@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package algo_iface;
+
+import "Location.proto";
+
+// A Scenario contains the part of the problem specification which varies daily,
+// that is the trains which come in and go out of the shunting area.
+message Scenario {
+    ScenarioIn in = 1;
+    ScenarioOut out = 2;
+}
+
+// Defines all trains arriving at the shunting area.
+message ScenarioIn {
+    repeated IncomingTrain trains = 1;
+}
+
+// Defines all requests for trains leaving the shunting area.
+message ScenarioOut {
+    repeated TrainRequest trainRequests = 1;
+}
+
+// An incoming train
+message IncomingTrain {
+    // The TrackPart ID of the location this train arrives over.
+    uint64 entryTrackPart = 1;
+
+    // The TrackPart ID of the location this train is at after arriving.
+    uint64 firstParkingTrackPart = 6;
+
+    // Arrival on the track, and departure from the track
+    // Times are in seconds since the epoch.
+    uint64 arrival = 2;
+    uint64 departure = 3;
+
+    string id = 4;
+
+    repeated IncomingTrainUnit members = 5;
+}
+
+message IncomingTrainUnit {
+    TrainUnit trainUnit = 1;
+
+    // Tasks for this train unit
+    repeated TaskSpec tasks = 2;
+}
+
+// A request for a train to leave the shunting area
+message TrainRequest {
+    // The TrackPart ID of the location this train leaves over.
+    uint64 leaveTrackPart = 1;
+
+    // The TrackPart ID of the location this train is at before leaving.
+    uint64 lastParkingTrackPart = 6;
+
+    // Arrival on the track, and departure from the track
+    // Times are in seconds since the epoch.
+    uint64 arrival = 2;
+    uint64 departure = 3;
+
+    // Name of this train
+    string displayName = 4;
+
+    // Outgoing train units; if in a TrainUnit the id field is not specified, then any train unit will do, provided that the other fields (train type, number of carriages) are still adhered to.
+    repeated TrainUnit trainUnits = 5;
+}
+
+// TrainUnit represents a combination of carriages which can move independently.
+message TrainUnit {
+	// A unique identifier of the unit
+	string id = 1;
+
+    TrainUnitType type = 2;
+}
+
+// TrainUnitType is a type of train unit
+message TrainUnitType {
+    // Name of the train unit type
+    // For example, "SGM" or "SLT".
+    string displayName = 1;
+
+    // Number of carriages. This is the total number of carriages,
+    // including the first and last carriage.
+    uint32 carriages = 2;
+
+    // Length of this train unit, in meters
+    double length = 4;
+
+    // The time it takes to reverse ("kopmaken"), in seconds
+    uint64 reversalDuration = 3;
+
+    // Time it takes to perform a combine in seconds
+    uint64 combineDuration = 5;
+
+    // Time it takes to perform a split in seconds
+    uint64 splitDuration = 6;
+
+    // kopmaaktijd = backNormTime + #carriage * backAdditionTime
+    uint64 backNormTime = 7;
+    uint64 backAdditionTime = 8;
+}
+
+// A ShuntingUnit is a combination of TrainUnits,
+// and moves as a unit at some point in time.
+message ShuntingUnit {
+	// Unique ID of this ShuntingUnit
+	string id = 1;
+
+	// The TrainUnits contained in this ShuntingUnit
+	repeated TrainUnit members = 2;
+
+    // The parents of a current ShuntingUnit, 
+    // that is, the shuntingunits which have been merged into this one,
+    // or the shuntingunit that has been split into (among others) this one.
+    repeated string parentIDs = 3;
+
+    // The children of the current ShuntingUnit,
+    // that is, the shuntingunits which contain parts of this shuntingunit.
+    // Alternatively, ShuntingUnit S has parent P iff P has child S.
+    repeated string childIDs = 4;
+}
+
+// A task specification specifies a certain task.
+message TaskSpec {
+    // The type of the task
+    TaskType type = 1;
+
+    // The priority; higher values indicate that this task is more important.
+    uint32 priority = 2 [deprecated = true];
+
+    // Time this task takes, in seconds
+    uint64 duration = 3;
+}

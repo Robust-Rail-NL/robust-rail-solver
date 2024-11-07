@@ -1,0 +1,97 @@
+{
+  "nonServiceTraffic": [
+    {
+      "members": [
+        "4",
+        "10",
+        "2",
+        "9"
+      ],
+      "arrival": "33000",
+      "departure": "33600"
+    }
+  ],
+  "disabledTrackPart": [
+    {
+      "trackPart": "4",
+      "arrival": "33000",
+      "departure": "0"
+    },
+    {
+      "trackPart": "0",
+      "arrival": "0",
+      "departure": "33600"
+    }
+  ],
+  "workers": [],
+  "in": [
+    {
+      "time": "32400",
+      "id": "1",
+      "sideTrackPart": "5",
+      "parkingTrackPart": "0",
+      "members": [
+        {
+          "id": "2401",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "Onderhoud"
+              },
+              "priority": 0,
+              "duration": "5400"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "out": [
+    {
+      "time": "39600",
+      "id": "3",
+      "sideTrackPart": "5",
+      "parkingTrackPart": "0",
+      "members": [
+        {
+          "id": "2401",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    }
+  ],
+  "startTime": "0",
+  "endTime": "172800",
+  "inStanding": [],
+  "outStanding": []
+}

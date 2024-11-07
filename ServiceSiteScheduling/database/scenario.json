@@ -1,0 +1,1307 @@
+{
+  "nonServiceTraffic": [],
+  "disabledTrackPart": [],
+  "workers": [],
+  "in": [
+    {
+      "time": "68160",
+      "id": "83055",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "2402",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "69120",
+      "id": "83059",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "9405",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "73080",
+      "id": "83049",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "2403",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        },
+        {
+          "id": "2602",
+          "type": {
+            "displayName": "SLT6",
+            "carriages": 6,
+            "length": 100.54000091552734,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "15",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "74040",
+      "id": "83057",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "8610",
+          "type": {
+            "displayName": "VIRM6",
+            "carriages": 6,
+            "length": 162.05999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "24",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "1800"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "1800"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "78240",
+      "id": "83069",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "7608",
+          "type": {
+            "displayName": "DDZ6",
+            "carriages": 6,
+            "length": 154,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "261",
+            "backAdditionTime": "23",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "DDZ",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "81180",
+      "id": "83077",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "8614",
+          "type": {
+            "displayName": "VIRM6",
+            "carriages": 6,
+            "length": 162.05999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "24",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "1800"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "1800"
+            }
+          ]
+        },
+        {
+          "id": "9406",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "83520",
+      "id": "83071",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "8615",
+          "type": {
+            "displayName": "VIRM6",
+            "carriages": 6,
+            "length": 162.05999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "24",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "A-Controle"
+              },
+              "priority": 0,
+              "duration": "1800"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "1800"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "84060",
+      "id": "83067",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "9407",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        },
+        {
+          "id": "8621",
+          "type": {
+            "displayName": "VIRM6",
+            "carriages": 6,
+            "length": 162.05999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "24",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "1800"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "1800"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "84480",
+      "id": "83079",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "2603",
+          "type": {
+            "displayName": "SLT6",
+            "carriages": 6,
+            "length": 100.54000091552734,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "15",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "A-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        },
+        {
+          "id": "2405",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        },
+        {
+          "id": "2404",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "90180",
+      "id": "83007",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "9411",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        },
+        {
+          "id": "9409",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "91260",
+      "id": "78884",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "9412",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "92100",
+      "id": "83003",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "2407",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        },
+        {
+          "id": "2406",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        },
+        {
+          "id": "2604",
+          "type": {
+            "displayName": "SLT6",
+            "carriages": 6,
+            "length": 100.54000091552734,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "15",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": "94620",
+      "id": "12345",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "9413",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": [
+            {
+              "type": {
+                "other": "B-Controle"
+              },
+              "priority": 0,
+              "duration": "900"
+            },
+            {
+              "type": {
+                "other": "Binnenkant reiniging"
+              },
+              "priority": 0,
+              "duration": "900"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "out": [
+    {
+      "time": "82680",
+      "id": "83070",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "2402",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "105480",
+      "id": "83018",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "9405",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "102480",
+      "id": "83086",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "2403",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        },
+        {
+          "id": "2602",
+          "type": {
+            "displayName": "SLT6",
+            "carriages": 6,
+            "length": 100.54000091552734,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "15",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "80400",
+      "id": "83082",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "8610",
+          "type": {
+            "displayName": "VIRM6",
+            "carriages": 6,
+            "length": 162.05999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "24",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "104460",
+      "id": "83002",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "7608",
+          "type": {
+            "displayName": "DDZ6",
+            "carriages": 6,
+            "length": 154,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "261",
+            "backAdditionTime": "23",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "DDZ",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "107940",
+      "id": "83010",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "8614",
+          "type": {
+            "displayName": "VIRM6",
+            "carriages": 6,
+            "length": 162.05999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "24",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        },
+        {
+          "id": "9406",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "110880",
+      "id": "83014",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "8615",
+          "type": {
+            "displayName": "VIRM6",
+            "carriages": 6,
+            "length": 162.05999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "24",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "106440",
+      "id": "78821",
+      "sideTrackPart": "41",
+      "parkingTrackPart": "14",
+      "members": [
+        {
+          "id": "8621",
+          "type": {
+            "displayName": "VIRM6",
+            "carriages": 6,
+            "length": 162.05999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "24",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "105840",
+      "id": "83004",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "9407",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        },
+        {
+          "id": "9411",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        },
+        {
+          "id": "9409",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "107040",
+      "id": "83008",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "2405",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        },
+        {
+          "id": "2404",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "104100",
+      "id": "78810",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "2603",
+          "type": {
+            "displayName": "SLT6",
+            "carriages": 6,
+            "length": 100.54000091552734,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "15",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "114420",
+      "id": "83020",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "9412",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "106320",
+      "id": "83006",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "2407",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        },
+        {
+          "id": "2406",
+          "type": {
+            "displayName": "SLT4",
+            "carriages": 4,
+            "length": 69.360000610351563,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "16",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        },
+        {
+          "id": "2604",
+          "type": {
+            "displayName": "SLT6",
+            "carriages": 6,
+            "length": 100.54000091552734,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "120",
+            "backAdditionTime": "15",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "SLT",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "time": "112620",
+      "id": "54321",
+      "sideTrackPart": "40",
+      "parkingTrackPart": "15",
+      "members": [
+        {
+          "id": "9413",
+          "type": {
+            "displayName": "VIRM4",
+            "carriages": 4,
+            "length": 108.55999755859375,
+            "combineDuration": "180",
+            "splitDuration": "120",
+            "backNormTime": "280",
+            "backAdditionTime": "25",
+            "travelSpeed": "0",
+            "startUpTime": "0",
+            "typePrefix": "VIRM",
+            "needsLoco": false,
+            "isLoco": false,
+            "needsElectricity": true
+          },
+          "tasks": []
+        }
+      ]
+    }
+  ],
+  "startTime": "0",
+  "endTime": "172800",
+  "inStanding": [],
+  "outStanding": []
+}

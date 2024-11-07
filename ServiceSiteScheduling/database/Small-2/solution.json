@@ -1,0 +1,873 @@
+{
+  "vertices": {
+    "0": {
+      "edges": [
+        "0",
+        "1",
+        "18",
+        "19"
+      ],
+      "type": "ZERO",
+      "actionId": "-1"
+    },
+    "1": {
+      "edges": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "type": "STARTING",
+      "actionId": "0"
+    },
+    "2": {
+      "edges": [
+        "2",
+        "3",
+        "30"
+      ],
+      "type": "ENDING",
+      "actionId": "0"
+    },
+    "3": {
+      "edges": [
+        "4",
+        "5",
+        "30"
+      ],
+      "type": "STARTING",
+      "actionId": "1"
+    },
+    "4": {
+      "edges": [
+        "4",
+        "5",
+        "24",
+        "25",
+        "26",
+        "31"
+      ],
+      "type": "ENDING",
+      "actionId": "1"
+    },
+    "5": {
+      "edges": [
+        "6",
+        "7",
+        "31"
+      ],
+      "type": "STARTING",
+      "actionId": "2"
+    },
+    "6": {
+      "edges": [
+        "6",
+        "7",
+        "32"
+      ],
+      "type": "ENDING",
+      "actionId": "2"
+    },
+    "7": {
+      "edges": [
+        "8",
+        "9",
+        "24",
+        "32"
+      ],
+      "type": "STARTING",
+      "actionId": "3"
+    },
+    "8": {
+      "edges": [
+        "8",
+        "9",
+        "27",
+        "28",
+        "33"
+      ],
+      "type": "ENDING",
+      "actionId": "3"
+    },
+    "9": {
+      "edges": [
+        "10",
+        "11",
+        "33"
+      ],
+      "type": "STARTING",
+      "actionId": "4"
+    },
+    "10": {
+      "edges": [
+        "10",
+        "11",
+        "34"
+      ],
+      "type": "ENDING",
+      "actionId": "4"
+    },
+    "11": {
+      "edges": [
+        "12",
+        "13",
+        "25",
+        "27",
+        "34"
+      ],
+      "type": "STARTING",
+      "actionId": "5"
+    },
+    "12": {
+      "edges": [
+        "12",
+        "13",
+        "29",
+        "35"
+      ],
+      "type": "ENDING",
+      "actionId": "5"
+    },
+    "13": {
+      "edges": [
+        "14",
+        "15",
+        "35"
+      ],
+      "type": "STARTING",
+      "actionId": "6"
+    },
+    "14": {
+      "edges": [
+        "14",
+        "15",
+        "36"
+      ],
+      "type": "ENDING",
+      "actionId": "6"
+    },
+    "15": {
+      "edges": [
+        "16",
+        "17",
+        "26",
+        "28",
+        "29",
+        "36"
+      ],
+      "type": "STARTING",
+      "actionId": "7"
+    },
+    "16": {
+      "edges": [
+        "16",
+        "17",
+        "22",
+        "23"
+      ],
+      "type": "ENDING",
+      "actionId": "7"
+    },
+    "17": {
+      "edges": [
+        "20",
+        "21",
+        "22",
+        "23"
+      ],
+      "type": "STARTING",
+      "actionId": "8"
+    },
+    "18": {
+      "edges": [
+        "18",
+        "19",
+        "20",
+        "21"
+      ],
+      "type": "ENDING",
+      "actionId": "8"
+    }
+  },
+  "edges": {
+    "0": {
+      "source": "1",
+      "destination": "0",
+      "weight": "-32400",
+      "isFixed": false
+    },
+    "1": {
+      "source": "0",
+      "destination": "1",
+      "weight": "32400",
+      "isFixed": false
+    },
+    "2": {
+      "source": "2",
+      "destination": "1",
+      "weight": "0",
+      "isFixed": false
+    },
+    "3": {
+      "source": "1",
+      "destination": "2",
+      "weight": "0",
+      "isFixed": false
+    },
+    "4": {
+      "source": "4",
+      "destination": "3",
+      "weight": "-180",
+      "isFixed": false
+    },
+    "5": {
+      "source": "3",
+      "destination": "4",
+      "weight": "180",
+      "isFixed": false
+    },
+    "6": {
+      "source": "6",
+      "destination": "5",
+      "weight": "-184",
+      "isFixed": false
+    },
+    "7": {
+      "source": "5",
+      "destination": "6",
+      "weight": "184",
+      "isFixed": false
+    },
+    "8": {
+      "source": "8",
+      "destination": "7",
+      "weight": "-180",
+      "isFixed": false
+    },
+    "9": {
+      "source": "7",
+      "destination": "8",
+      "weight": "180",
+      "isFixed": false
+    },
+    "10": {
+      "source": "10",
+      "destination": "9",
+      "weight": "-5400",
+      "isFixed": false
+    },
+    "11": {
+      "source": "9",
+      "destination": "10",
+      "weight": "5400",
+      "isFixed": false
+    },
+    "12": {
+      "source": "12",
+      "destination": "11",
+      "weight": "-180",
+      "isFixed": false
+    },
+    "13": {
+      "source": "11",
+      "destination": "12",
+      "weight": "180",
+      "isFixed": false
+    },
+    "14": {
+      "source": "14",
+      "destination": "13",
+      "weight": "-184",
+      "isFixed": false
+    },
+    "15": {
+      "source": "13",
+      "destination": "14",
+      "weight": "184",
+      "isFixed": false
+    },
+    "16": {
+      "source": "16",
+      "destination": "15",
+      "weight": "-180",
+      "isFixed": false
+    },
+    "17": {
+      "source": "15",
+      "destination": "16",
+      "weight": "180",
+      "isFixed": false
+    },
+    "18": {
+      "source": "18",
+      "destination": "0",
+      "weight": "-39600",
+      "isFixed": false
+    },
+    "19": {
+      "source": "0",
+      "destination": "18",
+      "weight": "39600",
+      "isFixed": false
+    },
+    "20": {
+      "source": "18",
+      "destination": "17",
+      "weight": "0",
+      "isFixed": false
+    },
+    "21": {
+      "source": "17",
+      "destination": "18",
+      "weight": "0",
+      "isFixed": false
+    },
+    "22": {
+      "source": "17",
+      "destination": "16",
+      "weight": "0",
+      "isFixed": false
+    },
+    "23": {
+      "source": "16",
+      "destination": "17",
+      "weight": "0",
+      "isFixed": false
+    },
+    "24": {
+      "source": "7",
+      "destination": "4",
+      "weight": "0",
+      "isFixed": false
+    },
+    "25": {
+      "source": "11",
+      "destination": "4",
+      "weight": "0",
+      "isFixed": false
+    },
+    "26": {
+      "source": "15",
+      "destination": "4",
+      "weight": "0",
+      "isFixed": false
+    },
+    "27": {
+      "source": "11",
+      "destination": "8",
+      "weight": "0",
+      "isFixed": false
+    },
+    "28": {
+      "source": "15",
+      "destination": "8",
+      "weight": "0",
+      "isFixed": false
+    },
+    "29": {
+      "source": "15",
+      "destination": "12",
+      "weight": "0",
+      "isFixed": false
+    },
+    "30": {
+      "source": "3",
+      "destination": "2",
+      "weight": "0",
+      "isFixed": false
+    },
+    "31": {
+      "source": "5",
+      "destination": "4",
+      "weight": "0",
+      "isFixed": false
+    },
+    "32": {
+      "source": "7",
+      "destination": "6",
+      "weight": "0",
+      "isFixed": false
+    },
+    "33": {
+      "source": "9",
+      "destination": "8",
+      "weight": "0",
+      "isFixed": false
+    },
+    "34": {
+      "source": "11",
+      "destination": "10",
+      "weight": "0",
+      "isFixed": false
+    },
+    "35": {
+      "source": "13",
+      "destination": "12",
+      "weight": "0",
+      "isFixed": false
+    },
+    "36": {
+      "source": "15",
+      "destination": "14",
+      "weight": "0",
+      "isFixed": false
+    }
+  },
+  "actions": {
+    "0": {
+      "Duration": "0",
+      "taskType": {
+        "predefined": "Arrive"
+      },
+      "shuntingUnit": {
+        "id": "0",
+        "members": [
+          {
+            "id": "2401",
+            "type": {
+              "displayName": "SLT4",
+              "carriages": 4,
+              "length": 69.360000610351563,
+              "combineDuration": "180",
+              "splitDuration": "120",
+              "backNormTime": "120",
+              "backAdditionTime": "16",
+              "travelSpeed": "0",
+              "startUpTime": "0",
+              "typePrefix": "SLT",
+              "needsLoco": false,
+              "isLoco": false,
+              "needsElectricity": true
+            },
+            "tasks": [
+              {
+                "type": {
+                  "other": "Onderhoud"
+                },
+                "priority": 0,
+                "duration": "5400"
+              }
+            ]
+          }
+        ],
+        "parentIDs": [],
+        "childIDs": []
+      },
+      "location": "5",
+      "resources": [
+        {
+          "name": "0",
+          "trackPartId": "0"
+        }
+      ],
+      "trainUnitIds": []
+    },
+    "1": {
+      "Duration": "0",
+      "taskType": {
+        "predefined": "Move"
+      },
+      "shuntingUnit": {
+        "id": "0",
+        "members": [
+          {
+            "id": "2401",
+            "type": {
+              "displayName": "SLT4",
+              "carriages": 4,
+              "length": 69.360000610351563,
+              "combineDuration": "180",
+              "splitDuration": "120",
+              "backNormTime": "120",
+              "backAdditionTime": "16",
+              "travelSpeed": "0",
+              "startUpTime": "0",
+              "typePrefix": "SLT",
+              "needsLoco": false,
+              "isLoco": false,
+              "needsElectricity": true
+            },
+            "tasks": [
+              {
+                "type": {
+                  "other": "Onderhoud"
+                },
+                "priority": 0,
+                "duration": "5400"
+              }
+            ]
+          }
+        ],
+        "parentIDs": [],
+        "childIDs": []
+      },
+      "location": "0",
+      "resources": [
+        {
+          "name": "0",
+          "trackPartId": "0"
+        },
+        {
+          "name": "9",
+          "trackPartId": "9"
+        },
+        {
+          "name": "1",
+          "trackPartId": "1"
+        }
+      ],
+      "trainUnitIds": []
+    },
+    "2": {
+      "Duration": "0",
+      "taskType": {
+        "predefined": "Walking"
+      },
+      "shuntingUnit": {
+        "id": "0",
+        "members": [
+          {
+            "id": "2401",
+            "type": {
+              "displayName": "SLT4",
+              "carriages": 4,
+              "length": 69.360000610351563,
+              "combineDuration": "180",
+              "splitDuration": "120",
+              "backNormTime": "120",
+              "backAdditionTime": "16",
+              "travelSpeed": "0",
+              "startUpTime": "0",
+              "typePrefix": "SLT",
+              "needsLoco": false,
+              "isLoco": false,
+              "needsElectricity": true
+            },
+            "tasks": [
+              {
+                "type": {
+                  "other": "Onderhoud"
+                },
+                "priority": 0,
+                "duration": "5400"
+              }
+            ]
+          }
+        ],
+        "parentIDs": [],
+        "childIDs": []
+      },
+      "location": "1",
+      "resources": [],
+      "trainUnitIds": []
+    },
+    "3": {
+      "Duration": "0",
+      "taskType": {
+        "predefined": "Move"
+      },
+      "shuntingUnit": {
+        "id": "0",
+        "members": [
+          {
+            "id": "2401",
+            "type": {
+              "displayName": "SLT4",
+              "carriages": 4,
+              "length": 69.360000610351563,
+              "combineDuration": "180",
+              "splitDuration": "120",
+              "backNormTime": "120",
+              "backAdditionTime": "16",
+              "travelSpeed": "0",
+              "startUpTime": "0",
+              "typePrefix": "SLT",
+              "needsLoco": false,
+              "isLoco": false,
+              "needsElectricity": true
+            },
+            "tasks": [
+              {
+                "type": {
+                  "other": "Onderhoud"
+                },
+                "priority": 0,
+                "duration": "5400"
+              }
+            ]
+          }
+        ],
+        "parentIDs": [],
+        "childIDs": []
+      },
+      "location": "1",
+      "resources": [
+        {
+          "name": "1",
+          "trackPartId": "1"
+        },
+        {
+          "name": "9",
+          "trackPartId": "9"
+        },
+        {
+          "name": "2",
+          "trackPartId": "2"
+        }
+      ],
+      "trainUnitIds": []
+    },
+    "4": {
+      "Duration": "0",
+      "taskType": {
+        "other": "Onderhoud"
+      },
+      "shuntingUnit": {
+        "id": "0",
+        "members": [
+          {
+            "id": "2401",
+            "type": {
+              "displayName": "SLT4",
+              "carriages": 4,
+              "length": 69.360000610351563,
+              "combineDuration": "180",
+              "splitDuration": "120",
+              "backNormTime": "120",
+              "backAdditionTime": "16",
+              "travelSpeed": "0",
+              "startUpTime": "0",
+              "typePrefix": "SLT",
+              "needsLoco": false,
+              "isLoco": false,
+              "needsElectricity": true
+            },
+            "tasks": [
+              {
+                "type": {
+                  "other": "Onderhoud"
+                },
+                "priority": 0,
+                "duration": "5400"
+              }
+            ]
+          }
+        ],
+        "parentIDs": [],
+        "childIDs": []
+      },
+      "location": "2",
+      "resources": [
+        {
+          "name": "11",
+          "facilityId": "11"
+        }
+      ],
+      "trainUnitIds": []
+    },
+    "5": {
+      "Duration": "0",
+      "taskType": {
+        "predefined": "Move"
+      },
+      "shuntingUnit": {
+        "id": "0",
+        "members": [
+          {
+            "id": "2401",
+            "type": {
+              "displayName": "SLT4",
+              "carriages": 4,
+              "length": 69.360000610351563,
+              "combineDuration": "180",
+              "splitDuration": "120",
+              "backNormTime": "120",
+              "backAdditionTime": "16",
+              "travelSpeed": "0",
+              "startUpTime": "0",
+              "typePrefix": "SLT",
+              "needsLoco": false,
+              "isLoco": false,
+              "needsElectricity": true
+            },
+            "tasks": [
+              {
+                "type": {
+                  "other": "Onderhoud"
+                },
+                "priority": 0,
+                "duration": "5400"
+              }
+            ]
+          }
+        ],
+        "parentIDs": [],
+        "childIDs": []
+      },
+      "location": "2",
+      "resources": [
+        {
+          "name": "2",
+          "trackPartId": "2"
+        },
+        {
+          "name": "9",
+          "trackPartId": "9"
+        },
+        {
+          "name": "1",
+          "trackPartId": "1"
+        }
+      ],
+      "trainUnitIds": []
+    },
+    "6": {
+      "Duration": "0",
+      "taskType": {
+        "predefined": "Walking"
+      },
+      "shuntingUnit": {
+        "id": "0",
+        "members": [
+          {
+            "id": "2401",
+            "type": {
+              "displayName": "SLT4",
+              "carriages": 4,
+              "length": 69.360000610351563,
+              "combineDuration": "180",
+              "splitDuration": "120",
+              "backNormTime": "120",
+              "backAdditionTime": "16",
+              "travelSpeed": "0",
+              "startUpTime": "0",
+              "typePrefix": "SLT",
+              "needsLoco": false,
+              "isLoco": false,
+              "needsElectricity": true
+            },
+            "tasks": [
+              {
+                "type": {
+                  "other": "Onderhoud"
+                },
+                "priority": 0,
+                "duration": "5400"
+              }
+            ]
+          }
+        ],
+        "parentIDs": [],
+        "childIDs": []
+      },
+      "location": "1",
+      "resources": [],
+      "trainUnitIds": []
+    },
+    "7": {
+      "Duration": "0",
+      "taskType": {
+        "predefined": "Move"
+      },
+      "shuntingUnit": {
+        "id": "0",
+        "members": [
+          {
+            "id": "2401",
+            "type": {
+              "displayName": "SLT4",
+              "carriages": 4,
+              "length": 69.360000610351563,
+              "combineDuration": "180",
+              "splitDuration": "120",
+              "backNormTime": "120",
+              "backAdditionTime": "16",
+              "travelSpeed": "0",
+              "startUpTime": "0",
+              "typePrefix": "SLT",
+              "needsLoco": false,
+              "isLoco": false,
+              "needsElectricity": true
+            },
+            "tasks": [
+              {
+                "type": {
+                  "other": "Onderhoud"
+                },
+                "priority": 0,
+                "duration": "5400"
+              }
+            ]
+          }
+        ],
+        "parentIDs": [],
+        "childIDs": []
+      },
+      "location": "1",
+      "resources": [
+        {
+          "name": "1",
+          "trackPartId": "1"
+        },
+        {
+          "name": "9",
+          "trackPartId": "9"
+        },
+        {
+          "name": "0",
+          "trackPartId": "0"
+        }
+      ],
+      "trainUnitIds": []
+    },
+    "8": {
+      "Duration": "0",
+      "taskType": {
+        "predefined": "Exit"
+      },
+      "shuntingUnit": {
+        "id": "0",
+        "members": [
+          {
+            "id": "2401",
+            "type": {
+              "displayName": "SLT4",
+              "carriages": 4,
+              "length": 69.360000610351563,
+              "combineDuration": "180",
+              "splitDuration": "120",
+              "backNormTime": "120",
+              "backAdditionTime": "16",
+              "travelSpeed": "0",
+              "startUpTime": "0",
+              "typePrefix": "SLT",
+              "needsLoco": false,
+              "isLoco": false,
+              "needsElectricity": true
+            },
+            "tasks": [
+              {
+                "type": {
+                  "other": "Onderhoud"
+                },
+                "priority": 0,
+                "duration": "5400"
+              }
+            ]
+          }
+        ],
+        "parentIDs": [],
+        "childIDs": []
+      },
+      "location": "0",
+      "resources": [
+        {
+          "name": "5",
+          "trackPartId": "5"
+        }
+      ],
+      "trainUnitIds": []
+    }
+  },
+  "conflicts": []
+}

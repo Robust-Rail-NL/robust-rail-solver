@@ -1,0 +1,182 @@
+{
+  "trackParts": [
+    {
+      "id": "0",
+      "type": "RailRoad",
+      "aSide": [
+        "9"
+      ],
+      "bSide": [
+        "5"
+      ],
+      "length": 75,
+      "name": "1",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false,
+      "isElectrified": true
+    },
+    {
+      "id": "1",
+      "type": "RailRoad",
+      "aSide": [
+        "7"
+      ],
+      "bSide": [
+        "9"
+      ],
+      "length": 140,
+      "name": "2",
+      "sawMovementAllowed": true,
+      "parkingAllowed": true,
+      "isElectrified": true
+    },
+    {
+      "id": "2",
+      "type": "RailRoad",
+      "aSide": [
+        "9"
+      ],
+      "bSide": [
+        "10"
+      ],
+      "length": 140,
+      "name": "3",
+      "sawMovementAllowed": true,
+      "parkingAllowed": true,
+      "isElectrified": true
+    },
+    {
+      "id": "3",
+      "type": "RailRoad",
+      "aSide": [
+        "10"
+      ],
+      "bSide": [
+        "8"
+      ],
+      "length": 140,
+      "name": "4",
+      "sawMovementAllowed": true,
+      "parkingAllowed": true,
+      "isElectrified": true
+    },
+    {
+      "id": "4",
+      "type": "RailRoad",
+      "aSide": [
+        "6"
+      ],
+      "bSide": [
+        "10"
+      ],
+      "length": 75,
+      "name": "5",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false,
+      "isElectrified": true
+    },
+    {
+      "id": "5",
+      "type": "Bumper",
+      "aSide": [
+        "0"
+      ],
+      "bSide": [],
+      "length": 0,
+      "name": "sein1",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false,
+      "isElectrified": false
+    },
+    {
+      "id": "6",
+      "type": "Bumper",
+      "aSide": [
+        "4"
+      ],
+      "bSide": [],
+      "length": 0,
+      "name": "sein2",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false,
+      "isElectrified": false
+    },
+    {
+      "id": "7",
+      "type": "Bumper",
+      "aSide": [
+        "1"
+      ],
+      "bSide": [],
+      "length": 0,
+      "name": "Stootblok1",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false,
+      "isElectrified": false
+    },
+    {
+      "id": "8",
+      "type": "Bumper",
+      "aSide": [
+        "3"
+      ],
+      "bSide": [],
+      "length": 0,
+      "name": "Stootblok2",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false,
+      "isElectrified": false
+    },
+    {
+      "id": "9",
+      "type": "Switch",
+      "aSide": [
+        "1"
+      ],
+      "bSide": [
+        "2",
+        "0"
+      ],
+      "length": 0,
+      "name": "Wissel1",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false,
+      "isElectrified": false
+    },
+    {
+      "id": "10",
+      "type": "Switch",
+      "aSide": [
+        "3"
+      ],
+      "bSide": [
+        "4",
+        "2"
+      ],
+      "length": 0,
+      "name": "Wissel2",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false,
+      "isElectrified": false
+    }
+  ],
+  "facilities": [
+    {
+      "id": "11",
+      "type": "Unknown",
+      "relatedTrackParts": [
+        "2"
+      ],
+      "taskTypes": [
+        {
+          "other": "Onderhoud"
+        }
+      ],
+      "simultaneousUsageCount": 2
+    }
+  ],
+  "taskTypes": [],
+  "movementConstant": 180,
+  "movementTrackCoefficient": 0,
+  "movementSwitchCoefficient": 0
+}

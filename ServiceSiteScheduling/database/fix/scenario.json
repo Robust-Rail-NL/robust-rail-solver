@@ -1,0 +1,1430 @@
+{
+    "in": {
+        "trains": [
+            {
+                "entryTrackPart": "41",
+                "arrival": "31500",
+                "departure": "31500",
+                "id": "1000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "2401",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 4,
+                                "reversalDuration": "120",
+                                "length": 70,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1380"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "33180",
+                "departure": "33180",
+                "id": "2000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "8608",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 6,
+                                "reversalDuration": "264",
+                                "length": 162,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        }
+                    },
+                    {
+                        "trainUnit": {
+                            "id": "9401",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "reversalDuration": "264",
+                                "length": 109,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "660"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "42",
+                "arrival": "34800",
+                "departure": "34800",
+                "id": "3000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "7501",
+                            "type": {
+                                "displayName": "DDZ",
+                                "carriages": 4,
+                                "reversalDuration": "253",
+                                "length": 101,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "zeepbeurt"
+                                },
+                                "duration": "1440"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "14"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "36780",
+                "departure": "36780",
+                "id": "4000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "9402",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "reversalDuration": "264",
+                                "length": 109,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "660"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "42",
+                "arrival": "38280",
+                "departure": "38280",
+                "id": "5000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "9404",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "reversalDuration": "264",
+                                "length": 109,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "660"
+                            }
+                        ]
+                    },
+                    {
+                        "trainUnit": {
+                            "id": "9403",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "reversalDuration": "264",
+                                "length": 109,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        }
+                    }
+                ],
+                "firstParkingTrackPart": "14"
+            },
+            {
+                "entryTrackPart": "42",
+                "arrival": "39240",
+                "departure": "39240",
+                "id": "6000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "2601",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 6,
+                                "reversalDuration": "120",
+                                "length": 101,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "zeepbeurt"
+                                },
+                                "duration": "1440"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1620"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "14"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "68160",
+                "departure": "68160",
+                "id": "7000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "2402",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 4,
+                                "reversalDuration": "120",
+                                "length": 70,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "900"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1380"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "69120",
+                "departure": "69120",
+                "id": "8000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "9405",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "reversalDuration": "264",
+                                "length": 109,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "2220"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "73080",
+                "departure": "73080",
+                "id": "9000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "2403",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 4,
+                                "reversalDuration": "120",
+                                "length": 70,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "900"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1380"
+                            }
+                        ]
+                    },
+                    {
+                        "trainUnit": {
+                            "id": "2602",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 6,
+                                "reversalDuration": "120",
+                                "length": 101,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "1200"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1620"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "74040",
+                "departure": "74040",
+                "id": "10000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "8610",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 6,
+                                "reversalDuration": "264",
+                                "length": 162,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "840"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "78240",
+                "departure": "78240",
+                "id": "11000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "7608",
+                            "type": {
+                                "displayName": "DDZ",
+                                "carriages": 6,
+                                "reversalDuration": "253",
+                                "length": 154,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "3360"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1080"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "81180",
+                "departure": "81180",
+                "id": "12000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "8614",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 6,
+                                "reversalDuration": "264",
+                                "length": 162,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "3360"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "840"
+                            }
+                        ]
+                    },
+                    {
+                        "trainUnit": {
+                            "id": "9406",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "reversalDuration": "264",
+                                "length": 109,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "2220"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "83520",
+                "departure": "83520",
+                "id": "13000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "8615",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 6,
+                                "reversalDuration": "264",
+                                "length": 162,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "3360"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_A"
+                                },
+                                "duration": "3600"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "84060",
+                "departure": "84060",
+                "id": "14000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "9407",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "reversalDuration": "264",
+                                "length": 109,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "2220"
+                            }
+                        ]
+                    },
+                    {
+                        "trainUnit": {
+                            "id": "8621",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 6,
+                                "reversalDuration": "264",
+                                "length": 162,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "3360"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "840"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "84480",
+                "departure": "84480",
+                "id": "15000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "2603",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 6,
+                                "reversalDuration": "120",
+                                "length": 101,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "1200"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_A"
+                                },
+                                "duration": "3060"
+                            }
+                        ]
+                    },
+                    {
+                        "trainUnit": {
+                            "id": "2405",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 4,
+                                "reversalDuration": "120",
+                                "length": 70,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "900"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1380"
+                            }
+                        ]
+                    },
+                    {
+                        "trainUnit": {
+                            "id": "2404",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 4,
+                                "reversalDuration": "120",
+                                "length": 70,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "900"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1380"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "90180",
+                "departure": "90180",
+                "id": "16000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "9411",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "reversalDuration": "264",
+                                "length": 109,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "2220"
+                            }
+                        ]
+                    },
+                    {
+                        "trainUnit": {
+                            "id": "9409",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "reversalDuration": "264",
+                                "length": 109,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "2220"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "660"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "91260",
+                "departure": "91260",
+                "id": "17000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "9412",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "reversalDuration": "264",
+                                "length": 109,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "240",
+                                "backAdditionTime": "30"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "2220"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "660"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
+                "entryTrackPart": "41",
+                "arrival": "92100",
+                "departure": "92100",
+                "id": "18000",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "2407",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 4,
+                                "reversalDuration": "120",
+                                "length": 70,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "900"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1380"
+                            }
+                        ]
+                    },
+                    {
+                        "trainUnit": {
+                            "id": "2406",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 4,
+                                "reversalDuration": "120",
+                                "length": 70,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "900"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1380"
+                            }
+                        ]
+                    },
+                    {
+                        "trainUnit": {
+                            "id": "2604",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 6,
+                                "reversalDuration": "120",
+                                "length": 101,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "19"
+                            }
+                        },
+                        "tasks": [
+                            {
+                                "type": {
+                                    "other": "inwendige_reiniging"
+                                },
+                                "duration": "1200"
+                            },
+                            {
+                                "type": {
+                                    "other": "technische_controle_B"
+                                },
+                                "duration": "1620"
+                            }
+                        ]
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            }
+        ]
+    },
+    "out": {
+        "trainRequests": [
+            {
+                "leaveTrackPart": "41",
+                "arrival": "54240",
+                "departure": "54240",
+                "displayName": "51000",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "reversalDuration": "120",
+                            "length": 70,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "60420",
+                "departure": "60420",
+                "displayName": "52000",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "reversalDuration": "264",
+                            "length": 109,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "52440",
+                "departure": "52440",
+                "displayName": "53000",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 6,
+                            "reversalDuration": "264",
+                            "length": 162,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "51600",
+                "departure": "51600",
+                "displayName": "54000",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "DDZ",
+                            "carriages": 4,
+                            "reversalDuration": "253",
+                            "length": 101,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "57840",
+                "departure": "57840",
+                "displayName": "55000",
+                "trainUnits": [
+                    {
+                        "id": "9402",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "reversalDuration": "264",
+                            "length": 109,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "42",
+                "arrival": "48960",
+                "departure": "48960",
+                "displayName": "56000",
+                "trainUnits": [
+                    {
+                        "id": "9404",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "reversalDuration": "264",
+                            "length": 109,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    },
+                    {
+                        "id": "9403",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "reversalDuration": "264",
+                            "length": 109,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "14"
+            },
+            {
+                "leaveTrackPart": "42",
+                "arrival": "52560",
+                "departure": "52560",
+                "displayName": "57000",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 6,
+                            "reversalDuration": "120",
+                            "length": 101,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "14"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "82680",
+                "departure": "82680",
+                "displayName": "58000",
+                "trainUnits": [
+                    {
+                        "id": "2402",
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "reversalDuration": "120",
+                            "length": 70,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "105480",
+                "departure": "105480",
+                "displayName": "59000",
+                "trainUnits": [
+                    {
+                        "id": "9405",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "reversalDuration": "264",
+                            "length": 109,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "102480",
+                "departure": "102480",
+                "displayName": "60000",
+                "trainUnits": [
+                    {
+                        "id": "2403",
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "reversalDuration": "120",
+                            "length": 70,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    },
+                    {
+                        "id": "2602",
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 6,
+                            "reversalDuration": "120",
+                            "length": 101,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "80400",
+                "departure": "80400",
+                "displayName": "61000",
+                "trainUnits": [
+                    {
+                        "id": "8610",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 6,
+                            "reversalDuration": "264",
+                            "length": 162,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "104460",
+                "departure": "104460",
+                "displayName": "62000",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "DDZ",
+                            "carriages": 6,
+                            "reversalDuration": "253",
+                            "length": 154,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "107940",
+                "departure": "107940",
+                "displayName": "63000",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 6,
+                            "reversalDuration": "264",
+                            "length": 162,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    },
+                    {
+                        "id": "9406",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "reversalDuration": "264",
+                            "length": 109,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "110880",
+                "departure": "110880",
+                "displayName": "64000",
+                "trainUnits": [
+                    {
+                        "id": "8615",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 6,
+                            "reversalDuration": "264",
+                            "length": 162,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "42",
+                "arrival": "106440",
+                "departure": "106440",
+                "displayName": "65000",
+                "trainUnits": [
+                    {
+                        "id": "8621",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 6,
+                            "reversalDuration": "264",
+                            "length": 162,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "14"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "105840",
+                "departure": "105840",
+                "displayName": "66000",
+                "trainUnits": [
+                    {
+                        "id": "9407",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "reversalDuration": "264",
+                            "length": 109,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    },
+                    {
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "reversalDuration": "264",
+                            "length": 109,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    },
+                    {
+                        "id": "9409",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "reversalDuration": "264",
+                            "length": 109,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "107040",
+                "departure": "107040",
+                "displayName": "67000",
+                "trainUnits": [
+                    {
+                        "id": "2405",
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "reversalDuration": "120",
+                            "length": 70,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    },
+                    {
+                        "id": "2404",
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "reversalDuration": "120",
+                            "length": 70,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "104100",
+                "departure": "104100",
+                "displayName": "68000",
+                "trainUnits": [
+                    {
+                        "id": "2603",
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 6,
+                            "reversalDuration": "120",
+                            "length": 101,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "114420",
+                "departure": "114420",
+                "displayName": "69000",
+                "trainUnits": [
+                    {
+                        "id": "9412",
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "reversalDuration": "264",
+                            "length": 109,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "240",
+                            "backAdditionTime": "30"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "41",
+                "arrival": "106320",
+                "departure": "106320",
+                "displayName": "70000",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "reversalDuration": "120",
+                            "length": 70,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    },
+                    {
+                        "id": "2406",
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "reversalDuration": "120",
+                            "length": 70,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    },
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 6,
+                            "reversalDuration": "120",
+                            "length": 101,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "19"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            }
+        ]
+    }
+}
