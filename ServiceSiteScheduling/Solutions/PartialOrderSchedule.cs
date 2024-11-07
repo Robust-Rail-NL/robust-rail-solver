@@ -70,19 +70,21 @@ namespace ServiceSiteScheduling.Solutions
 
                 if (routing != null)
                 {
-                    Console.WriteLine("Routing:");
+                    Console.WriteLine("Routing in tracks:");
                     var tracks = routing.Route.Tracks;
-                    var lastTask = tracks.Last(); 
+                    var lastTrack = tracks.Last(); 
 
-                    foreach (Track task in tracks)
+                    // TODO: display more infrastructure
+
+                    foreach (Track track in tracks)
                     {
-                        if(task != lastTask)
+                        if(track != lastTrack)
                         {
-                            Console.Write($"{task} --> ");
+                            Console.Write($"{track} --> ");
 
                         }else 
                         {
-                            Console.Write($"{task}");
+                            Console.Write($"{track}");
                         }
 
                     }
