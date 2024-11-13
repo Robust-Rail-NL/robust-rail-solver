@@ -195,7 +195,8 @@ namespace ServiceSiteScheduling.Solutions
                 move = move.NextMove;
             }
             PartialOrderSchedule POS = new PartialOrderSchedule(start, this.ShuntUnits, this.ArrivalTasks, this.DepartureTasks);
-            POS.UpdatePOS(start);
+            POS.CreatePOS(start);
+            POS.UpdatePOS();
             POS.DisplayInfrastructure();
         
         }
