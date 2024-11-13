@@ -131,6 +131,12 @@ namespace ServiceSiteScheduling
                     default:
                         break;
                 }
+                // foreach (KeyValuePair<ulong, Infrastructure> infra in infrastructuremap)
+                // {
+                //     Console.WriteLine($"id: {infra.Key} : Inrastructure {infra.Value}");
+
+                // }
+
             }
             instance.Tracks = tracks.ToArray();
             // Connect the parts
@@ -191,7 +197,8 @@ namespace ServiceSiteScheduling
             Dictionary<AlgoIface.TaskType, ServiceType> taskmap = new Dictionary<AlgoIface.TaskType, ServiceType>();
             var tasktypes = scenario.In.Trains.Aggregate(
                 new List<AlgoIface.TaskType>(),
-                (list, train) => {
+                (list, train) =>
+                {
                     list.AddRange(train.Members.Aggregate(
                         new List<AlgoIface.TaskType>(),
                         (l, unit) => { l.AddRange(unit.Tasks.Select(task => task.Type)); return l; }));
