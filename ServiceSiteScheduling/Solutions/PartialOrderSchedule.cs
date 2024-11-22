@@ -16,6 +16,7 @@ using ServiceSiteScheduling.Servicing;
 using System.Xml;
 using System.Security;
 using YamlDotNet.Core.Tokens;
+using System.Linq.Expressions;
 
 
 namespace ServiceSiteScheduling.Solutions
@@ -43,6 +44,8 @@ namespace ServiceSiteScheduling.Solutions
             this.DepartureTasks = departures;
         }
 
+        // Get the infrastrucure describing the shunting yard
+        // this information is obtained from the ProblemInstance, created from the `location.data` file
         public Dictionary<ulong, Infrastructure> GetInfrasturcture()
         {
             ProblemInstance instance = ProblemInstance.Current;
@@ -95,6 +98,7 @@ namespace ServiceSiteScheduling.Solutions
 
             if (routing != null)
             {
+                // Standard MoveTask
                 var tracks = routing.Route.Tracks;
                 var lastTrack = tracks.Last();
 
@@ -107,42 +111,103 @@ namespace ServiceSiteScheduling.Solutions
 
                 }
             }
+            else
+            {
+                // Departure MoveTask
+                if (move.TaskType == MoveTaskType.Departure)
+                {
+                    // Cast as DepartureRoutingTask
+                    var routingDeparture = move as DepartureRoutingTask;
+                    if (routingDeparture != null)
+                    {
+                        var listOfRoutes = routingDeparture.GetRoutes();
+
+                        // // TODO: display more infrastructure
+                        int numbrerOfInfraUsed = 0;
+                        int k = 0;
+                        foreach (Route route in listOfRoutes)
+                        {
+                            var tracks = route.Tracks;
+                            var lastTrack = tracks.Last();
+
+                            List<ulong> IDListOfInstraUsedIntermediate = new List<ulong>();
+
+                            foreach (Track track in tracks)
+                            {
+
+                                IDListOfInstraUsedIntermediate.Add(track.ASide.ID);
+                                IDListOfInstraUsedIntermediate.Add(track.ID);
+                                IDListOfInstraUsedIntermediate.Add(track.BSide.ID);
+
+                            }
+                            // TODO: review this, probably a different logic should be used her
+                            // maybe calculate the distance for each route ? 
+                            if (k == 0)
+                            {
+                                numbrerOfInfraUsed = IDListOfInstraUsedIntermediate.Count;
+                                foreach (ulong trackID in IDListOfInstraUsedIntermediate)
+                                    IDListOfInstraUsed.Add(trackID);
+
+                            }
+                            else
+                            {
+                                if (IDListOfInstraUsedIntermediate.Count < numbrerOfInfraUsed)
+                                {
+                                    // Less infrasturcure used 
+                                    numbrerOfInfraUsed = IDListOfInstraUsedIntermediate.Count;
+                                    IDListOfInstraUsed = new List<ulong>();
+
+                                    foreach (ulong trackID in IDListOfInstraUsedIntermediate)
+                                        IDListOfInstraUsed.Add(trackID);
+                                }
+
+                            }
+                            k++;
+
+                        }
+
+
+                    }
+                }
+            }
 
             return IDListOfInstraUsed;
         }
 
-
-        public bool InfraConflict(Dictionary<Infrastructure, int> InfraOccupiedByMovesID, List<ulong> IDListOfInfraUsed, int moveID, ref int conflictingMoveId, bool revisit)
+        // Returns true if the same infrastrucure is used by previous moves as the requireied in @IDListOfInfraUsed
+        // @IDListOfInfraUsed contains the infrastructure the current move will use 
+        // @InfraOccupiedByMovesID is a dictionary (Key:Value) contains all the infrastructures (Key) and 
+        // their occupation by a specific move (Value) - note: the moves are specified by their IDs 
+        // @conflictingMoveIds contains all the conflicting moves, that use the same infrastrucure tas the current move requires to occupy
+        public bool InfraConflict(Dictionary<Infrastructure, int> InfraOccupiedByMovesID, List<ulong> IDListOfInfraUsed, int moveID, ref List<int> conflictingMoveIds)
         {
 
             Dictionary<ulong, Infrastructure> DictOfInfrastrucure = this.DictOfInrastructure;
 
-            bool ConflictOccured = false;
-
+            conflictingMoveIds = new List<int>();
             foreach (ulong id in IDListOfInfraUsed)
             {
-                if (InfraOccupiedByMovesID[DictOfInfrastrucure[id]] != moveID && InfraOccupiedByMovesID[DictOfInfrastrucure[id]] == 999 && revisit == false)
+                if (InfraOccupiedByMovesID[DictOfInfrastrucure[id]] == 999)
                 {
-                    ConflictOccured = false;
-                    conflictingMoveId = InfraOccupiedByMovesID[DictOfInfrastrucure[id]];
+                    // conflictingMoveId = InfraOccupiedByMovesID[DictOfInfrastrucure[id]];
                 }
-                else if (InfraOccupiedByMovesID[DictOfInfrastrucure[id]] != moveID && InfraOccupiedByMovesID[DictOfInfrastrucure[id]] != 999 && revisit == true)
+                else
                 {
-                    ConflictOccured = true;
-                    conflictingMoveId = InfraOccupiedByMovesID[DictOfInfrastrucure[id]];
-                    return true;
+                    if (conflictingMoveIds.Contains(InfraOccupiedByMovesID[DictOfInfrastrucure[id]]) == false)
+                        conflictingMoveIds.Add(InfraOccupiedByMovesID[DictOfInfrastrucure[id]]);
                 }
-                else if (InfraOccupiedByMovesID[DictOfInfrastrucure[id]] != moveID && InfraOccupiedByMovesID[DictOfInfrastrucure[id]] != 999 && revisit == false)
-                {
-                    conflictingMoveId = InfraOccupiedByMovesID[DictOfInfrastrucure[id]];
-                    return true;
-                }
+
+
             }
+            if (conflictingMoveIds.Count != 0)
+                return true;
 
-
-            return ConflictOccured;
+            return false;
         }
 
+        // Links the previous move -@parentMovementID- this move was conflicting since it previously used the same infrastructure as the
+        // the current move -@childMovementID-
+        // @MovementLinks is a dictionary with move IDs as Key, and value as List of all the linked moves
         public void LinkMovmentsByID(Dictionary<int, List<int>> MovementLinks, int parentMovementID, int childMovementID)
         {
 
@@ -169,16 +234,7 @@ namespace ServiceSiteScheduling.Solutions
         }
         public void RemoveAssignedMoveFromInfrastructureByID(List<MoveTask> listOfMoves, Dictionary<Infrastructure, MoveTask> InfraOccupiedByMoves, Dictionary<Infrastructure, int> InfraOccupiedByMovesID, Dictionary<ulong, Infrastructure> DictOfInfrastrucure, int conflictingMoveId)
         {
-            // var conflictingMove = listOfMoves[conflictingMoveId];
-
-            // List<ulong> IDListOfInfraUsedByConflictingMove = GetIDListOfInfraUsed(conflictingMove);
-
-            // foreach (ulong infraID in IDListOfInfraUsedByConflictingMove)
-            // {
-            //     InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = null;
-            //     InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = 999;
-            // }
-
+        
 
             foreach (KeyValuePair<Infrastructure, int> pair in InfraOccupiedByMovesID)
             {
@@ -196,40 +252,21 @@ namespace ServiceSiteScheduling.Solutions
             // Index of the list is the ID assigned to a move
             List<MoveTask> listOfMoves = this.ListOfMoves;
 
-            // Maybe use later:
-            // Key of dictionary corresponds to the move ID, the value specifies three states:
-            // "pending" - move ID has not yet been assigned to an infrastructure
-            // "assigned" - move ID is currently assigned to an infrastructure
-            // "removed" - move ID has been previously been assigned to an infrastrucure, but since all
-            // movments were studied (all the movements were iterated) a reiteration is happening in the list
-            // of movments therefore we the "assigned" movement is linked to the new movment that wants to use
-            // the same infrastructure the "assigned" movment is now "removed"
-            // this dictionary is useful to skip movemnts that were already assigned or removed
-            Dictionary<int, string> listOfMovesStates = new Dictionary<int, string>();
-            // Init all moveStates as pending, since they were not yet assigned to an infrasturcture
-            int moveID = 0;
-            foreach (MoveTask move in listOfMoves)
-            {
-                listOfMovesStates[moveID] = "pending";
-                moveID++;
-            }
-
-            // Key: movement ID (parent node), value: list of linked movements (IDs child nodes)  
-            // 0:{1,3} (arrival movement) 1:{2}
-            // Idea is to ontain multiple directed graphs -> dependency between linked movements 
+                  
+               
+            // Dictionary with move IDs as Key, and value as List of all the linked moves
+            // Key: movement ID (parent move) this move was conflicting since it previously used the same infrastructure as the
+            // the current move, Value: list of linked movements (IDs child moves)
+            // 0:{1,3} OR 1:{2,3}
+            // Idea is to onbtain multiple directed graphs -> dependency between linked movements
             Dictionary<int, List<int>> MovementLinks = new Dictionary<int, List<int>>();
 
-            // for(int i=0; i<listOfMoves.Count; i++)
-            // {
-            //     MovementLinks[i] = new List<int>();
-            // }
-
-            // Dictionary with all infrastrucures, for each infrastructure a movement is assigned 
+            // Dictionary with all infrastrucures, for each infrastructure a movement is assigned
             Dictionary<Infrastructure, MoveTask> InfraOccupiedByMoves = new Dictionary<Infrastructure, MoveTask>();
 
             // Dictionary with all infrastrucures, for each infrastructure a movement ID is assigned, the IDs
             // are used to access a move which is stored in 'listOfMoves' or  'this.ListOfMoves'
-            // the InfraOccupiedByMovesID is initialized with 999, meaning that there in no valid movment ID 
+            // the InfraOccupiedByMovesID is initialized with 999, meaning that there in no valid movment ID
             // assigned yet to the for the given infrastructure
             Dictionary<Infrastructure, int> InfraOccupiedByMovesID = new Dictionary<Infrastructure, int>();
 
@@ -240,7 +277,7 @@ namespace ServiceSiteScheduling.Solutions
 
             bool Test = true;
 
-            // Initialize dictionaries 
+            // Initialize dictionaries
             foreach (KeyValuePair<ulong, Infrastructure> infra in DictOfInfrastrucure)
             {
                 InfraOccupiedByMoves[infra.Value] = null; // Maybe later this can be removed
@@ -251,185 +288,76 @@ namespace ServiceSiteScheduling.Solutions
             int ok = 1;
             int moveIndex = 0;
             int conflictingMoveId = 0;
+
+            List<int> conflictingMoveIds = new List<int>();
             bool revisit = false;
             int revisitIndex = 0;
 
+
+
             while (ok != 0)
             {
-               
 
-                // If the movement has alredy been assigned to an infrastructure or it was removed (it was linked to another move)
-                // it is not necessary to be studied 
-                while (true)
-                {
-                    if(listOfMovesStates[moveIndex] == "pending" || (moveIndex ==  listOfMovesStates.Count-1))
-                    {
-                        break;
-                    }                  
-                    else{
-                        moveIndex++;
-                    }
-                }
-
-                // for(int i=0; i < listOfMovesStates.Count; i++)
-                // {
-                //     if(listOfMovesStates[i] == "pending")
-                //     {
-                //         moveIndex = i;
-                //         Console.WriteLine("Here");
-                //         break;
-                //     }
-                //     else{
-                //         ok = 0;
-                //     }
-
-                // }
 
                 var currentMove = listOfMoves[moveIndex];
                 List<ulong> IDListOfInfraUsed = GetIDListOfInfraUsed(currentMove); // used by the movement
 
 
-                if ((InfraConflict(InfraOccupiedByMovesID, IDListOfInfraUsed, moveIndex, ref conflictingMoveId, revisit) != true) && (revisit == false))
+                if (InfraConflict(InfraOccupiedByMovesID, IDListOfInfraUsed, moveIndex, ref conflictingMoveIds) == false)
                 {
                     // No conflict occured
+
                     foreach (ulong infraID in IDListOfInfraUsed)
                     {
                         InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
                         InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
                     }
                     // The given movement is assigned to an infrastructure
-                    listOfMovesStates[moveIndex] = "assigned";
-                }
-                else if((InfraConflict(InfraOccupiedByMovesID, IDListOfInfraUsed, moveIndex, ref conflictingMoveId, revisit) == true) && (revisit == false))
-                {
-                    listOfMovesStates[moveIndex] = "pending";
+                    Console.WriteLine($"-|Move {moveIndex} - is assigned|");
+
 
                 }
-                else if (revisit == true)
+                else
                 {
 
-                    if (InfraConflict(InfraOccupiedByMovesID, IDListOfInfraUsed, moveIndex, ref conflictingMoveId, revisit) == true)
+                    foreach (int MoveId in conflictingMoveIds)
                     {
+                        Console.WriteLine($"-|Conflicting move id {MoveId}|");
+                        
                         // 1st: link movements -> conflictingMoveId is now linked with the moveIndex (current move id)
-                        // Console.WriteLine($"Remove {conflictingMoveId} link with {moveIndex}");
-                        LinkMovmentsByID(MovementLinks, conflictingMoveId, moveIndex);
 
+                        LinkMovmentsByID(MovementLinks, MoveId, moveIndex);
 
-                        MergeMovements(InfraOccupiedByMoves, InfraOccupiedByMovesID, DictOfInfrastrucure, moveIndex);
-
-                        // 2nd: remove the conflicting movement that was previously assigned -> InfraOccupiedByMovesID 
-                        // be set to 999 for the move that once has alredy been assigned and now it is in conflict 
-
-                        RemoveAssignedMoveFromInfrastructureByID(listOfMoves, InfraOccupiedByMoves, InfraOccupiedByMovesID, DictOfInfrastrucure, conflictingMoveId);
-                        listOfMovesStates[conflictingMoveId] = "removed";
-
-                        // Assign current movement to the required infrastructure
+                        // 2nd Assign current movement to the required infrastructure
                         foreach (ulong infraID in IDListOfInfraUsed)
                         {
                             InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
                             InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
                         }
-                        // The given movement is assigned to an infrastructure
-                        listOfMovesStates[moveIndex] = "assigned";
-                        revisit = false;
-                        // var conflictingMove = listOfMoves[conflictingMoveId];
-
-                        // List<ulong> IDListOfInfraUsedByConflictingMove = GetIDListOfInfraUsed(conflictingMove);
-
-                        // foreach (ulong infraID in IDListOfInfraUsedByConflictingMove)
-                        // {
-                        //     InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = null;
-                        //     InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = 999;
-                        // }
-                    }
-                    else
-                    {
-                        // No conflict occured
-                        foreach (ulong infraID in IDListOfInfraUsed)
-                        {
-                            InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
-                            InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
-                        }
-                        // The given movement is assigned to an infrastructure
-                        listOfMovesStates[moveIndex] = "assigned";
-                        revisit = true;
 
                     }
+                    Console.WriteLine($"|Move {moveIndex} - is assigned|");
 
 
-
-
-                    // Conflict occured
-                    // TODO: Replace the conflictingMoveId with in the list by 999 and do the same steps like in no conflict occured step
-                    //  Console.WriteLine($" ****** ******* ***** **** **** Conflicting ID: {conflictingMoveId}  ****** ******* ***** **** ****");
-                }
-                else if ((InfraConflict(InfraOccupiedByMovesID, IDListOfInfraUsed, moveIndex, ref conflictingMoveId, revisit) == true))
-                {
-                    Console.WriteLine($" ****** ******* ***** **** **** Conflicting ID: {conflictingMoveId} with move {moveIndex}  ****** ******* ***** **** ****");
 
                 }
-
-
                 moveIndex++;
-
-                if (moveIndex >= listOfMoves.Count)
-                {
-                    // A reiteration of listOfMoves has to happend, to see which moves assigned to a given
-                    // infrastructure must be replaced
-                    moveIndex = 0;
-                    revisit = true;
-                    revisitIndex++;
-
-                    if (Test)
-                    {
-                        Console.WriteLine("-----------------------------------------------------------");
-
-                        Console.WriteLine($"------ Infrastructure - Move - Revisit {revisitIndex} -----");
-
-                        Console.WriteLine("-----------------------------------------------------------");
-
-                        foreach (KeyValuePair<Infrastructure, int> pairInraMove in InfraOccupiedByMovesID)
-                        {
-                            Console.WriteLine($"Inrastrucure : {pairInraMove.Key} - {pairInraMove.Value}");
-                        }
-                        DisplayPartialResults(MovementLinks);
-
-                        int move_ID = 0;
-                        Console.WriteLine("\n");
-                        foreach (MoveTask move in listOfMoves)
-                        {
-                            if(move_ID < listOfMoves.Count)
-                            {
-                                Console.Write($"State {move_ID} - {listOfMovesStates[move_ID]}");
-                            }
-                            move_ID++;
-                            
-                        }
-                        // foreach (KeyValuePair<int, string> pair in listOfMovesStates)
-                        // {
-                        //     if (pair.Value == "assigned")
-                        //     {
-                        //         Console.WriteLine($"Move: {pair.Key}");
-                        //     }
-                        // }
-
-                    }
-                }
-
-                // if (Test)
-                // {
-                //     if (revisitIndex > 7)
-                //         ok = 0;
-                // }
-
-                // When all the movements are in "pending" sate the POS creation is done
-                if (listOfMovesStates.Values.Any(state => state == "pending") == false)
-                {
+                if(moveIndex == listOfMoves.Count)
                     ok = 0;
-
-                }
-
             }
+
+            // Show connections per Move
+            foreach(KeyValuePair<int, List<int>> pair in MovementLinks)
+            {
+                Console.Write($"Move{pair.Key} -->");
+                foreach(int element in pair.Value)
+                {
+                    Console.Write($"Move:{element} ");
+                    
+                }
+                Console.Write("\n");
+            }
+            // DisplayPartialResults(MovementLinks);
 
 
         }
@@ -437,45 +365,46 @@ namespace ServiceSiteScheduling.Solutions
         public void DisplayPartialResults(Dictionary<int, List<int>> MovementLinks)
         {
 
+
+            // TODO: It is used for an old version, it most be modified accordingly
             foreach (KeyValuePair<int, List<int>> pair in MovementLinks)
             {
 
-
-
-
-
-
                 if (pair.Value.Count != 0)
                 {
-                    string movesStr = "";
+                    Console.Write($" Move:{pair.Key} -->");
 
                     if (pair.Value.Count == 1)
                     {
-                        Console.Write($" Move:{pair.Key} ----> Move: {pair.Value[0]} ----> ");
-
+                        Console.Write($" Move:{pair.Value[0]}");
                     }
                     else
                     {
                         foreach (int id in pair.Value)
                         {
-                            movesStr = movesStr + id + " , ";
-                        }
-                        Console.Write($" Move:{pair.Key} ----> Move: {movesStr} ----> ");
+                            if (pair.Value.Last() == pair.Value.Count - 1)
+                            {
+                                Console.Write($" Move:{id}");
+                            }
+                            else
+                            {
+                                Console.Write($" Move:{id} -->");
 
+                            }
+
+                        }
                     }
 
 
-
-
-
                 }
-                else if (pair.Value.Count == 0)
+                else
                 {
                     Console.Write($"Move:{pair.Key}");
-                    Console.Write("\n");
 
 
                 }
+                Console.Write("\n");
+
             }
         }
 
@@ -519,15 +448,18 @@ namespace ServiceSiteScheduling.Solutions
 
             Console.WriteLine("-------------------------------");
 
+           
+        }
 
-
-
-            MoveTask move = this.First;
+        // Shows rich information about the movements and infrastructure used in the Totaly Ordered Solution
+        public void DisplayMovements()
+        {
+             MoveTask move = this.First;
             int i = 0;
             while (move != null)
             {
-                Console.WriteLine($"Move: {i}");
-                Console.WriteLine($"From : {move.FromTrack} -> To : {move.ToTrack}");
+                Console.WriteLine($"Move: {i} --- {move.TaskType}");
+                Console.WriteLine($"From : {move.FromTrack} -> To : {move.ToTrack} ({move.Train})");
 
                 var routing = move as RoutingTask;
 
@@ -562,39 +494,75 @@ namespace ServiceSiteScheduling.Solutions
                     Console.WriteLine("");
 
                 }
+                else
+                {
+                    if (move.TaskType is MoveTaskType.Departure)
+                    {
+                        // var previousTasks = move.AllPrevious
+                        Console.WriteLine("All Previous tasks:");
+                        foreach (TrackTask task in move.AllPrevious)
+                            Console.WriteLine($"---{task}----");
+
+                        Console.WriteLine("All Next tasks:");
+                        foreach (TrackTask task in move.AllNext)
+                            Console.WriteLine($"---{task}----");
 
 
-                // if (move.TaskType == MoveTaskType.Departure)
-                // {
-                //     Console.WriteLine("Routing:");
-                //     // var routes = ((DepartureRoutingTask)move).GetRoutes();
 
-                //     // foreach (Route route in routes)
-                //     // {
-                //     //     Console.WriteLine($"{route}");
-                //     // }
-                //     Console.WriteLine($"{(DepartureRoutingTask)move}");
-                // }   
+                        var routingDeparture = move as DepartureRoutingTask;
+                        if (routingDeparture != null)
+                        {
+                            var listOfRoutes = routingDeparture.GetRoutes();
 
-                // var departure = move as DepartureRoutingTask;
-                // if (departure != null)
-                // {
-                //     Console.WriteLine("Routing:");
-
-                //     var routes = departure.routes;
-
-                //     Console.WriteLine($"{departure.routes}");
-                // }
+                            Console.WriteLine($"Infrastrucre used (tracks) number of routes {listOfRoutes.Count}:");
 
 
+                            // // TODO: display more infrastructure
+                            foreach (Route route in listOfRoutes)
+                            {
+                                var Tracks = route.Tracks;
+                                var lastTrack = Tracks.Last();
+
+                                foreach (Track track in Tracks)
+                                {
+
+                                    if (track != lastTrack)
+                                    {
+                                        Console.Write($" A side {track.ASide} -->");
+                                        Console.Write($" {track} --> ");
+                                        Console.Write($" B side {track.BSide} -->");
+                                    }
+                                    else
+                                    {
+                                        Console.Write($" A side {track.ASide} -->");
+                                        Console.Write($" {track} -->");
+
+                                        Console.Write($" B side {track.BSide} ");
+                                    }
+
+
+                                }
+                                Console.WriteLine("");
+
+
+
+                            }
+                            Console.WriteLine("");
+
+
+
+                        }
+
+
+
+
+                    }
+
+
+                }
                 i++;
                 move = move.NextMove;
             }
-        }
-
-        public void DisplayMovements()
-        {
-            // TODO   
         }
         public void EvaluatePOS()
         {
@@ -621,5 +589,27 @@ namespace ServiceSiteScheduling.Solutions
     //     public override void SkipParking(ParkingTask parking);
     //     public override void UnskipParking(Trains.ShuntTrain train);
     // }
+
+    // if (conflictingMoveId > moveIndex)
+    // {
+    //     if (listOfMovesStates[moveIndex] != "removed")
+    //     {
+
+    //         RemoveAssignedMoveFromInfrastructureByID(listOfMoves, InfraOccupiedByMoves, InfraOccupiedByMovesID, DictOfInfrastrucure, conflictingMoveId);
+    //         listOfMovesStates[conflictingMoveId] = "pending";
+
+    //         foreach (ulong infraID in IDListOfInfraUsed)
+    //         {
+    //             InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
+    //             InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
+    //         }
+    //         // The given movement is assigned to an infrastructure
+
+    //         listOfMovesStates[moveIndex] = "assigned";
+    //         Console.WriteLine($"|Move {moveIndex} - is assigned|");
+    //     }
+
+    // }
+
 
 }
