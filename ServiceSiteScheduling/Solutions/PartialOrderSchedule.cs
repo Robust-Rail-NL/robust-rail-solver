@@ -30,18 +30,23 @@ namespace ServiceSiteScheduling.Solutions
 
         public ArrivalTask FirstArrival { get { return this.ArrivalTasks.First(arrival => arrival.Next.PreviousMove == null); } }
 
+        // This is the Adjacency List for POS Movements: Each POSMoveTask maps to a list of connected POSMoveTask
+        public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList { get; private set; }
+
+        // Reated to Total Ordered Solution
         public MoveTask First { get; set; }
         public MoveTask Last { get; set; }
 
+        // List of moves got from the Totaly Ordered Solution
+        // the moves already contain the relations with the tasks
+        // this list should be initiated only once and the order of moves should not be changed
         public List<MoveTask> ListOfMoves { get; set; }
 
         public Dictionary<ulong, Infrastructure> DictOfInrastructure { get; set; }
-        public PartialOrderSchedule(MoveTask first, ShuntTrainUnit[] shuntunits, ArrivalTask[] arrivals, DepartureTask[] departures)
+        public PartialOrderSchedule(MoveTask first)
         {
             this.First = first;
-            this.ShuntUnits = shuntunits;
-            this.ArrivalTasks = arrivals;
-            this.DepartureTasks = departures;
+            
         }
 
         // Get the infrastrucure describing the shunting yard
