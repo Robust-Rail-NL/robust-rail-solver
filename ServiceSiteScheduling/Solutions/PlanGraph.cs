@@ -198,8 +198,21 @@ namespace ServiceSiteScheduling.Solutions
             POS.CreatePOS(start);
             POS.UpdatePOS();
             POS.DisplayInfrastructure();
+            POS.DisplayMovements();
         
         }
+
+
+        //  A side 42 Sein70 --> 25 Spoor906a (0 B) -->  B side 58 Wissel963 --> A side 56 Wissel960 --> 38 Spoor53 (421 Both) --> B side 53 Wissel957 
+ 
+
+ 
+
+        //   A side 42 Sein70 --> 25 Spoor906a (0 B) -->  B side 58 Wissel963 --> A side 57 Wissel961 --> 39 Spoor52 (473 Both) --> B side 70 Engels974975 
+ 
+
+
+
 
         public void ComputeTime(MoveTask start, Time time)
         {
