@@ -274,10 +274,20 @@ namespace ServiceSiteScheduling.Solutions
 
             // Dictionary with move IDs as Key, and value as List of all the linked moves
             // Key: movement ID (parent move) this move was conflicting since it previously used the same infrastructure as the
-            // the current move, Value: list of linked movements (IDs child moves)
+            // the current move even if it is trivial when the same train unit is used in the previous and the current move,
+            // Value: list of linked movements (IDs child moves)
             // 0:{1,3} OR 1:{2,3}
             // Idea is to onbtain multiple directed graphs -> dependency between linked movements
+            // To Note: here the links are the links of infrastructure conflicts and same train units per movment
+            // @MovementLinksSameInfrastructure contains the linked moves related to the same infrastructure used
             Dictionary<int, List<int>> MovementLinks = new Dictionary<int, List<int>>();
+
+
+            // Dictionary with move IDs as Key, and value as List of all the linked moves using the same infrastructure,
+            // in this dictionary a movement is linked to another movement (parent move) if and only if they used the same 
+            // infrastructure aka dashed lines Move_i---> Move_j
+            Dictionary<int, List<int>> MovementLinksSameInfrastructure = new Dictionary<int, List<int>>();
+
 
             // Dictionary with all infrastrucures, for each infrastructure a movement is assigned
             Dictionary<Infrastructure, MoveTask> InfraOccupiedByMoves = new Dictionary<Infrastructure, MoveTask>();
@@ -337,22 +347,34 @@ namespace ServiceSiteScheduling.Solutions
                 else
                 {
 
+                    // Contains all the movments that was assigned to the same movements as the train unit of the cuurent move (moveIndex)
+                    // this also mean that these movements are conflicting becasue of the same train used assigned to the movement
+                    // and not only because of the same infrastructure used
+                    List<int> movesUsingSameTrainUnit = CheckIfSameTrainUintUsed(conflictingMoveIds, listOfMoves, moveIndex);
+
                     foreach (int MoveId in conflictingMoveIds)
                     {
-
                         // 1st: link movements -> conflictingMoveId is now linked with the moveIndex (current move id)
-
-                        // if same train do not add anything
-
                         LinkMovmentsByID(MovementLinks, MoveId, moveIndex);
 
-                        // 2nd Assign current movement to the required infrastructure
-                        foreach (ulong infraID in IDListOfInfraUsed)
+                        // This statement is used to link the movements conflicted because of using the same infrastrucure\
+                        // and not because of same train unit assigned per movement {aka dashed line dependency} 
+                        if (movesUsingSameTrainUnit.Count != 0)
                         {
-                            InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
-                            InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
+                            if(!movesUsingSameTrainUnit.Contains(MoveId))
+                                LinkMovmentsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
+                        }
+                        else
+                        {
+                            LinkMovmentsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
                         }
 
+                    }
+                    // 2nd Assign current movement to the required infrastructure
+                    foreach (ulong infraID in IDListOfInfraUsed)
+                    {
+                        InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
+                        InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
                     }
 
 
@@ -363,12 +385,20 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     ok = 0;
                     // The last movement is not linked, it contains an empty list
-                    MovementLinks.Add(moveIndex-1, new List<int>());
+                    MovementLinks.Add(moveIndex - 1, new List<int>());
                 }
             }
 
+
+            this.POSadjacencyList = CreatePOSAdjacencyList(MovementLinks);
+            DisplayAllPOSMovementLinks();
+
+
+            Console.WriteLine("----------------------------------------------------------");
+            Console.WriteLine("|   POS Movement Links - Infrastructure (dashed lines)   |");
+            Console.WriteLine("----------------------------------------------------------");
             // Show connections per Move
-            foreach (KeyValuePair<int, List<int>> pair in MovementLinks)
+            foreach (KeyValuePair<int, List<int>> pair in MovementLinksSameInfrastructure)
             {
                 Console.Write($"Move{pair.Key} -->");
                 foreach (int element in pair.Value)
@@ -378,9 +408,53 @@ namespace ServiceSiteScheduling.Solutions
                 }
                 Console.Write("\n");
             }
-            this.POSadjacencyList = CreatePOSAdjacencyList(MovementLinks);
-            DisplayAllPOSMovementLinks();
             // DisplayPartialResults(MovementLinks);
+        }
+
+
+        public List<int> CheckIfSameTrainUintUsed(List<int> conflictingMoveIds, List<MoveTask> listOfMoves, int moveIndex)
+        {
+
+            List<int> movesUsingSameTrainUnit = new List<int>();
+            // moveIndex is the ID of the current move that has conflicting moves: conflictingMoveIds
+            // since they use the same infrastructure than the current move 
+            MoveTask currentMove = listOfMoves[moveIndex];
+
+            foreach (int moveInConflictID in conflictingMoveIds)
+            {
+                MoveTask moveInConflict = listOfMoves[moveInConflictID];
+
+                // Train Units used in the move in conflict
+                List<ShuntTrainUnit> trainUnitsOfConflictingMove = moveInConflict.Train.Units;
+
+                List<ShuntTrainUnit> trainUintsOfCurrentMove = currentMove.Train.Units;
+
+                foreach (ShuntTrainUnit shuntTrainOfConflictingMove in trainUnitsOfConflictingMove)
+                {
+                    foreach (ShuntTrainUnit shuntTrainOfCurrentMove in trainUintsOfCurrentMove)
+                    {
+                        // if the one of the train units are the same, that means that there is a conflict in using
+                        // the same train unit between the conflicting moves by the infrastructure used 
+                        if (shuntTrainOfConflictingMove.Index == shuntTrainOfCurrentMove.Index)
+                        {
+                            movesUsingSameTrainUnit.Add(moveInConflictID);
+                        }
+                    }
+                }
+
+
+            }
+
+
+            if (movesUsingSameTrainUnit.Count != 0)
+            {
+                // First the repeating IDs are removed
+                return movesUsingSameTrainUnit.Distinct().ToList();
+            }
+            else
+            {
+                return movesUsingSameTrainUnit;
+            }
         }
 
         // Shows all the relations between the POS movements, meaning that
@@ -407,6 +481,7 @@ namespace ServiceSiteScheduling.Solutions
 
         }
 
+
         // POS Adjacency list is used to track the links between the movement nodes
         // of the POS graph. The POS Adjacency list is actually a dictionary
         // => {POSMove : List[POSMove, ...]} 
@@ -429,16 +504,6 @@ namespace ServiceSiteScheduling.Solutions
                 POSMoveTask POSmove = new POSMoveTask(listOfMoves[pair.Key], pair.Key);
                 POSMoveList.Add(POSmove);
 
-                // Console.Write($"Move{pair.Key} -->");
-
-
-                // foreach(int linkedMove in pair.Value)
-                // {
-                //     Console.Write($"Move:{linkedMove} ");
-                //     POSmove.LinkedMoves.Add(linkedMove);
-
-                // }
-                // Console.Write("\n");
             }
             foreach (KeyValuePair<int, List<int>> pair in orderedMovementLinks)
             {
@@ -453,6 +518,8 @@ namespace ServiceSiteScheduling.Solutions
             }
 
 
+            this.FirstPOS = posAdjacencyList.First().Key;
+            this.LastPOS = posAdjacencyList.Last().Key;
 
             return posAdjacencyList;
 
