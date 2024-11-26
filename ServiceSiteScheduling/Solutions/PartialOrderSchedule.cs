@@ -33,6 +33,13 @@ namespace ServiceSiteScheduling.Solutions
         // This is the Adjacency List for POS Movements: Each POSMoveTask maps to a list of connected POSMoveTask
         public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList { get; private set; }
 
+        // First movement of the POS 
+        public POSMoveTask FirstPOS { get; set; }
+
+        // Last movement of the POS
+        public POSMoveTask LastPOS { get; set; }
+
+
         // Reated to Total Ordered Solution
         public MoveTask First { get; set; }
         public MoveTask Last { get; set; }
@@ -42,11 +49,12 @@ namespace ServiceSiteScheduling.Solutions
         // this list should be initiated only once and the order of moves should not be changed
         public List<MoveTask> ListOfMoves { get; set; }
 
+        // Dictionary that contains the overall Infrastructure used in the scenario
         public Dictionary<ulong, Infrastructure> DictOfInrastructure { get; set; }
         public PartialOrderSchedule(MoveTask first)
         {
             this.First = first;
-            
+
         }
 
         // Get the infrastrucure describing the shunting yard
@@ -94,7 +102,9 @@ namespace ServiceSiteScheduling.Solutions
 
         }
 
-        // Returns list of the IDs of the Infrastructure used by a movement
+
+
+        // Returns list of the IDs of the Infrastructure used by a movement (MoveTask)
         public List<ulong> GetIDListOfInfraUsed(MoveTask move)
         {
             List<ulong> IDListOfInstraUsed = new List<ulong>();
@@ -239,7 +249,7 @@ namespace ServiceSiteScheduling.Solutions
         }
         public void RemoveAssignedMoveFromInfrastructureByID(List<MoveTask> listOfMoves, Dictionary<Infrastructure, MoveTask> InfraOccupiedByMoves, Dictionary<Infrastructure, int> InfraOccupiedByMovesID, Dictionary<ulong, Infrastructure> DictOfInfrastrucure, int conflictingMoveId)
         {
-        
+
 
             foreach (KeyValuePair<Infrastructure, int> pair in InfraOccupiedByMovesID)
             {
@@ -251,14 +261,17 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
+        // TODO: rename it to CreatePOS - it should pobably be called only once 
+        // later un update function will basically be called when a recopute of POS 
+        // is needed
         public void UpdatePOS()
         {
 
             // Index of the list is the ID assigned to a move
             List<MoveTask> listOfMoves = this.ListOfMoves;
 
-                  
-               
+
+
             // Dictionary with move IDs as Key, and value as List of all the linked moves
             // Key: movement ID (parent move) this move was conflicting since it previously used the same infrastructure as the
             // the current move, Value: list of linked movements (IDs child moves)
@@ -318,7 +331,6 @@ namespace ServiceSiteScheduling.Solutions
                         InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
                     }
                     // The given movement is assigned to an infrastructure
-                    Console.WriteLine($"-|Move {moveIndex} - is assigned|");
 
 
                 }
@@ -327,9 +339,10 @@ namespace ServiceSiteScheduling.Solutions
 
                     foreach (int MoveId in conflictingMoveIds)
                     {
-                        Console.WriteLine($"-|Conflicting move id {MoveId}|");
-                        
+
                         // 1st: link movements -> conflictingMoveId is now linked with the moveIndex (current move id)
+
+                        // if same train do not add anything
 
                         LinkMovmentsByID(MovementLinks, MoveId, moveIndex);
 
@@ -341,28 +354,107 @@ namespace ServiceSiteScheduling.Solutions
                         }
 
                     }
-                    Console.WriteLine($"|Move {moveIndex} - is assigned|");
 
 
 
                 }
                 moveIndex++;
-                if(moveIndex == listOfMoves.Count)
+                if (moveIndex == listOfMoves.Count)
+                {
                     ok = 0;
+                    // The last movement is not linked, it contains an empty list
+                    MovementLinks.Add(moveIndex-1, new List<int>());
+                }
             }
 
             // Show connections per Move
-            foreach(KeyValuePair<int, List<int>> pair in MovementLinks)
+            foreach (KeyValuePair<int, List<int>> pair in MovementLinks)
             {
                 Console.Write($"Move{pair.Key} -->");
-                foreach(int element in pair.Value)
+                foreach (int element in pair.Value)
                 {
                     Console.Write($"Move:{element} ");
-                    
+
                 }
                 Console.Write("\n");
             }
+            this.POSadjacencyList = CreatePOSAdjacencyList(MovementLinks);
+            DisplayAllPOSMovementLinks();
             // DisplayPartialResults(MovementLinks);
+        }
+
+        // Shows all the relations between the POS movements, meaning that
+        // all kind of links per move are displayed - links by infrastructure
+        // links by same train unit used
+        public void DisplayAllPOSMovementLinks()
+        {
+            Console.WriteLine("--------------------------------------------");
+            Console.WriteLine("|          All POS Movement Links          |");
+            Console.WriteLine("--------------------------------------------");
+
+            Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = this.POSadjacencyList;
+
+            foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> pair in posAdjacencyList)
+            {
+                Console.Write($"Move{pair.Key.ID} --> ");
+                foreach (POSMoveTask element in pair.Value)
+                {
+                    Console.Write($"Move:{element.ID} ");
+
+                }
+                Console.Write("\n");
+            }
+
+        }
+
+        // POS Adjacency list is used to track the links between the movement nodes
+        // of the POS graph. The POS Adjacency list is actually a dictionary
+        // => {POSMove : List[POSMove, ...]} 
+        public Dictionary<POSMoveTask, List<POSMoveTask>> CreatePOSAdjacencyList(Dictionary<int, List<int>> MovementLinks)
+        {
+            Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = new Dictionary<POSMoveTask, List<POSMoveTask>>();
+
+            List<MoveTask> listOfMoves = this.ListOfMoves;
+
+            // Order Dictionary
+            // Dictionary<int, List<int>> orderedMovementLinks = new Dictionary<int, List<int>>();
+
+            var orderedMovementLinks = MovementLinks.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            List<POSMoveTask> POSMoveList = new List<POSMoveTask>();
+
+            foreach (KeyValuePair<int, List<int>> pair in orderedMovementLinks)
+            {
+
+                POSMoveTask POSmove = new POSMoveTask(listOfMoves[pair.Key], pair.Key);
+                POSMoveList.Add(POSmove);
+
+                // Console.Write($"Move{pair.Key} -->");
+
+
+                // foreach(int linkedMove in pair.Value)
+                // {
+                //     Console.Write($"Move:{linkedMove} ");
+                //     POSmove.LinkedMoves.Add(linkedMove);
+
+                // }
+                // Console.Write("\n");
+            }
+            foreach (KeyValuePair<int, List<int>> pair in orderedMovementLinks)
+            {
+                // Console.Write($"Move{pair.Key} -->");
+                POSMoveTask POSmove = POSMoveList[pair.Key];
+
+                posAdjacencyList[POSmove] = new List<POSMoveTask>();
+                foreach (int linkedMoveID in pair.Value)
+                {
+                    posAdjacencyList[POSmove].Add(POSMoveList[linkedMoveID]);
+                }
+            }
+
+
+
+            return posAdjacencyList;
 
 
         }
@@ -413,6 +505,8 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
+        // TODO; rename it to Initialize POS since it is a sort of Constructor
+        // this function does not generate a POS graph only initialize some values
         public void CreatePOS(MoveTask first)
         {
             MoveTask move = this.First;
@@ -453,13 +547,13 @@ namespace ServiceSiteScheduling.Solutions
 
             Console.WriteLine("-------------------------------");
 
-           
+
         }
 
         // Shows rich information about the movements and infrastructure used in the Totaly Ordered Solution
         public void DisplayMovements()
         {
-             MoveTask move = this.First;
+            MoveTask move = this.First;
             int i = 0;
             while (move != null)
             {
@@ -574,47 +668,6 @@ namespace ServiceSiteScheduling.Solutions
             // TODO
         }
     }
-
-    // class POSMoveTask : MoveTask
-    // {
-    //     public POSMoveTask(Trains.ShuntTrain train, MoveTaskType tasktype) : base(train, tasktype) {}
-
-    //     public override MoveTask DeepCopy()
-    //     {
-    //         return new POSMoveTask(this.Train, this.TaskType);
-    //     }
-
-
-    //     public override bool IsParkingSkipped(Trains.ShuntTrain train){
-    //         return true;
-    //     }
-    //     public override ParkingTask GetSkippedParking(Trains.ShuntTrain train);
-    //     public override RoutingTask GetRouteToSkippedParking(Trains.ShuntTrain train);
-
-    //     public override void SkipParking(ParkingTask parking);
-    //     public override void UnskipParking(Trains.ShuntTrain train);
-    // }
-
-    // if (conflictingMoveId > moveIndex)
-    // {
-    //     if (listOfMovesStates[moveIndex] != "removed")
-    //     {
-
-    //         RemoveAssignedMoveFromInfrastructureByID(listOfMoves, InfraOccupiedByMoves, InfraOccupiedByMovesID, DictOfInfrastrucure, conflictingMoveId);
-    //         listOfMovesStates[conflictingMoveId] = "pending";
-
-    //         foreach (ulong infraID in IDListOfInfraUsed)
-    //         {
-    //             InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
-    //             InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
-    //         }
-    //         // The given movement is assigned to an infrastructure
-
-    //         listOfMovesStates[moveIndex] = "assigned";
-    //         Console.WriteLine($"|Move {moveIndex} - is assigned|");
-    //     }
-
-    // }
 
 
 }
