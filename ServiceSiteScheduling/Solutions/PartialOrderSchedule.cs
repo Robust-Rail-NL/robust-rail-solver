@@ -33,6 +33,11 @@ namespace ServiceSiteScheduling.Solutions
         // This is the Adjacency List for POS Movements: Each POSMoveTask maps to a list of connected POSMoveTask
         public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList { get; private set; }
 
+        // This is the Adjacency List for POS Movements using the same infrastructure: Each POSMoveTask maps to a list of connected POSMoveTask
+        // (dashed line dependency links)
+        public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyListForInfrastructure { get; private set; }
+
+
         // First movement of the POS 
         public POSMoveTask FirstPOS { get; set; }
 
@@ -386,11 +391,18 @@ namespace ServiceSiteScheduling.Solutions
                     ok = 0;
                     // The last movement is not linked, it contains an empty list
                     MovementLinks.Add(moveIndex - 1, new List<int>());
+                    
+                    
+                    MovementLinksSameInfrastructure.Add(moveIndex - 1, new List<int>());
                 }
             }
 
 
             this.POSadjacencyList = CreatePOSAdjacencyList(MovementLinks);
+            this.FirstPOS = POSadjacencyList.First().Key;
+            this.LastPOS = POSadjacencyList.Last().Key;
+
+            this.POSadjacencyListForInfrastructure = CreatePOSAdjacencyList(MovementLinksSameInfrastructure);
             DisplayAllPOSMovementLinks();
 
 
@@ -398,7 +410,7 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("|   POS Movement Links - Infrastructure (dashed lines)   |");
             Console.WriteLine("----------------------------------------------------------");
             // Show connections per Move
-            foreach (KeyValuePair<int, List<int>> pair in MovementLinksSameInfrastructure)
+            foreach (KeyValuePair<int, List<int>> pair in MovementLinksSameInfrastructure.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value))
             {
                 Console.Write($"Move{pair.Key} -->");
                 foreach (int element in pair.Value)
@@ -498,13 +510,22 @@ namespace ServiceSiteScheduling.Solutions
 
             List<POSMoveTask> POSMoveList = new List<POSMoveTask>();
 
-            foreach (KeyValuePair<int, List<int>> pair in orderedMovementLinks)
+            // foreach (KeyValuePair<int, List<int>> pair in orderedMovementLinks)
+            // {
+
+            //     POSMoveTask POSmove = new POSMoveTask(listOfMoves[pair.Key], pair.Key);
+            //     POSMoveList.Add(POSmove);
+
+            // }
+            int id = 0;
+            foreach(MoveTask moveTask in listOfMoves)
             {
 
-                POSMoveTask POSmove = new POSMoveTask(listOfMoves[pair.Key], pair.Key);
+                POSMoveTask POSmove = new POSMoveTask(moveTask, id);
                 POSMoveList.Add(POSmove);
-
+                id++;
             }
+
             foreach (KeyValuePair<int, List<int>> pair in orderedMovementLinks)
             {
                 // Console.Write($"Move{pair.Key} -->");
@@ -512,16 +533,13 @@ namespace ServiceSiteScheduling.Solutions
 
                 posAdjacencyList[POSmove] = new List<POSMoveTask>();
                 foreach (int linkedMoveID in pair.Value)
-                {
+                {                    
+
                     posAdjacencyList[POSmove].Add(POSMoveList[linkedMoveID]);
                 }
             }
 
-
-            this.FirstPOS = posAdjacencyList.First().Key;
-            this.LastPOS = posAdjacencyList.Last().Key;
-
-            return posAdjacencyList;
+            return posAdjacencyList.OrderBy(pair => pair.Key.ID).ToDictionary(pair => pair.Key, pair => pair.Value);;
 
 
         }
