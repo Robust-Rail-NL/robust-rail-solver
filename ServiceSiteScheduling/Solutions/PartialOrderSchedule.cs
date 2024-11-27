@@ -37,7 +37,7 @@ namespace ServiceSiteScheduling.Solutions
         // (dashed line dependency links)
         public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyListForInfrastructure { get; private set; }
 
-         // This is the Adjacency List for POS Movements using the same Train Unit: Each POSMoveTask maps to a list of connected POSMoveTask
+        // This is the Adjacency List for POS Movements using the same Train Unit: Each POSMoveTask maps to a list of connected POSMoveTask
         // (solid line dependency links)
         public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyListForTrainUint { get; private set; }
 
@@ -412,7 +412,7 @@ namespace ServiceSiteScheduling.Solutions
 
 
                     MovementLinksSameInfrastructure.Add(moveIndex - 1, new List<int>());
-                    MovementLinksSameTrainUnit.Add(moveIndex-1, new List<int>());
+                    MovementLinksSameTrainUnit.Add(moveIndex - 1, new List<int>());
                 }
             }
 
@@ -428,8 +428,197 @@ namespace ServiceSiteScheduling.Solutions
             DisplayAllPOSMovementLinks();
             DisplayPOSMovementLinksInfrastructureUsed();
             DisplayPOSMovementLinksTrainUinitUsed();
-         
 
+
+        }
+
+        public POSMoveTask GetPOSMoveTaskByID(int ID, Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList)
+        {
+
+            foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> pair in POSadjacencyList)
+            {
+                if (pair.Key.ID == ID)
+                    return pair.Key;
+            }
+            throw new KeyNotFoundException($"The move '{ID}' was not found in the POSadjacencyList.");
+        }
+
+        public List<POSMoveTask> GetMovePredecessors(POSMoveTask POSmove, Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList)
+        {
+            List<POSMoveTask> PredecessorsOfPOSMove = new List<POSMoveTask>();
+
+            foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> pair in POSadjacencyList)
+            {
+                foreach (POSMoveTask move in pair.Value)
+                {
+                    if (move.ID == POSmove.ID)
+                        PredecessorsOfPOSMove.Add(pair.Key);
+                }
+
+            }
+
+            if (PredecessorsOfPOSMove.Count > 1)
+            {
+                return PredecessorsOfPOSMove.OrderBy(element => element.ID).ToList();
+            }
+            return PredecessorsOfPOSMove;
+        }
+
+        // Displays all the direct sucessors and predecessors of a given POS move
+        // the move is identified by its ID (POSMoveTask POSmove.ID)
+        // @linkType specifies the type of the links 'infrastructure' - same inrastructure used - populated from @POSadjacencyListForInfrastructure
+        // 'trainUint' - same train unit(s) used - populated from @POSadjacencyListForTrainUint
+        public void DisplayMoveLinksOfPOSMove(int POSId, string linkType)
+        {
+            Console.WriteLine("----------------------------------------------------------");
+            Console.WriteLine($"|         POS Movement Links - move id : {POSId}        |");
+            Console.WriteLine("----------------------------------------------------------");
+
+            if (linkType == "infrastructure")
+            {
+                Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList = this.POSadjacencyListForInfrastructure;
+
+                try
+                {
+                    POSMoveTask POSmove = GetPOSMoveTaskByID(POSId, POSadjacencyList);
+
+                    List<POSMoveTask> sucessorPOSMoves = POSadjacencyList[POSmove];
+
+                    List<POSMoveTask> predecessorsPOSMoves = GetMovePredecessors(POSmove, POSadjacencyList);
+
+                    Console.WriteLine("|  Direct Sucessors |");
+                    Console.Write("[ ");
+
+                    foreach (POSMoveTask move in sucessorPOSMoves)
+                    {
+                        Console.Write($"Move {move.ID}, ");
+                    }
+                    Console.WriteLine(" ]");
+
+                    Console.WriteLine("|  Direct Predecessors |");
+                    Console.Write("[ ");
+
+                    foreach (POSMoveTask move in predecessorsPOSMoves)
+                    {
+                        Console.Write($"Move {move.ID}, ");
+                    }
+                    Console.WriteLine(" ]");
+
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+
+
+
+            }
+            else if (linkType == "trainUint")
+            {
+                Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList = this.POSadjacencyListForTrainUint;
+
+                try
+                {
+                    POSMoveTask POSmove = GetPOSMoveTaskByID(POSId, POSadjacencyList);
+
+                    List<POSMoveTask> sucessorPOSMoves = POSadjacencyList[POSmove];
+
+                    List<POSMoveTask> predecessorsPOSMoves = GetMovePredecessors(POSmove, POSadjacencyList);
+
+                    Console.WriteLine("|  Direct Sucessors |");
+
+                    Console.Write("[ ");
+                    foreach (POSMoveTask move in sucessorPOSMoves)
+                    {
+                        Console.Write($"Move {move.ID}, ");
+                    }
+                    Console.WriteLine(" ]");
+
+                    Console.WriteLine("|  Direct Predecessors |");
+                    Console.Write("[ ");
+
+                    foreach (POSMoveTask move in predecessorsPOSMoves)
+                    {
+                        Console.Write($"Move {move.ID}, ");
+                    }
+                    Console.WriteLine(" ]");
+
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+
+            }
+            else
+            {
+                Console.WriteLine("--- Unknown linkType for GetLinksOfPOSMove() ---");
+            }
+
+        }
+
+
+        // Get all the direct sucessors and predecessors of a given POS move, the move is identified by its ID (POSMoveTask POSmove.ID)
+        // Successors stored in @sucessorPOSMoves; Predecessors stored in @predecessorsPOSMoves
+        // @linkType specifies the type of the links 'infrastructure' - same inrastructure used - populated from @POSadjacencyListForInfrastructure
+        // 'trainUint' - same train unit(s) used - populated from @POSadjacencyListForTrainUint
+        public void GetMoveLinksOfPOSMove(int POSId, string linkType, out List<POSMoveTask> sucessorPOSMoves, out List<POSMoveTask> predecessorsPOSMoves)
+        {
+            sucessorPOSMoves = new List<POSMoveTask>();
+            predecessorsPOSMoves = new List<POSMoveTask>();
+
+            if (linkType == "infrastructure")
+            {
+                Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList = this.POSadjacencyListForInfrastructure;
+
+                // sucessorPOSMoves.Clear();
+                // predecessorsPOSMoves.Clear();
+                try
+                {
+
+                    POSMoveTask POSmove = GetPOSMoveTaskByID(POSId, POSadjacencyList);
+
+                    sucessorPOSMoves.AddRange(POSadjacencyList[POSmove]);
+
+                    predecessorsPOSMoves.AddRange(GetMovePredecessors(POSmove, POSadjacencyList));
+
+
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+
+            }
+            else if (linkType == "trainUint")
+            {
+                Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList = this.POSadjacencyListForTrainUint;
+
+                try
+                {
+
+
+                    POSMoveTask POSmove = GetPOSMoveTaskByID(POSId, POSadjacencyList);
+
+                    sucessorPOSMoves.AddRange(POSadjacencyList[POSmove]);
+
+                    predecessorsPOSMoves.AddRange(GetMovePredecessors(POSmove, POSadjacencyList));
+
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+
+            }
+            else
+            {
+                Console.WriteLine("--- Unknown linkType for GetLinksOfPOSMove() ---");
+            }
         }
 
         // Shows train unit relations between the POS movements, meaning that
