@@ -366,7 +366,7 @@ namespace ServiceSiteScheduling.Solutions
                         // and not because of same train unit assigned per movement {aka dashed line dependency} 
                         if (movesUsingSameTrainUnit.Count != 0)
                         {
-                            if(!movesUsingSameTrainUnit.Contains(MoveId))
+                            if (!movesUsingSameTrainUnit.Contains(MoveId))
                                 LinkMovmentsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
                         }
                         else
@@ -391,8 +391,8 @@ namespace ServiceSiteScheduling.Solutions
                     ok = 0;
                     // The last movement is not linked, it contains an empty list
                     MovementLinks.Add(moveIndex - 1, new List<int>());
-                    
-                    
+
+
                     MovementLinksSameInfrastructure.Add(moveIndex - 1, new List<int>());
                 }
             }
@@ -404,25 +404,32 @@ namespace ServiceSiteScheduling.Solutions
 
             this.POSadjacencyListForInfrastructure = CreatePOSAdjacencyList(MovementLinksSameInfrastructure);
             DisplayAllPOSMovementLinks();
+            DisplayPOSMovementLinksUsedInfrastructure();
 
+         
+        }
 
+        // Shows infrastructure the relations between the POS movements, meaning that
+        // links per move using the same infrastructure are displayed - links by infrastructure
+        public void DisplayPOSMovementLinksUsedInfrastructure()
+        {
             Console.WriteLine("----------------------------------------------------------");
             Console.WriteLine("|   POS Movement Links - Infrastructure (dashed lines)   |");
             Console.WriteLine("----------------------------------------------------------");
             // Show connections per Move
-            foreach (KeyValuePair<int, List<int>> pair in MovementLinksSameInfrastructure.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value))
+            Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = this.POSadjacencyListForInfrastructure;
+
+            foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> pair in posAdjacencyList.OrderBy(pair => pair.Key.ID).ToDictionary(pair => pair.Key, pair => pair.Value))
             {
-                Console.Write($"Move{pair.Key} -->");
-                foreach (int element in pair.Value)
+                Console.Write($"Move{pair.Key.ID} --> ");
+                foreach (POSMoveTask element in pair.Value)
                 {
-                    Console.Write($"Move:{element} ");
+                    Console.Write($"Move:{element.ID} ");
 
                 }
                 Console.Write("\n");
             }
-            // DisplayPartialResults(MovementLinks);
         }
-
 
         public List<int> CheckIfSameTrainUintUsed(List<int> conflictingMoveIds, List<MoveTask> listOfMoves, int moveIndex)
         {
@@ -518,7 +525,7 @@ namespace ServiceSiteScheduling.Solutions
 
             // }
             int id = 0;
-            foreach(MoveTask moveTask in listOfMoves)
+            foreach (MoveTask moveTask in listOfMoves)
             {
 
                 POSMoveTask POSmove = new POSMoveTask(moveTask, id);
@@ -533,13 +540,13 @@ namespace ServiceSiteScheduling.Solutions
 
                 posAdjacencyList[POSmove] = new List<POSMoveTask>();
                 foreach (int linkedMoveID in pair.Value)
-                {                    
+                {
 
                     posAdjacencyList[POSmove].Add(POSMoveList[linkedMoveID]);
                 }
             }
 
-            return posAdjacencyList.OrderBy(pair => pair.Key.ID).ToDictionary(pair => pair.Key, pair => pair.Value);;
+            return posAdjacencyList.OrderBy(pair => pair.Key.ID).ToDictionary(pair => pair.Key, pair => pair.Value); ;
 
 
         }
