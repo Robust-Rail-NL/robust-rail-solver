@@ -37,6 +37,10 @@ namespace ServiceSiteScheduling.Solutions
         // (dashed line dependency links)
         public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyListForInfrastructure { get; private set; }
 
+         // This is the Adjacency List for POS Movements using the same Train Unit: Each POSMoveTask maps to a list of connected POSMoveTask
+        // (solid line dependency links)
+        public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyListForTrainUint { get; private set; }
+
 
         // First movement of the POS 
         public POSMoveTask FirstPOS { get; set; }
@@ -285,13 +289,21 @@ namespace ServiceSiteScheduling.Solutions
             // Idea is to onbtain multiple directed graphs -> dependency between linked movements
             // To Note: here the links are the links of infrastructure conflicts and same train units per movment
             // @MovementLinksSameInfrastructure contains the linked moves related to the same infrastructure used
+            // @MovementLinksSameTrainUnit contains the linked moves related to the same train unit used
             Dictionary<int, List<int>> MovementLinks = new Dictionary<int, List<int>>();
 
 
-            // Dictionary with move IDs as Key, and value as List of all the linked moves using the same infrastructure,
+            // Dictionary with move IDs as Key, and value as List linked moves using the same infrastructure,
             // in this dictionary a movement is linked to another movement (parent move) if and only if they used the same 
             // infrastructure aka dashed lines Move_i---> Move_j
             Dictionary<int, List<int>> MovementLinksSameInfrastructure = new Dictionary<int, List<int>>();
+
+
+            // Dictionary with move IDs as Key, and value as List of linked moves using the same train unit,
+            // in this dictionary a movement is linked to another movement (parent move) if and only if they used the same 
+            // train unit aka solid lines Move_i -> Move_j
+            Dictionary<int, List<int>> MovementLinksSameTrainUnit = new Dictionary<int, List<int>>();
+
 
 
             // Dictionary with all infrastrucures, for each infrastructure a movement is assigned
@@ -362,12 +374,18 @@ namespace ServiceSiteScheduling.Solutions
                         // 1st: link movements -> conflictingMoveId is now linked with the moveIndex (current move id)
                         LinkMovmentsByID(MovementLinks, MoveId, moveIndex);
 
-                        // This statement is used to link the movements conflicted because of using the same infrastrucure\
-                        // and not because of same train unit assigned per movement {aka dashed line dependency} 
+
                         if (movesUsingSameTrainUnit.Count != 0)
                         {
+                            // This statement is used to link the movements conflicted because of using the same infrastrucure\
+                            // and not because of same train unit assigned per movement {aka dashed line dependency}
                             if (!movesUsingSameTrainUnit.Contains(MoveId))
                                 LinkMovmentsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
+
+                            // This statement is used to link the movements conflicted because of using the same train unit\
+                            // and not because of same infrastructure assigned per movement {aka solid line dependency}
+                            if (movesUsingSameTrainUnit.Contains(MoveId))
+                                LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
                         }
                         else
                         {
@@ -394,6 +412,7 @@ namespace ServiceSiteScheduling.Solutions
 
 
                     MovementLinksSameInfrastructure.Add(moveIndex - 1, new List<int>());
+                    MovementLinksSameTrainUnit.Add(moveIndex-1, new List<int>());
                 }
             }
 
@@ -403,15 +422,41 @@ namespace ServiceSiteScheduling.Solutions
             this.LastPOS = POSadjacencyList.Last().Key;
 
             this.POSadjacencyListForInfrastructure = CreatePOSAdjacencyList(MovementLinksSameInfrastructure);
-            DisplayAllPOSMovementLinks();
-            DisplayPOSMovementLinksUsedInfrastructure();
 
+            this.POSadjacencyListForTrainUint = CreatePOSAdjacencyList(MovementLinksSameTrainUnit);
+
+            DisplayAllPOSMovementLinks();
+            DisplayPOSMovementLinksInfrastructureUsed();
+            DisplayPOSMovementLinksTrainUinitUsed();
          
+
         }
 
-        // Shows infrastructure the relations between the POS movements, meaning that
+        // Shows train unit relations between the POS movements, meaning that
+        // links per move using the same train unit are displayed - links by train unit
+        public void DisplayPOSMovementLinksTrainUinitUsed()
+        {
+            Console.WriteLine("----------------------------------------------------------");
+            Console.WriteLine("|      POS Movement Links - Train Unit (solid lines)     |");
+            Console.WriteLine("----------------------------------------------------------");
+            // Show connections per Move
+            Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = this.POSadjacencyListForTrainUint;
+
+            foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> pair in posAdjacencyList.OrderBy(pair => pair.Key.ID).ToDictionary(pair => pair.Key, pair => pair.Value))
+            {
+                Console.Write($"Move{pair.Key.ID} --> ");
+                foreach (POSMoveTask element in pair.Value)
+                {
+                    Console.Write($"Move:{element.ID} ");
+
+                }
+                Console.Write("\n");
+            }
+        }
+
+        // Shows infrastructure relations between the POS movements, meaning that
         // links per move using the same infrastructure are displayed - links by infrastructure
-        public void DisplayPOSMovementLinksUsedInfrastructure()
+        public void DisplayPOSMovementLinksInfrastructureUsed()
         {
             Console.WriteLine("----------------------------------------------------------");
             Console.WriteLine("|   POS Movement Links - Infrastructure (dashed lines)   |");
