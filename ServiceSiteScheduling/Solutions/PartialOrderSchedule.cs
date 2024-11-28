@@ -18,6 +18,7 @@ using System.Security;
 using YamlDotNet.Core.Tokens;
 using System.Linq.Expressions;
 using AlgoIface;
+using System.Net.Http.Metrics;
 
 
 namespace ServiceSiteScheduling.Solutions
@@ -556,13 +557,77 @@ namespace ServiceSiteScheduling.Solutions
             this.POSadjacencyListForInfrastructure = CreatePOSAdjacencyList(MovementLinksSameInfrastructure);
 
             this.POSadjacencyListForTrainUint = CreatePOSAdjacencyList(MovementLinksSameTrainUnit);
+            AddTrainUnitPredeccessorSuccessorLinksToPOSMoves();
 
+           
             DisplayAllPOSMovementLinks();
             DisplayPOSMovementLinksInfrastructureUsed();
             DisplayPOSMovementLinksTrainUinitUsed();
+            DisplayTrainUnitSuccessorsAndPredeccessors();
+
 
 
         }
+
+        public void LinkPOSMovesWithPOSTrackTasks()
+        {
+            Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyListForTrainUint = this.POSadjacencyListForTrainUint;
+
+            foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> element in posAdjacencyListForTrainUint)
+            {
+                POSMoveTask POSmove = element.Key;
+
+                List<POSMoveTask> Successors = POSmove.SuccessorMovesByTrainUnits;
+                List<POSMoveTask> Predeccessors = POSmove.PredecessorMovesByTrainUnits;
+
+                
+            }
+        }
+        
+        // Takes all the POSMove of the adjacencyList and assigns the POSMove successors and predeccessors to the
+        // POSMove taken. This function is very useful, since it adds new link information to the POSMoves used
+        // in the Partial Order Schedule graph
+        public void AddTrainUnitPredeccessorSuccessorLinksToPOSMoves()
+        {
+            Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyListForTrainUint = this.POSadjacencyListForTrainUint;
+
+            foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> element in posAdjacencyListForTrainUint)
+            {
+                // Add sucessors to each POSMoves contained by the adjacency list
+                POSMoveTask POSmove = element.Key;
+                List<POSMoveTask> Successors = element.Value;
+
+                foreach (POSMoveTask successor in Successors)
+                {
+                    POSmove.AddNewSuccessorByTrainUnits(successor);
+                }
+
+                // Add predeccessors to each POSMoves contained by the adjacency list
+                List<POSMoveTask> Predeccessors = GetMovePredecessors(POSmove, posAdjacencyListForTrainUint);
+
+                foreach (POSMoveTask predeccessor in Predeccessors)
+                {
+                    POSmove.AddNewPredecessorByTrainUnits(predeccessor);
+                }
+
+            }
+        }
+
+        // Displays all the POSMove predeccessors and successors - these links are represents the 
+        // relations between the moves using the same train unit
+        public void DisplayTrainUnitSuccessorsAndPredeccessors()
+        {
+             Console.WriteLine("---------------------------------------------------");
+            Console.WriteLine("|  From POS Movement Links - Same Train Unit used  |");
+            Console.WriteLine("---------------------------------------------------");
+
+            foreach(KeyValuePair<POSMoveTask, List<POSMoveTask>> element in this.POSadjacencyListForTrainUint)
+            {
+                Console.WriteLine(element.Key);
+            }
+        }
+
+
         // public List<POSTrackTask> CreatePOSTrackTask()
         // {
         //     Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = this.POSadjacencyList;
