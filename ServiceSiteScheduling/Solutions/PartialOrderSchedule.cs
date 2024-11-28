@@ -17,6 +17,7 @@ using System.Xml;
 using System.Security;
 using YamlDotNet.Core.Tokens;
 using System.Linq.Expressions;
+using AlgoIface;
 
 
 namespace ServiceSiteScheduling.Solutions
@@ -26,6 +27,8 @@ namespace ServiceSiteScheduling.Solutions
         public ShuntTrainUnit[] ShuntUnits { get; private set; }
 
         public ArrivalTask[] ArrivalTasks { get; private set; }
+
+        public List<Trains.TrainUnit> ListOfTrainUnits { get; set; }
         DepartureTask[] DepartureTasks;
 
         public ArrivalTask FirstArrival { get { return this.ArrivalTasks.First(arrival => arrival.Next.PreviousMove == null); } }
@@ -42,7 +45,7 @@ namespace ServiceSiteScheduling.Solutions
         public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyListForTrainUint { get; private set; }
 
 
-        // First movement of the POS 
+        // First movement of the POS
         public POSMoveTask FirstPOS { get; set; }
 
         // Last movement of the POS
@@ -58,12 +61,32 @@ namespace ServiceSiteScheduling.Solutions
         // this list should be initiated only once and the order of moves should not be changed
         public List<MoveTask> ListOfMoves { get; set; }
 
+        public List<POSTrackTask> ListOfPOSTrackTasks { get; set; }
+
         // Dictionary that contains the overall Infrastructure used in the scenario
         public Dictionary<ulong, Infrastructure> DictOfInrastructure { get; set; }
         public PartialOrderSchedule(MoveTask first)
         {
             this.First = first;
 
+        }
+
+        // Get all the train units (shunt train units) used by the movements in this scenario
+        // this information is obtained from the ProblemInstance, created from the `scenario.data` file
+        public List<Trains.TrainUnit> GetTrainFleet()
+        {
+            ProblemInstance instance = ProblemInstance.Current;
+
+            List<Trains.TrainUnit> trains = new List<Trains.TrainUnit>();
+
+
+
+            foreach (var train in instance.TrainUnits)
+            {
+                trains.Add(train);
+            }
+
+            return trains;
         }
 
         // Get the infrastrucure describing the shunting yard
@@ -111,6 +134,27 @@ namespace ServiceSiteScheduling.Solutions
 
         }
 
+        // Returns list of the IDs of the train units used by a movement (MoveTask)
+
+        public List<int> GetIDListOfTrainUnitsUsed(MoveTask move)
+        {
+            List<int> trainUnits = new List<int>();
+
+            foreach (TrackTask task in move.AllNext)
+            {
+                foreach (ShuntTrainUnit trainUnit in task.Train.Units)
+                    trainUnits.Add(trainUnit.Index);
+            }
+
+            foreach (TrackTask task in move.AllPrevious)
+            {
+                foreach (ShuntTrainUnit trainUnit in task.Train.Units)
+                    trainUnits.Add(trainUnit.Index);
+            }
+
+            return trainUnits.Distinct().ToList();
+
+        }
 
 
         // Returns list of the IDs of the Infrastructure used by a movement (MoveTask)
@@ -165,7 +209,7 @@ namespace ServiceSiteScheduling.Solutions
 
                             }
                             // TODO: review this, probably a different logic should be used her
-                            // maybe calculate the distance for each route ? 
+                            // maybe calculate the distance for each route ?
                             if (k == 0)
                             {
                                 numbrerOfInfraUsed = IDListOfInstraUsedIntermediate.Count;
@@ -177,7 +221,7 @@ namespace ServiceSiteScheduling.Solutions
                             {
                                 if (IDListOfInstraUsedIntermediate.Count < numbrerOfInfraUsed)
                                 {
-                                    // Less infrasturcure used 
+                                    // Less infrasturcure used
                                     numbrerOfInfraUsed = IDListOfInstraUsedIntermediate.Count;
                                     IDListOfInstraUsed = new List<ulong>();
 
@@ -199,9 +243,9 @@ namespace ServiceSiteScheduling.Solutions
         }
 
         // Returns true if the same infrastrucure is used by previous moves as the requireied in @IDListOfInfraUsed
-        // @IDListOfInfraUsed contains the infrastructure the current move will use 
-        // @InfraOccupiedByMovesID is a dictionary (Key:Value) contains all the infrastructures (Key) and 
-        // their occupation by a specific move (Value) - note: the moves are specified by their IDs 
+        // @IDListOfInfraUsed contains the infrastructure the current move will use
+        // @InfraOccupiedByMovesID is a dictionary (Key:Value) contains all the infrastructures (Key) and
+        // their occupation by a specific move (Value) - note: the moves are specified by their IDs
         // @conflictingMoveIds contains all the conflicting moves, that use the same infrastrucure tas the current move requires to occupy
         public bool InfraConflict(Dictionary<Infrastructure, int> InfraOccupiedByMovesID, List<ulong> IDListOfInfraUsed, int moveID, ref List<int> conflictingMoveIds)
         {
@@ -227,6 +271,38 @@ namespace ServiceSiteScheduling.Solutions
                 return true;
 
             return false;
+        }
+
+        // Returns true if the same train unit is used by previous moves as the requireied in @IDListOfTrainUnitUsed
+        // @IDListOfTrainUnitUsed contains the train units of the current move
+        // @TrainUnitsOccupiedByMovesID is a dictionary (Key:Value) contains all the train units (Key) and
+        // their appearance by a specific move (Value) - note: the moves are specified by their IDs
+        // @conflictingMoveIds contains all the conflicting moves, with the same train unit as the current move has
+        public bool TrainUnitConflict(Dictionary<Trains.TrainUnit, int> TrainUnitsOccupiedByMovesID, List<int> IDListOfTrainUnitUsed, ref List<int> conflictingMoveIds)
+        {
+            List<Trains.TrainUnit> listOfTrainUnits = this.ListOfTrainUnits;
+
+            conflictingMoveIds = new List<int>();
+
+            foreach (int id in IDListOfTrainUnitUsed)
+            {
+                if (TrainUnitsOccupiedByMovesID[listOfTrainUnits[id]] == 999)
+                {
+
+                }
+                else
+                {
+                    if (conflictingMoveIds.Contains(TrainUnitsOccupiedByMovesID[listOfTrainUnits[id]]) == false)
+                    {
+                        conflictingMoveIds.Add(TrainUnitsOccupiedByMovesID[listOfTrainUnits[id]]);
+                    }
+                }
+            }
+            if (conflictingMoveIds.Count != 0)
+                return true;
+
+            return false;
+
         }
 
         // Links the previous move -@parentMovementID- this move was conflicting since it previously used the same infrastructure as the
@@ -256,22 +332,9 @@ namespace ServiceSiteScheduling.Solutions
                 InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = currentID;
             }
         }
-        public void RemoveAssignedMoveFromInfrastructureByID(List<MoveTask> listOfMoves, Dictionary<Infrastructure, MoveTask> InfraOccupiedByMoves, Dictionary<Infrastructure, int> InfraOccupiedByMovesID, Dictionary<ulong, Infrastructure> DictOfInfrastrucure, int conflictingMoveId)
-        {
 
-
-            foreach (KeyValuePair<Infrastructure, int> pair in InfraOccupiedByMovesID)
-            {
-                if (pair.Value == conflictingMoveId)
-                {
-                    InfraOccupiedByMoves[pair.Key] = null;
-                    InfraOccupiedByMovesID[pair.Key] = 999;
-                }
-            }
-        }
-
-        // TODO: rename it to CreatePOS - it should pobably be called only once 
-        // later un update function will basically be called when a recopute of POS 
+        // TODO: rename it to CreatePOS - it should pobably be called only once
+        // later un update function will basically be called when a recopute of POS
         // is needed
         public void UpdatePOS()
         {
@@ -294,16 +357,15 @@ namespace ServiceSiteScheduling.Solutions
 
 
             // Dictionary with move IDs as Key, and value as List linked moves using the same infrastructure,
-            // in this dictionary a movement is linked to another movement (parent move) if and only if they used the same 
+            // in this dictionary a movement is linked to another movement (parent move) if and only if they used the same
             // infrastructure aka dashed lines Move_i---> Move_j
             Dictionary<int, List<int>> MovementLinksSameInfrastructure = new Dictionary<int, List<int>>();
 
 
             // Dictionary with move IDs as Key, and value as List of linked moves using the same train unit,
-            // in this dictionary a movement is linked to another movement (parent move) if and only if they used the same 
+            // in this dictionary a movement is linked to another movement (parent move) if and only if they used the same
             // train unit aka solid lines Move_i -> Move_j
             Dictionary<int, List<int>> MovementLinksSameTrainUnit = new Dictionary<int, List<int>>();
-
 
 
             // Dictionary with all infrastrucures, for each infrastructure a movement is assigned
@@ -315,8 +377,20 @@ namespace ServiceSiteScheduling.Solutions
             // assigned yet to the for the given infrastructure
             Dictionary<Infrastructure, int> InfraOccupiedByMovesID = new Dictionary<Infrastructure, int>();
 
+
+
+            //List of al train uinit used the movement present in this scenario
+            List<Trains.TrainUnit> ListOfTrainUnits = this.ListOfTrainUnits;
+
+            // Dictionary with all train units, for each train unit a movement ID is assigned, the IDs
+            // are used to access a move which is stored in 'listOfMoves' or  'this.ListOfMoves'
+            // the TrainUnitsOccupiedByMovesID is initialized with 999, meaning that there in no valid movment ID
+            // assigned yet to given train unit
+            Dictionary<Trains.TrainUnit, int> TrainUnitsOccupiedByMovesID = new Dictionary<Trains.TrainUnit, int>();
+
             // Dictionary conatining all the infrasturcutre, index:infrastructure
             Dictionary<ulong, Infrastructure> DictOfInfrastrucure = this.DictOfInrastructure;
+
 
             // Init dictionary for infrastructures occupied by moves
 
@@ -330,6 +404,12 @@ namespace ServiceSiteScheduling.Solutions
             }
 
 
+            foreach (Trains.TrainUnit train in ListOfTrainUnits)
+            {
+                TrainUnitsOccupiedByMovesID[train] = 999;
+            }
+
+
             int ok = 1;
             int moveIndex = 0;
             int conflictingMoveId = 0;
@@ -338,27 +418,49 @@ namespace ServiceSiteScheduling.Solutions
             bool revisit = false;
             int revisitIndex = 0;
 
+            // Example of the using @InfraOccupiedByMovesID to link moves using the same infrastructure: (x in this example is 999 in @InfraOccupiedByMovesID)
+            // Scenario:
+            // Move 0: 0 -> 2 -> 4  (infrastructure)
+            // Move 1: 0 -> 2 -> 1  (infrastructure)
+            // Move 2: 4 -> 2 -> 3  (infrastructure)
+
+            // Evolution of @InfraOccupiedByMovesID:
+            // | Move 0 | => iteration 0
+            // 0; 1; 2; 3; 4; (infrastructure)
+            // 0; x; 0; x; 0; (occupation by move)
+            // No link
+
+            // | Move 1 | => iteration 1
+            // 0; 1; 2; 3; 4; (infrastructure)
+            // 1; 1; 1; x; 0; (occupation by move) 
+            // Move 1 is in conflict with Move 0 => link Move 0 and Move 1; Move 0-> Move 1
+
+            // | Move 2 | => iteration 2
+            // 0; 1; 2; 3; 4; (infrastructure)
+            // 1; 1; 2; 2; 2; (occupation by move)
+            // Move 1 is in conflict with Move 0 and Move 1 => link Move 1 and Move 2 and Move 0 and Move 2; Move 0-> Move 1-> Move 2
+            //                                                                                                     ----------> Move 2 
+
 
 
             while (ok != 0)
             {
 
-
                 var currentMove = listOfMoves[moveIndex];
-                List<ulong> IDListOfInfraUsed = GetIDListOfInfraUsed(currentMove); // used by the movement
+                List<ulong> IDListOfInfraUsed = GetIDListOfInfraUsed(currentMove); // infrastructure used by the movement
 
 
+                // Identify all the conflicting moves related to the infrastructure used by the movements - and link moves
                 if (InfraConflict(InfraOccupiedByMovesID, IDListOfInfraUsed, moveIndex, ref conflictingMoveIds) == false)
                 {
                     // No conflict occured
 
                     foreach (ulong infraID in IDListOfInfraUsed)
                     {
+                        // Assign move to the infrastructure occupied
                         InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
                         InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
                     }
-                    // The given movement is assigned to an infrastructure
-
 
                 }
                 else
@@ -384,8 +486,8 @@ namespace ServiceSiteScheduling.Solutions
 
                             // This statement is used to link the movements conflicted because of using the same train unit\
                             // and not because of same infrastructure assigned per movement {aka solid line dependency}
-                            if (movesUsingSameTrainUnit.Contains(MoveId))
-                                LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
+                            // if (movesUsingSameTrainUnit.Contains(MoveId))
+                            //     LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
                         }
                         else
                         {
@@ -403,6 +505,35 @@ namespace ServiceSiteScheduling.Solutions
 
 
                 }
+                // Identify all the conflicting moves related to the same train units used by the movements - and link moves
+
+                List<int> IDListOfTrainUnitUsed = GetIDListOfTrainUnitsUsed(currentMove); // Train units used by the movement
+
+                if (TrainUnitConflict(TrainUnitsOccupiedByMovesID, IDListOfTrainUnitUsed, ref conflictingMoveIds) == false)
+                {
+                    // No conflict occured. Here the moves are not linked
+                    foreach (int trainUnitID in IDListOfTrainUnitUsed)
+                    {
+                        // Assin the move to the Train Units used
+                        TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
+                    }
+                }
+                else
+                {
+                    // The conflicting moves are linked
+                    foreach (int MoveId in conflictingMoveIds)
+                    {
+                        LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
+
+                    }
+
+                    foreach (int trainUnitID in IDListOfTrainUnitUsed)
+                    {
+
+                        TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
+                    }
+                }
+
                 moveIndex++;
                 if (moveIndex == listOfMoves.Count)
                 {
@@ -413,6 +544,7 @@ namespace ServiceSiteScheduling.Solutions
 
                     MovementLinksSameInfrastructure.Add(moveIndex - 1, new List<int>());
                     MovementLinksSameTrainUnit.Add(moveIndex - 1, new List<int>());
+
                 }
             }
 
@@ -431,7 +563,45 @@ namespace ServiceSiteScheduling.Solutions
 
 
         }
+        // public List<POSTrackTask> CreatePOSTrackTask()
+        // {
+        //     Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = this.POSadjacencyList;
 
+        //     int id = 0;
+        //     foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> pair in posAdjacencyList)
+        //     {
+        //         MoveTask move = pair.Key.CorrespondingMoveTask;
+
+
+        //         if (move.AllPrevious.Count == 1)
+        //         {
+        //             TrackTask trackTask = move.AllPrevious[0];
+
+        //             POSTrackTask POStask = null;
+
+        //             if (trackTask.TaskType is TrackTaskType.Arrival)
+        //             {
+        //                 POStask = new POSTrackTask(id, POSTrackTaskType.Arrival, trackTask);
+
+        //             }
+        //         }
+
+
+        //         // foreach (TrackTask task in move.AllPrevious)
+        //         //         {
+        //         //             Console.WriteLine($"---{task}----");
+        //         //             // if (task is ParkingTask parkingTask)
+        //         //             //     Console.WriteLine("@It was a ParkingTask");
+        //         //             // if (task is ServiceTask serviceTask)
+        //         //             //     Console.WriteLine("@It was a ServiceTask");
+        //         //             // if (task is ArrivalTask arrivalTask)
+        //         //             //     Console.WriteLine("@It was a ArrivalTask");
+        //         //             // if (task is DepartureTask departureTask)
+        //         //             //     Console.WriteLine("@It was a DepartureTask");
+        //         //         }
+
+        //     }
+        // }
         public POSMoveTask GetPOSMoveTaskByID(int ID, Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList)
         {
 
@@ -670,7 +840,7 @@ namespace ServiceSiteScheduling.Solutions
 
             List<int> movesUsingSameTrainUnit = new List<int>();
             // moveIndex is the ID of the current move that has conflicting moves: conflictingMoveIds
-            // since they use the same infrastructure than the current move 
+            // since they use the same infrastructure than the current move
             MoveTask currentMove = listOfMoves[moveIndex];
 
             foreach (int moveInConflictID in conflictingMoveIds)
@@ -687,7 +857,7 @@ namespace ServiceSiteScheduling.Solutions
                     foreach (ShuntTrainUnit shuntTrainOfCurrentMove in trainUintsOfCurrentMove)
                     {
                         // if the one of the train units are the same, that means that there is a conflict in using
-                        // the same train unit between the conflicting moves by the infrastructure used 
+                        // the same train unit between the conflicting moves by the infrastructure used
                         if (shuntTrainOfConflictingMove.Index == shuntTrainOfCurrentMove.Index)
                         {
                             movesUsingSameTrainUnit.Add(moveInConflictID);
@@ -737,7 +907,7 @@ namespace ServiceSiteScheduling.Solutions
 
         // POS Adjacency list is used to track the links between the movement nodes
         // of the POS graph. The POS Adjacency list is actually a dictionary
-        // => {POSMove : List[POSMove, ...]} 
+        // => {POSMove : List[POSMove, ...]}
         public Dictionary<POSMoveTask, List<POSMoveTask>> CreatePOSAdjacencyList(Dictionary<int, List<int>> MovementLinks)
         {
             Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = new Dictionary<POSMoveTask, List<POSMoveTask>>();
@@ -833,7 +1003,7 @@ namespace ServiceSiteScheduling.Solutions
 
         // TODO; rename it to Initialize POS since it is a sort of Constructor
         // this function does not generate a POS graph only initialize some values
-        public void CreatePOS(MoveTask first)
+        public void CreatePOS()
         {
             MoveTask move = this.First;
 
@@ -852,6 +1022,8 @@ namespace ServiceSiteScheduling.Solutions
             this.First = listOfMoves.First();
 
             this.DictOfInrastructure = GetInfrasturcture();
+
+            this.ListOfTrainUnits = GetTrainFleet();
 
         }
         public void DisplayInfrastructure()
@@ -894,6 +1066,34 @@ namespace ServiceSiteScheduling.Solutions
                     var tracks = routing.Route.Tracks;
                     var lastTrack = tracks.Last();
 
+                    Console.WriteLine("All Previous tasks:");
+                    foreach (TrackTask task in routing.AllPrevious)
+                    {
+                        Console.WriteLine($"---{task}----");
+                        // if (task is ParkingTask parkingTask)
+                        //     Console.WriteLine("@It was a ParkingTask");
+                        // if (task is ServiceTask serviceTask)
+                        //     Console.WriteLine("@It was a ServiceTask");
+                        // if (task is ArrivalTask arrivalTask)
+                        //     Console.WriteLine("@It was a ArrivalTask");
+                        // if (task is DepartureTask departureTask)
+                        //     Console.WriteLine("@It was a DepartureTask");
+                    }
+
+                    Console.WriteLine("All Next tasks:");
+                    foreach (TrackTask task in routing.AllNext)
+                    {
+                        Console.WriteLine($"---{task}----");
+                        // if (task is ParkingTask parkingTask)
+                        //     Console.WriteLine("@It was a ParkingTask");
+                        // if (task is ServiceTask serviceTask)
+                        //     Console.WriteLine("@It was a ServiceTask");
+                        // if (task is ArrivalTask arrivalTask)
+                        //     Console.WriteLine("@It was a ArrivalTask");
+                        // if (task is DepartureTask departureTask)
+                        //     Console.WriteLine("@It was a DepartureTask");
+                    }
+
                     // TODO: display more infrastructure
 
                     foreach (Track track in tracks)
@@ -926,11 +1126,31 @@ namespace ServiceSiteScheduling.Solutions
                         // var previousTasks = move.AllPrevious
                         Console.WriteLine("All Previous tasks:");
                         foreach (TrackTask task in move.AllPrevious)
+                        {
                             Console.WriteLine($"---{task}----");
+                            // if (task is ParkingTask parkingTask)
+                            //     Console.WriteLine("@It was a ParkingTask");
+                            // if (task is ServiceTask serviceTask)
+                            //     Console.WriteLine("@It was a ServiceTask");
+                            // if (task is ArrivalTask arrivalTask)
+                            //     Console.WriteLine("@It was a ArrivalTask");
+                            // if (task is DepartureTask departureTask)
+                            //     Console.WriteLine("@It was a DepartureTask");
+                        }
 
                         Console.WriteLine("All Next tasks:");
                         foreach (TrackTask task in move.AllNext)
+                        {
                             Console.WriteLine($"---{task}----");
+                            // if (task is ParkingTask parkingTask)
+                            //     Console.WriteLine("@It was a ParkingTask");
+                            // if (task is ServiceTask serviceTask)
+                            //     Console.WriteLine("@It was a ServiceTask");
+                            // if (task is ArrivalTask arrivalTask)
+                            //     Console.WriteLine("@It was a ArrivalTask");
+                            // if (task is DepartureTask departureTask)
+                            //     Console.WriteLine("@It was a DepartureTask");
+                        }
 
 
 
