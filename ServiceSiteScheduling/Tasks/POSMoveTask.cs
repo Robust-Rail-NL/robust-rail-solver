@@ -27,6 +27,10 @@ namespace ServiceSiteScheduling.Tasks
 
         public List<POSMoveTask> PredecessorMovesByTrainUnits {get; set;}
 
+        public List<POSMoveTask> SuccessorMovesByInfrastructure {get; set;}
+
+        public List<POSMoveTask> PredecessorMovesByInfrastructure {get; set;}
+
         public List<POSTrackTask> SuccessorTrackTasks {get; set;}
 
         public List<POSTrackTask> PredecessorTrackTasks {get; set;}
@@ -40,6 +44,9 @@ namespace ServiceSiteScheduling.Tasks
             this.LinkedMoves = new  List<POSMoveTask>();
             this.SuccessorMovesByTrainUnits = new List<POSMoveTask>();
             this.PredecessorMovesByTrainUnits = new List<POSMoveTask>();
+            this.SuccessorMovesByInfrastructure = new List<POSMoveTask>();
+            this.PredecessorMovesByInfrastructure = new List<POSMoveTask>();
+            
             this.SuccessorTrackTasks = new List<POSTrackTask>();
             this.PredecessorTrackTasks = new List<POSTrackTask>();
         }   
@@ -54,6 +61,15 @@ namespace ServiceSiteScheduling.Tasks
             this.PredecessorMovesByTrainUnits.Add(predeccessor);
         }
 
+        public void AddNewSuccessorByInfrastructure(POSMoveTask successor)
+        {
+            this.SuccessorMovesByInfrastructure.Add(successor);
+        }
+
+        public void AddNewPredeccessorByInfrastructure(POSMoveTask predeccessor)
+        {
+            this.PredecessorMovesByInfrastructure.Add(predeccessor);
+        }
         public override string ToString()
         {
             string str = "POSMove " + this.ID + ":\n";
