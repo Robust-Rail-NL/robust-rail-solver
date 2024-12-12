@@ -50,6 +50,12 @@ namespace ServiceSiteScheduling.Solutions
         // (dotted arcs links)
         public Dictionary<POSTrackTask, List<POSTrackTask>> POSTrackTaskadjacencyListForTrainUsed {get; set;}
 
+        // This is the Adjacency List for POS TrackTask using the same Infrastructure: Each POSTrackTask maps to a list of connected POSTrackTask
+        // (dotted arcs links)
+        public Dictionary<POSTrackTask, List<POSTrackTask>> POSTrackTaskadjacencyListForInfrastructure {get; set;}
+
+
+
         // First movement of the POS
         public POSMoveTask FirstPOS { get; set; }
 
@@ -854,6 +860,21 @@ namespace ServiceSiteScheduling.Solutions
 
             // TODO: -------------------------------------------------------------------------------------------------------------------------------------------
 
+            this.POSTrackTaskadjacencyListForInfrastructure = CreatePOSAdjacencyListTrackTask(POSTrackTaskLinksSameInfrastructure);
+
+            Console.WriteLine("--------------------------------------------------------------------------------------------------");
+            Console.WriteLine("|              From POSTrackTask inner Links (same Infrastructure used) - AdjacencyList            |");
+            Console.WriteLine("--------------------------------------------------------------------------------------------------");
+
+            foreach(KeyValuePair<POSTrackTask, List<POSTrackTask>> Ttask in this.POSTrackTaskadjacencyListForInfrastructure)
+            {
+                Console.Write($"POSTrackTask {Ttask.Key.ID} --> ");
+                foreach(POSTrackTask linkToPOStrackTask in Ttask.Value)
+                {
+                    Console.Write($"POSTrackTask {linkToPOStrackTask.ID} ");
+                }
+                Console.WriteLine();
+            }
 
         }
 
