@@ -19,6 +19,7 @@ using YamlDotNet.Core.Tokens;
 using System.Linq.Expressions;
 using AlgoIface;
 using System.Net.Http.Metrics;
+using System.Security.Cryptography.X509Certificates;
 
 
 namespace ServiceSiteScheduling.Solutions
@@ -38,13 +39,16 @@ namespace ServiceSiteScheduling.Solutions
         public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList { get; private set; }
 
         // This is the Adjacency List for POS Movements using the same infrastructure: Each POSMoveTask maps to a list of connected POSMoveTask
-        // (dashed line dependency links)
+        // (dashed arcs dependency links)
         public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyListForInfrastructure { get; private set; }
 
         // This is the Adjacency List for POS Movements using the same Train Unit: Each POSMoveTask maps to a list of connected POSMoveTask
-        // (solid line dependency links)
+        // (solid arcs dependency links)
         public Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyListForTrainUint { get; private set; }
 
+        // This is the Adjacency List for POS TrackTask using the same Train Unit: Each POSTrackTask maps to a list of connected POSTrackTask
+        // (dotted arcs links)
+        public Dictionary<POSTrackTask, List<POSTrackTask>> POSTrackTaskadjacencyListForTrainUsed {get; set;}
 
         // First movement of the POS
         public POSMoveTask FirstPOS { get; set; }
@@ -832,6 +836,22 @@ namespace ServiceSiteScheduling.Solutions
                 Console.WriteLine();
             }
 
+            this.POSTrackTaskadjacencyListForTrainUsed = CreatePOSAdjacencyListTrackTask(POSTrackTaskLinksSameTrainUnits);
+
+            Console.WriteLine("-----------------------------------------------------------------------------------------------");
+            Console.WriteLine("|              From POSTrackTask inner Links (same Train Unit used) - AdjacencyList            |");
+            Console.WriteLine("-----------------------------------------------------------------------------------------------");
+
+            foreach(KeyValuePair<POSTrackTask, List<POSTrackTask>> Ttask in this.POSTrackTaskadjacencyListForTrainUsed)
+            {
+                Console.Write($"POSTrackTask {Ttask.Key.ID} --> ");
+                foreach(POSTrackTask linkToPOStrackTask in Ttask.Value)
+                {
+                    Console.Write($"POSTrackTask {linkToPOStrackTask.ID} ");
+                }
+                Console.WriteLine();
+            }
+
             // TODO: -------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1598,19 +1618,11 @@ namespace ServiceSiteScheduling.Solutions
             List<MoveTask> listOfMoves = this.ListOfMoves;
 
             // Order Dictionary
-            // Dictionary<int, List<int>> orderedMovementLinks = new Dictionary<int, List<int>>();
-
             var orderedMovementLinks = MovementLinks.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
 
             List<POSMoveTask> POSMoveList = new List<POSMoveTask>();
 
-            // foreach (KeyValuePair<int, List<int>> pair in orderedMovementLinks)
-            // {
-
-            //     POSMoveTask POSmove = new POSMoveTask(listOfMoves[pair.Key], pair.Key);
-            //     POSMoveList.Add(POSmove);
-
-            // }
+        
             int id = 0;
             foreach (MoveTask moveTask in listOfMoves)
             {
@@ -1633,6 +1645,43 @@ namespace ServiceSiteScheduling.Solutions
                     posAdjacencyList[POSmove].Add(POSMoveList[linkedMoveID]);
                 }
             }
+
+            return posAdjacencyList.OrderBy(pair => pair.Key.ID).ToDictionary(pair => pair.Key, pair => pair.Value); ;
+
+
+        }
+
+
+        // POS Adjacency list is used to track the links between the POSTrackTask nodes
+        // of the POS graph. The POS Adjacency list is actually a dictionary
+        // => {POSTrackTask : List[POSTrackTask, ...]}
+        public Dictionary<POSTrackTask, List<POSTrackTask>> CreatePOSAdjacencyListTrackTask(Dictionary<int, List<int>> POSTrackTaskLinks)
+        {
+            Dictionary<POSTrackTask, List<POSTrackTask>> posAdjacencyList = new Dictionary<POSTrackTask, List<POSTrackTask>>();
+
+            List<POSTrackTask> listOfPOSTrackTasks = this.ListOfPOSTrackTasks;
+
+            // Order Dictionary
+            var orderedPOStrackTaskLinks = POSTrackTaskLinks.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            
+
+            foreach (POSTrackTask trackTask in listOfPOSTrackTasks)
+            {
+                posAdjacencyList[trackTask] = new List<POSTrackTask>();
+            }
+
+            foreach (KeyValuePair<int, List<int>> pair in orderedPOStrackTaskLinks)
+            {
+                foreach (int linkedTrackTaskID in pair.Value)
+                {
+
+                    posAdjacencyList[listOfPOSTrackTasks[pair.Key]].Add(listOfPOSTrackTasks[linkedTrackTaskID]);
+
+                }
+            }
+
+
 
             return posAdjacencyList.OrderBy(pair => pair.Key.ID).ToDictionary(pair => pair.Key, pair => pair.Value); ;
 
