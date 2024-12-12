@@ -887,6 +887,7 @@ namespace ServiceSiteScheduling.Solutions
             }
             DisplayMovesSuccessorsAndPredeccessors();
             ShowAllInfoAboutMove(7);
+            ShowAllInfoAboutTrackTask(17);
         }
 
         // Creates a list of POSTrackkTasks. POSTrackTasks are created by using the TrackTasks embedded between 
@@ -1403,6 +1404,23 @@ namespace ServiceSiteScheduling.Solutions
                 return PredecessorsOfPOStrackTask.OrderBy(element => element.ID).ToList();
             }
             return PredecessorsOfPOStrackTask;
+        }
+
+
+         public void ShowAllInfoAboutTrackTask(int trackTaskID)
+        {
+            Console.WriteLine("-----------------------------------------------------------------------");
+            Console.WriteLine($"|         All information about- track task id : {trackTaskID}        |");
+            Console.WriteLine("-----------------------------------------------------------------------");
+            foreach (POSTrackTask item in this.ListOfPOSTrackTasks)
+            {
+                if(item.ID == trackTaskID)
+                {
+                    Console.Write(item);
+                    Console.Write(item.GetInfoLinksByTrainUnits());
+                    Console.Write(item.GetInfoLinksByInfrastructure());
+                }
+            }
         }
 
         public void ShowAllInfoAboutMove(int moveID)
