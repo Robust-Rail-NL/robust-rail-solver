@@ -157,6 +157,19 @@ namespace ServiceSiteScheduling.Solutions
 
         }
 
+        // Returns list of the IDs of the Infrastructure used by a POSTrackTask (POSTrackTask)
+
+        public List<ulong> GetIDListOfInfraUsedByTrackTasks(POSTrackTask posTrackTask)
+        {
+            List<ulong> IDListOfInstraUsed = [
+                posTrackTask.Track.ASide.ID,
+                posTrackTask.Track.ID,
+                posTrackTask.Track.BSide.ID,
+            ];
+
+            return IDListOfInstraUsed;
+        }
+
 
         // Returns list of the IDs of the Infrastructure used by a movement (MoveTask)
         public List<ulong> GetIDListOfInfraUsed(MoveTask move)
@@ -320,6 +333,8 @@ namespace ServiceSiteScheduling.Solutions
             MovementLinks[parentMovementID].Add(childMovementID);
         }
 
+
+
         public void MergeMovements(Dictionary<Infrastructure, MoveTask> InfraOccupiedByMoves, Dictionary<Infrastructure, int> InfraOccupiedByMovesID, Dictionary<ulong, Infrastructure> DictOfInfrastrucure, int currentID)
         {
             List<MoveTask> listOfMoves = this.ListOfMoves;
@@ -332,6 +347,38 @@ namespace ServiceSiteScheduling.Solutions
                 InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
                 InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = currentID;
             }
+        }
+
+        // Returns true if the same infrastrucure is used by previous POSTrackTask as the requireied in @IDListOfInfraUsed
+        // @IDListOfInfraUsed contains the infrastructure the current POSTrackTask will use
+        // @InfraOccupiedByTrackTaskID is a dictionary (Key:Value) contains all the infrastructures (Key) and
+        // their occupation by a specific POSTrackTask (Value) - note: the POSTrackTask are specified by their IDs
+        // @conflictingTrackTaskIds contains all the conflicting moves, that use the same infrastrucure the current POSTrackTask requires to occupy
+        public bool InfraConflictByTrackTasks(Dictionary<Infrastructure, int> InfraOccupiedByTrackTaskID, List<ulong> IDListOfInfraUsed, ref List<int> conflictingTrackTaskIds)
+        {
+
+            Dictionary<ulong, Infrastructure> DictOfInfrastrucure = this.DictOfInrastructure;
+
+            conflictingTrackTaskIds = new List<int>();
+            foreach (ulong id in IDListOfInfraUsed)
+            {
+                if (InfraOccupiedByTrackTaskID[DictOfInfrastrucure[id]] == 999)
+                {
+                    // conflictingMoveId = InfraOccupiedByMovesID[DictOfInfrastrucure[id]];
+                }
+                else
+                {
+                    if (conflictingTrackTaskIds.Contains(InfraOccupiedByTrackTaskID[DictOfInfrastrucure[id]]) == false)
+                        conflictingTrackTaskIds.Add(InfraOccupiedByTrackTaskID[DictOfInfrastrucure[id]]);
+                }
+
+
+            }
+            if (conflictingTrackTaskIds.Count != 0)
+                return true;
+
+            return false;
+
         }
 
         // TODO: rename it to CreatePOS - it should pobably be called only once
@@ -378,6 +425,7 @@ namespace ServiceSiteScheduling.Solutions
             // assigned yet to the for the given infrastructure
             Dictionary<Infrastructure, int> InfraOccupiedByMovesID = new Dictionary<Infrastructure, int>();
 
+            Dictionary<Infrastructure, int> InfraOccupiedByTrackTaskID = new Dictionary<Infrastructure, int>();
 
 
             //List of al train uinit used the movement present in this scenario
@@ -402,6 +450,7 @@ namespace ServiceSiteScheduling.Solutions
             {
                 InfraOccupiedByMoves[infra.Value] = null; // Maybe later this can be removed
                 InfraOccupiedByMovesID[infra.Value] = 999;
+                InfraOccupiedByTrackTaskID[infra.Value] = 999;
             }
 
 
@@ -413,11 +462,9 @@ namespace ServiceSiteScheduling.Solutions
 
             int ok = 1;
             int moveIndex = 0;
-            int conflictingMoveId = 0;
 
             List<int> conflictingMoveIds = new List<int>();
-            bool revisit = false;
-            int revisitIndex = 0;
+
 
             // Example of the using @InfraOccupiedByMovesID to link moves using the same infrastructure: (x in this example is 999 in @InfraOccupiedByMovesID)
             // Scenario:
@@ -569,8 +616,77 @@ namespace ServiceSiteScheduling.Solutions
             DisplayPOSMovementLinksTrainUinitUsed();
             // DisplayTrainUnitSuccessorsAndPredeccessors();
             DisplayMovesSuccessorsAndPredeccessors();
+
             this.ListOfPOSTrackTasks = CreatePOSTrackTaskList();
             DisplayListPOSTrackTracks();
+
+
+            // TODO: -------------------------------------------------------------------------------------------------------------------------------------------
+            ok = 1;
+            int TrackTaskIndex = 0;
+
+            List<int> conflictingTrackTaskIds = new List<int>();
+
+            List<POSTrackTask> listOfPOSTrackTasks = this.ListOfPOSTrackTasks;
+            while (ok != 0)
+            {
+
+                var currentPOSTrakTask = listOfPOSTrackTasks[TrackTaskIndex];
+
+                List<ulong> IDListOfInfraUsed = GetIDListOfInfraUsedByTrackTasks(currentPOSTrakTask);
+
+                // Identify all the conflicting POSTrackTask related to the infrastructure used by the POSTrakTask - and links POSTrackTasks
+                if (InfraConflictByTrackTasks(InfraOccupiedByTrackTaskID, IDListOfInfraUsed, ref conflictingTrackTaskIds) == false)
+                {
+                    // No conflict occured
+
+                    foreach (ulong infraID in IDListOfInfraUsed)
+                    {
+                        // Assign move to the infrastructure occupied
+                        InfraOccupiedByTrackTaskID[DictOfInfrastrucure[infraID]] = TrackTaskIndex;
+                    }
+
+                }
+                else
+                {
+                    // Contains all the movments that was assigned to the same movements as the train unit of the cuurent move (moveIndex)
+                    // this also mean that these movements are conflicting becasue of the same train used assigned to the movement
+                    // and not only because of the same infrastructure used
+                    List<int> trackTaskUsingSameTrainUnit = CheckIfSameTrainUintUsedByPOSTrackTask(conflictingTrackTaskIds, listOfPOSTrackTasks, TrackTaskIndex);
+
+
+                    // TODO from here:
+                    foreach (int trackTaskId in conflictingTrackTaskIds)
+                    {
+                   
+
+                        if (trackTaskUsingSameTrainUnit.Count != 0)
+                        {
+                            // This statement is used to link the movements conflicted because of using the same infrastrucure\
+                            // and not because of same train unit assigned per movement {aka dashed line dependency}
+                            if (!trackTaskUsingSameTrainUnit.Contains(trackTaskId))
+                                LinkMovmentsByID(MovementLinksSameInfrastructure, trackTaskId, TrackTaskIndex);
+
+                            // This statement is used to link the movements conflicted because of using the same train unit\
+                            // and not because of same infrastructure assigned per movement {aka solid line dependency}
+                            // if (movesUsingSameTrainUnit.Contains(MoveId))
+                            //     LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
+                        }
+                        else
+                        {
+                            LinkMovmentsByID(MovementLinksSameInfrastructure, trackTaskId, TrackTaskIndex);
+                        }
+
+                    }
+                }
+
+
+
+
+                TrackTaskIndex++;
+            }
+            // TODO: -------------------------------------------------------------------------------------------------------------------------------------------
+
 
         }
 
@@ -595,7 +711,7 @@ namespace ServiceSiteScheduling.Solutions
 
 
             int id = 0;
-            
+
             // Study all the POSMoveTasl moves
             foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> element in POSadjacencyList)
             {
@@ -669,7 +785,7 @@ namespace ServiceSiteScheduling.Solutions
 
                                 // More than 1 pedeccessor task means that the train units were combined
                                 if (previousTrackTasksOfSuccessor.Count > 1)
-                                    newTrackTask.setPOSTrackTaskType(POSTrackTaskType.Combine); 
+                                    newTrackTask.setPOSTrackTaskType(POSTrackTaskType.Combine);
                                 newTrackTask.nextMoves.Add(explicitSuccessor);
 
                             }
@@ -700,6 +816,7 @@ namespace ServiceSiteScheduling.Solutions
                                 if (previousTrackTaskOfSuccessor.Count > 1)
                                     newTrackTask.setPOSTrackTaskType(POSTrackTaskType.Combine);
                                 newTrackTask.nextMoves.Add(explicitSuccessor);
+
 
                             }
                             // if(nextTrackTask.Start == task.Start && nextTrackTask.End == task.End && nextTrackTask.Train == task.Train && )   
@@ -1251,6 +1368,53 @@ namespace ServiceSiteScheduling.Solutions
                 return movesUsingSameTrainUnit;
             }
         }
+
+
+        public List<int> CheckIfSameTrainUintUsedByPOSTrackTask(List<int> conflictingTrackTaskIds, List<POSTrackTask> listOfPOSTrackTasks, int TrackTaskIndex)
+        {
+
+            List<int> trackTasksUsingSameTrainUnit = new List<int>();
+            // TrackTaskIndex is the ID of the current POSTrackTask that has conflicting POSTrackTask: conflictingTrackTaskIds
+            // since they use the same infrastructure than the current POSTrackTask
+            POSTrackTask currentTrackTask = listOfPOSTrackTasks[TrackTaskIndex];
+
+            foreach (int trackTaskInConflictID in conflictingTrackTaskIds)
+            {
+                POSTrackTask taskInConflict = listOfPOSTrackTasks[trackTaskInConflictID];
+
+                // Train Units used in the track task in conflict
+                List<ShuntTrainUnit> trainUnitsOfConflictingTrackTask = taskInConflict.Train.Units;
+
+                List<ShuntTrainUnit> trainUintsOfCurrentTrackTask = currentTrackTask.Train.Units;
+
+                foreach (ShuntTrainUnit shuntTrainOfConflictingTrackTask in trainUnitsOfConflictingTrackTask)
+                {
+                    foreach (ShuntTrainUnit shuntTrainOfCurrentTrackTask in trainUintsOfCurrentTrackTask)
+                    {
+                        // if the one of the train units are the same, that means that there is a conflict in using
+                        // the same train unit between the conflicting track task by the same infrastructure used
+                        if (shuntTrainOfConflictingTrackTask.Index == shuntTrainOfCurrentTrackTask.Index)
+                        {
+                            trackTasksUsingSameTrainUnit.Add(trackTaskInConflictID);
+                        }
+                    }
+                }
+
+
+            }
+
+
+            if (trackTasksUsingSameTrainUnit.Count != 0)
+            {
+                // First the repeating IDs are removed
+                return trackTasksUsingSameTrainUnit.Distinct().ToList();
+            }
+            else
+            {
+                return trackTasksUsingSameTrainUnit;
+            }
+        }
+
 
         // Shows all the relations between the POS movements, meaning that
         // all kind of links per move are displayed - links by infrastructure
