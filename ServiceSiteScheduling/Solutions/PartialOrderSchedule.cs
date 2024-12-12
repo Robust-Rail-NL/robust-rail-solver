@@ -157,6 +157,19 @@ namespace ServiceSiteScheduling.Solutions
 
         }
 
+        // Returns list of the IDs of the train units used by a POSTrackTask (POSTrackTask)
+        public List<int> GetIDListOfTrainUnitUsedPOSTrackTask(POSTrackTask posTrackTask)
+        {
+            List<int> trainUnits = new List<int>();
+
+            foreach(ShuntTrainUnit trainUnit in posTrackTask.Train.Units)
+            {
+                trainUnits.Add(trainUnit.Index);
+            }
+
+            return trainUnits.Distinct().ToList();
+        }
+
         // Returns list of the IDs of the Infrastructure used by a POSTrackTask (POSTrackTask)
 
         public List<ulong> GetIDListOfInfraUsedByTrackTasks(POSTrackTask posTrackTask)
@@ -319,6 +332,39 @@ namespace ServiceSiteScheduling.Solutions
 
         }
 
+
+        // Returns true if the same train unit is used by previous POSTrackTask as the requireied in @IDListOfTrainUnitUsed
+        // @IDListOfTrainUnitUsed contains the train units of the current POSTrackTask
+        // @TrainUnitsOccupiedByTrackTaskID is a dictionary (Key:Value) contains all the train units (Key) and
+        // their appearance by a specific POSTrackTask (Value) - note: the POSTrackTasks are specified by their IDs
+        // @conflictingTrackTaskIds contains all the conflicting POSTrackTask, with the same train unit as the current POSTrackTask has
+        public bool TrainUnitConflictByPOSTrackTask(Dictionary<Trains.TrainUnit, int> TrainUnitsOccupiedByTrackTaskID, List<int> IDListOfTrainUnitUsed, ref List<int> conflictingTrackTaskIds)
+        {
+            List<Trains.TrainUnit> listOfTrainUnits = this.ListOfTrainUnits;
+
+            conflictingTrackTaskIds = new List<int>();
+
+            foreach (int id in IDListOfTrainUnitUsed)
+            {
+                if (TrainUnitsOccupiedByTrackTaskID[listOfTrainUnits[id]] == 999)
+                {
+
+                }
+                else
+                {
+                    if (conflictingTrackTaskIds.Contains(TrainUnitsOccupiedByTrackTaskID[listOfTrainUnits[id]]) == false)
+                    {
+                        conflictingTrackTaskIds.Add(TrainUnitsOccupiedByTrackTaskID[listOfTrainUnits[id]]);
+                    }
+                }
+            }
+            if (conflictingTrackTaskIds.Count != 0)
+                return true;
+
+            return false;
+
+        }
+
         // Links the previous move -@parentMovementID- this move was conflicting since it previously used the same infrastructure/train unit as the
         // the current move -@childMovementID-
         // @MovementLinks is a dictionary with move IDs as Key, and value as List of all the linked moves
@@ -337,7 +383,6 @@ namespace ServiceSiteScheduling.Solutions
         // Links the previous POSTrackTask -@parentPOSTrackTaskID- this POSTrackTask was conflicting since it previously used the same infrastructure/train unit
         // as the current POSTrackTask -@childPOSTrackTaskID-
         // @POSTrackTaskLinks is a dictionary with POSTrackTask IDs as Key, and value as List of all the linked POSTrackTasks
-    
         public void LinkTrackTaskByID(Dictionary<int, List<int>> POSTrackTaskLinks, int parentPOSTrackTaskID, int childPOSTrackTaskID)
         {
 
@@ -457,8 +502,27 @@ namespace ServiceSiteScheduling.Solutions
             Dictionary<ulong, Infrastructure> DictOfInfrastrucure = this.DictOfInrastructure;
 
 
-            // Init dictionary for infrastructures occupied by moves
+            // Dictionary with POSTrackTask IDs as Key, and value as List of linked POSTrackTask using the same train unit,
+            // in this dictionary a POSTrackTask is linked to another POSTrackTask (parent POSTrackTask) if and only if they used the same
+            // train unit aka dotted arcs (version 2) Task_i...> Task_j
+            Dictionary<int, List<int>> POSTrackTaskLinksSameInfrastructure = new Dictionary<int, List<int>>();
 
+
+            
+            // Dictionary with POSTrackTask IDs as Key, and value as List linked POSTrackTask using the same infrastructure,
+            // in this dictionary a POSTrackTask is linked to another POSTrackTask (parent POSTrackTask) if and only if they used the same
+            // infrastructure aka dotted arcs (version 1) Task_i...> Task_j
+            Dictionary<int, List<int>> POSTrackTaskLinksSameTrainUnits = new Dictionary<int, List<int>>();
+
+
+
+            // Dictionary with all train units, for each train unit a POSTrackTask ID is assigned, the IDs
+            // are used to access a POSTrackTask which is stored in 'this.ListOfPOSTrackTasks'
+            // the TrainUnitsOccupiedByPOSTrackTaskID is initialized with 999, meaning that there in no valid POSTrackTask ID
+            // assigned yet to given train unit
+            Dictionary<Trains.TrainUnit, int> TrainUnitsOccupiedByPOSTrackTaskID = new Dictionary<Trains.TrainUnit, int>();
+
+            // Init dictionary for infrastructures occupied by moves
             bool Test = true;
 
             // Initialize dictionaries
@@ -473,6 +537,7 @@ namespace ServiceSiteScheduling.Solutions
             foreach (Trains.TrainUnit train in ListOfTrainUnits)
             {
                 TrainUnitsOccupiedByMovesID[train] = 999;
+                TrainUnitsOccupiedByPOSTrackTaskID[train] = 999;
             }
 
 
@@ -658,15 +723,15 @@ namespace ServiceSiteScheduling.Solutions
 
                     foreach (ulong infraID in IDListOfInfraUsed)
                     {
-                        // Assign move to the infrastructure occupied
+                        // Assign POSTrackTask to the infrastructure occupied
                         InfraOccupiedByTrackTaskID[DictOfInfrastrucure[infraID]] = TrackTaskIndex;
                     }
 
                 }
                 else
                 {
-                    // Contains all the movments that was assigned to the same movements as the train unit of the cuurent move (moveIndex)
-                    // this also mean that these movements are conflicting becasue of the same train used assigned to the movement
+                    // Contains all the POSTrackTasks that was assigned to the same POSTrackTask as the train unit of the current POSTrackTask (TrackTaskIndex)
+                    // this also mean that these POSTrackTasks are conflicting becasue of the same train used (assigned to the POSTrackTask)
                     // and not only because of the same infrastructure used
                     List<int> trackTaskUsingSameTrainUnit = CheckIfSameTrainUintUsedByPOSTrackTask(conflictingTrackTaskIds, listOfPOSTrackTasks, TrackTaskIndex);
 
@@ -678,29 +743,95 @@ namespace ServiceSiteScheduling.Solutions
 
                         if (trackTaskUsingSameTrainUnit.Count != 0)
                         {
-                            // This statement is used to link the movements conflicted because of using the same infrastrucure\
-                            // and not because of same train unit assigned per movement {aka dashed line dependency}
+                            // This statement is used to link the POSTrackTasks conflicted because of using the same infrastrucure\
+                            // and not because of same train unit assigned per POSTrackTask {aka dashed line dependency}
                             if (!trackTaskUsingSameTrainUnit.Contains(trackTaskId))
-                                LinkMovmentsByID(MovementLinksSameInfrastructure, trackTaskId, TrackTaskIndex);
-
-                            // This statement is used to link the movements conflicted because of using the same train unit\
-                            // and not because of same infrastructure assigned per movement {aka solid line dependency}
-                            // if (movesUsingSameTrainUnit.Contains(MoveId))
-                            //     LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
+                                LinkTrackTaskByID(POSTrackTaskLinksSameInfrastructure, trackTaskId, TrackTaskIndex);
+                           
                         }
                         else
                         {
-                            LinkMovmentsByID(MovementLinksSameInfrastructure, trackTaskId, TrackTaskIndex);
+                            LinkTrackTaskByID(POSTrackTaskLinksSameInfrastructure, trackTaskId, TrackTaskIndex);
+
                         }
 
+                    }
+                    // 2nd Assign current POSTrackTask to the required infrastructure
+                    foreach (ulong infraID in IDListOfInfraUsed)
+                    {
+                        InfraOccupiedByTrackTaskID[DictOfInfrastrucure[infraID]] = TrackTaskIndex;
+                    }
+                }
+
+                 // Identify all the conflicting POSTrackTask related to the same train units used by the POSTrackTask - and link POSTrackTask
+
+                List<int> IDListOfTrainUnitUsed = GetIDListOfTrainUnitUsedPOSTrackTask(currentPOSTrakTask); // Train units used by the POSTrackTask
+
+                if (TrainUnitConflictByPOSTrackTask(TrainUnitsOccupiedByPOSTrackTaskID, IDListOfTrainUnitUsed, ref conflictingTrackTaskIds) == false)
+                {
+                    // No conflict occured. Here the POSTrackTasks are not linked
+                    foreach (int trainUnitID in IDListOfTrainUnitUsed)
+                    {
+                        // Assin the POSTrackTask to the Train Units used
+                        TrainUnitsOccupiedByPOSTrackTaskID[ListOfTrainUnits[trainUnitID]] = TrackTaskIndex;
+                    }
+                }
+                else
+                {
+                    // The conflicting POSTrackTasks are linked
+                    foreach (int TrackId in conflictingTrackTaskIds)
+                    {
+                        LinkTrackTaskByID(POSTrackTaskLinksSameTrainUnits, TrackId, TrackTaskIndex);
+
+                    }
+
+                    foreach (int trainUnitID in IDListOfTrainUnitUsed)
+                    {
+
+                        TrainUnitsOccupiedByPOSTrackTaskID[ListOfTrainUnits[trainUnitID]] = TrackTaskIndex;
                     }
                 }
 
 
 
-
                 TrackTaskIndex++;
+                if (TrackTaskIndex == listOfPOSTrackTasks.Count)
+                {
+                    ok = 0;
+               
+                  
+
+                }
             }
+
+            Console.WriteLine("-----------------------------------------------------------------------------------");
+            Console.WriteLine("|            From POSTrackTask inner Links (same Infrastructure used)              |");
+            Console.WriteLine("-----------------------------------------------------------------------------------");
+
+            foreach(KeyValuePair<int, List<int>> pair in POSTrackTaskLinksSameInfrastructure.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value))
+            {
+                Console.Write($"POSTrackTask {pair.Key} --> ");
+                foreach(int linkToPOStrackTask in pair.Value)
+                {
+                    Console.Write($"POSTrackTask {linkToPOStrackTask} ");
+                }
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("-----------------------------------------------------------------------------------");
+            Console.WriteLine("|              From POSTrackTask inner Links (same Train Unit used)                |");
+            Console.WriteLine("-----------------------------------------------------------------------------------");
+
+            foreach(KeyValuePair<int, List<int>> pair in POSTrackTaskLinksSameTrainUnits.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value))
+            {
+                Console.Write($"POSTrackTask {pair.Key} --> ");
+                foreach(int linkToPOStrackTask in pair.Value)
+                {
+                    Console.Write($"POSTrackTask {linkToPOStrackTask} ");
+                }
+                Console.WriteLine();
+            }
+
             // TODO: -------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -856,9 +987,9 @@ namespace ServiceSiteScheduling.Solutions
         // Displays the all POSTrackTask list identified in the POS solution
         public void DisplayListPOSTrackTracks()
         {
-            Console.WriteLine("-----------------------------------------------------");
-            Console.WriteLine("|            From POS TrackTask Links               |");
-            Console.WriteLine("-----------------------------------------------------");
+            Console.WriteLine("-----------------------------------------------------------------");
+            Console.WriteLine("|            From POS TrackTask Links with POSMoves              |");
+            Console.WriteLine("-----------------------------------------------------------------");
 
             List<POSTrackTask> listPOSTrackTask = this.ListOfPOSTrackTasks;
 
