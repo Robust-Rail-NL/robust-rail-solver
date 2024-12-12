@@ -260,7 +260,7 @@ namespace ServiceSiteScheduling.Solutions
         // @IDListOfInfraUsed contains the infrastructure the current move will use
         // @InfraOccupiedByMovesID is a dictionary (Key:Value) contains all the infrastructures (Key) and
         // their occupation by a specific move (Value) - note: the moves are specified by their IDs
-        // @conflictingMoveIds contains all the conflicting moves, that use the same infrastrucure tas the current move requires to occupy
+        // @conflictingMoveIds contains all the conflicting moves, that use the same infrastrucure the current move requires to occupy
         public bool InfraConflict(Dictionary<Infrastructure, int> InfraOccupiedByMovesID, List<ulong> IDListOfInfraUsed, int moveID, ref List<int> conflictingMoveIds)
         {
 
@@ -331,6 +331,21 @@ namespace ServiceSiteScheduling.Solutions
 
             }
             MovementLinks[parentMovementID].Add(childMovementID);
+        }
+
+
+        // Links the previous POSTrackTask -@parentPOSTrackTaskID- this POSTrackTask was conflicting since it previously used the same infrastructure as the
+        // the current POSTrackTask -@childPOSTrackTaskID-
+        // @POSTrackTaskLinks is a dictionary with POSTrackTask IDs as Key, and value as List of all the linked POSTrackTask when using the same infrastructure
+        public void LinkTrackTaskByID(Dictionary<int, List<int>> POSTrackTaskLinks, int parentPOSTrackTaskID, int childPOSTrackTaskID)
+        {
+
+            if (!POSTrackTaskLinks.ContainsKey(parentPOSTrackTaskID))
+            {
+                POSTrackTaskLinks[parentPOSTrackTaskID] = new List<int>();
+
+            }
+            POSTrackTaskLinks[parentPOSTrackTaskID].Add(childPOSTrackTaskID);
         }
 
 
