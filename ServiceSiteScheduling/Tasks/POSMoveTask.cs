@@ -73,7 +73,7 @@ namespace ServiceSiteScheduling.Tasks
         public override string ToString()
         {
             string str = "POSMove " + this.ID + ":\n";
-            str = str + "Links by same Train Unit used :\n";
+            str = str + "Movement Links by same Train Unit used :\n";
             str = str + "|Direct successors: [";
 
             foreach(POSMoveTask successor in SuccessorMovesByTrainUnits)
@@ -89,8 +89,7 @@ namespace ServiceSiteScheduling.Tasks
             }
             str = str + "]\n";
 
-
-            str = str + "Links by same Infrastructure used :\n";
+            str = str + "Movement Links by same Infrastructure used :\n";
             str = str + "|Direct successors: [";
 
             foreach(POSMoveTask successor in SuccessorMovesByInfrastructure)
@@ -102,6 +101,22 @@ namespace ServiceSiteScheduling.Tasks
             foreach(POSMoveTask predeccessor in PredecessorMovesByInfrastructure)
             {
                 str = str + "Move " + predeccessor.ID + ", ";
+
+            }
+            str = str + "]\n";
+
+            str = str + "Track Task Links :\n";
+            str = str + "|Direct successors: [";
+
+            foreach(POSTrackTask successor in SuccessorTrackTasks)
+            {
+                str = str + "Track Task " + successor.ID + " , ";
+            }
+            str = str + "]\n|Direct predeccessors|: [";
+
+            foreach(POSTrackTask predeccessor in PredecessorTrackTasks)
+            {
+                str = str + "Track Task " + predeccessor.ID + ", ";
 
             }
             str = str + "]\n";
