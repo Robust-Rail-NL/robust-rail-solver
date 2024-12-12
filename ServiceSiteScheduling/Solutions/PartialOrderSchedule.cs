@@ -319,7 +319,7 @@ namespace ServiceSiteScheduling.Solutions
 
         }
 
-        // Links the previous move -@parentMovementID- this move was conflicting since it previously used the same infrastructure as the
+        // Links the previous move -@parentMovementID- this move was conflicting since it previously used the same infrastructure/train unit as the
         // the current move -@childMovementID-
         // @MovementLinks is a dictionary with move IDs as Key, and value as List of all the linked moves
         public void LinkMovmentsByID(Dictionary<int, List<int>> MovementLinks, int parentMovementID, int childMovementID)
@@ -334,9 +334,10 @@ namespace ServiceSiteScheduling.Solutions
         }
 
 
-        // Links the previous POSTrackTask -@parentPOSTrackTaskID- this POSTrackTask was conflicting since it previously used the same infrastructure as the
-        // the current POSTrackTask -@childPOSTrackTaskID-
-        // @POSTrackTaskLinks is a dictionary with POSTrackTask IDs as Key, and value as List of all the linked POSTrackTask when using the same infrastructure
+        // Links the previous POSTrackTask -@parentPOSTrackTaskID- this POSTrackTask was conflicting since it previously used the same infrastructure/train unit
+        // as the current POSTrackTask -@childPOSTrackTaskID-
+        // @POSTrackTaskLinks is a dictionary with POSTrackTask IDs as Key, and value as List of all the linked POSTrackTasks
+    
         public void LinkTrackTaskByID(Dictionary<int, List<int>> POSTrackTaskLinks, int parentPOSTrackTaskID, int childPOSTrackTaskID)
         {
 
