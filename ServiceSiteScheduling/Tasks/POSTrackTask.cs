@@ -27,6 +27,13 @@ namespace ServiceSiteScheduling.Tasks
 
         public TrackParts.Track Track { get; set; }
 
+        public List<POSTrackTask> SuccessorTrackTaskByTrainUnits { get; set; }
+
+        public List<POSTrackTask> PredecessorTrackTaskByTrainUnits { get; set; }
+
+        public List<POSTrackTask> SuccessorTrackTaskByInfrastructure { get; set; }
+
+        public List<POSTrackTask> PredecessorTrackTaskByInfrastructure { get; set; }
 
 
 
@@ -67,6 +74,36 @@ namespace ServiceSiteScheduling.Tasks
 
             this.Track = correspondingTrackTask.Track;
 
+
+            this.SuccessorTrackTaskByTrainUnits = new List<POSTrackTask>();
+
+            this.PredecessorTrackTaskByTrainUnits = new List<POSTrackTask>();
+
+            this.SuccessorTrackTaskByInfrastructure = new List<POSTrackTask>();
+
+            this.PredecessorTrackTaskByInfrastructure = new List<POSTrackTask>();
+
+        }
+
+
+        public void AddNewSuccessorByTrainUnits(POSTrackTask successor)
+        {
+            this.SuccessorTrackTaskByTrainUnits.Add(successor);
+        }
+
+        public void AddNewPredecessorByTrainUnits(POSTrackTask predeccessor)
+        {
+            this.PredecessorTrackTaskByTrainUnits.Add(predeccessor);
+        }
+
+        public void AddNewSuccessorByInfrastructure(POSTrackTask successor)
+        {
+            this.SuccessorTrackTaskByInfrastructure.Add(successor);
+        }
+
+        public void AddNewPredeccessorByInfrastructure(POSTrackTask predeccessor)
+        {
+            this.PredecessorTrackTaskByInfrastructure.Add(predeccessor);
         }
 
         public void setPOSTrackTaskType(POSTrackTaskType POSTrackTaskType)
@@ -102,7 +139,7 @@ namespace ServiceSiteScheduling.Tasks
                     POStype = "Split";
                     break;
 
-                 case POSTrackTaskType.Combine:
+                case POSTrackTaskType.Combine:
                     POStype = "Combine";
                     break;
                 // Default value
