@@ -85,7 +85,7 @@ namespace ServiceSiteScheduling.Tasks
 
         }
 
-          public void displayLinksByInfrastructure()
+        public void displayLinksByInfrastructure()
         {
             Console.Write($"POSTrackTask {this.ID}\n");
             Console.Write("|  Direct Sucessors | ");
@@ -96,7 +96,7 @@ namespace ServiceSiteScheduling.Tasks
                 Console.Write($"POSTrackTask {item.ID}, ");
             }
             Console.WriteLine(" ]");
-            
+
             Console.Write("|  Direct Predeccessors | ");
             Console.Write("[ ");
 
@@ -119,7 +119,7 @@ namespace ServiceSiteScheduling.Tasks
                 Console.Write($"POSTrackTask {item.ID}, ");
             }
             Console.WriteLine(" ]");
-            
+
             Console.Write("|  Direct Predeccessors | ");
             Console.Write("[ ");
 
@@ -130,6 +130,48 @@ namespace ServiceSiteScheduling.Tasks
             Console.WriteLine(" ]\n");
 
         }
+
+        public string GetInfoLinksByTrainUnits()
+        {
+            string str = "";
+            str = str + "TrackTask Links by same Train Unit used :\n";
+            str = str + "|Direct successors|: [";
+            foreach (POSTrackTask item in SuccessorTrackTaskByInfrastructure)
+            {
+                str = str + "POSTrackTask " + item.ID + ", ";
+            }
+            str = str + "]\n|Direct predeccessors|: [";
+
+            foreach (POSTrackTask item in PredecessorTrackTaskByInfrastructure)
+            {
+                str = str + "POSTrackTask " + item.ID + ", ";
+            }
+
+            str = str + "]\n";
+            return str;
+        }
+
+          public string GetInfoLinksByInfrastructure()
+        {
+            string str = "";
+            str = str + "TrackTask Links by same Infrastructure used :\n";
+            str = str + "|Direct successors: [";
+            foreach (POSTrackTask item in SuccessorTrackTaskByTrainUnits)
+            {
+                str = str + "POSTrackTask " + item.ID + ", ";
+            }
+            str = str + "]\n|Direct predeccessors|: [";
+
+            foreach (POSTrackTask item in PredecessorTrackTaskByTrainUnits)
+            {
+                str = str + "POSTrackTask " + item.ID + ", ";
+            }
+
+            str = str + "]\n";
+            return str;
+        }
+
+
         public void AddNewSuccessorByTrainUnits(POSTrackTask successor)
         {
             this.SuccessorTrackTaskByTrainUnits.Add(successor);
