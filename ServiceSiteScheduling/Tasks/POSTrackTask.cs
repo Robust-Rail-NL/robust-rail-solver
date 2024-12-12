@@ -85,7 +85,51 @@ namespace ServiceSiteScheduling.Tasks
 
         }
 
+          public void displayLinksByInfrastructure()
+        {
+            Console.Write($"POSTrackTask {this.ID}\n");
+            Console.Write("|  Direct Sucessors | ");
+            Console.Write("[ ");
 
+            foreach (POSTrackTask item in SuccessorTrackTaskByInfrastructure)
+            {
+                Console.Write($"POSTrackTask {item.ID}, ");
+            }
+            Console.WriteLine(" ]");
+            
+            Console.Write("|  Direct Predeccessors | ");
+            Console.Write("[ ");
+
+            foreach (POSTrackTask item in PredecessorTrackTaskByInfrastructure)
+            {
+                Console.Write($"POSTrackTask {item.ID}, ");
+            }
+            Console.WriteLine(" ]\n");
+
+        }
+
+        public void displayLinksByTrainUnits()
+        {
+            Console.Write($"POSTrackTask {this.ID}\n");
+            Console.Write("|  Direct Sucessors | ");
+            Console.Write("[ ");
+
+            foreach (POSTrackTask item in SuccessorTrackTaskByTrainUnits)
+            {
+                Console.Write($"POSTrackTask {item.ID}, ");
+            }
+            Console.WriteLine(" ]");
+            
+            Console.Write("|  Direct Predeccessors | ");
+            Console.Write("[ ");
+
+            foreach (POSTrackTask item in PredecessorTrackTaskByTrainUnits)
+            {
+                Console.Write($"POSTrackTask {item.ID}, ");
+            }
+            Console.WriteLine(" ]\n");
+
+        }
         public void AddNewSuccessorByTrainUnits(POSTrackTask successor)
         {
             this.SuccessorTrackTaskByTrainUnits.Add(successor);
