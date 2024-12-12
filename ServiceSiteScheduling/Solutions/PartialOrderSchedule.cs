@@ -48,11 +48,11 @@ namespace ServiceSiteScheduling.Solutions
 
         // This is the Adjacency List for POS TrackTask using the same Train Unit: Each POSTrackTask maps to a list of connected POSTrackTask
         // (dotted arcs links)
-        public Dictionary<POSTrackTask, List<POSTrackTask>> POSTrackTaskadjacencyListForTrainUsed {get; set;}
+        public Dictionary<POSTrackTask, List<POSTrackTask>> POSTrackTaskadjacencyListForTrainUsed { get; set; }
 
         // This is the Adjacency List for POS TrackTask using the same Infrastructure: Each POSTrackTask maps to a list of connected POSTrackTask
         // (dotted arcs links)
-        public Dictionary<POSTrackTask, List<POSTrackTask>> POSTrackTaskadjacencyListForInfrastructure {get; set;}
+        public Dictionary<POSTrackTask, List<POSTrackTask>> POSTrackTaskadjacencyListForInfrastructure { get; set; }
 
 
 
@@ -172,7 +172,7 @@ namespace ServiceSiteScheduling.Solutions
         {
             List<int> trainUnits = new List<int>();
 
-            foreach(ShuntTrainUnit trainUnit in posTrackTask.Train.Units)
+            foreach (ShuntTrainUnit trainUnit in posTrackTask.Train.Units)
             {
                 trainUnits.Add(trainUnit.Index);
             }
@@ -518,7 +518,7 @@ namespace ServiceSiteScheduling.Solutions
             Dictionary<int, List<int>> POSTrackTaskLinksSameInfrastructure = new Dictionary<int, List<int>>();
 
 
-            
+
             // Dictionary with POSTrackTask IDs as Key, and value as List linked POSTrackTask using the same infrastructure,
             // in this dictionary a POSTrackTask is linked to another POSTrackTask (parent POSTrackTask) if and only if they used the same
             // infrastructure aka dotted arcs (version 1) Task_i...> Task_j
@@ -748,7 +748,7 @@ namespace ServiceSiteScheduling.Solutions
                     // TODO from here:
                     foreach (int trackTaskId in conflictingTrackTaskIds)
                     {
-                   
+
 
                         if (trackTaskUsingSameTrainUnit.Count != 0)
                         {
@@ -756,7 +756,7 @@ namespace ServiceSiteScheduling.Solutions
                             // and not because of same train unit assigned per POSTrackTask {aka dashed line dependency}
                             if (!trackTaskUsingSameTrainUnit.Contains(trackTaskId))
                                 LinkTrackTaskByID(POSTrackTaskLinksSameInfrastructure, trackTaskId, TrackTaskIndex);
-                           
+
                         }
                         else
                         {
@@ -772,7 +772,7 @@ namespace ServiceSiteScheduling.Solutions
                     }
                 }
 
-                 // Identify all the conflicting POSTrackTask related to the same train units used by the POSTrackTask - and link POSTrackTask
+                // Identify all the conflicting POSTrackTask related to the same train units used by the POSTrackTask - and link POSTrackTask
 
                 List<int> IDListOfTrainUnitUsed = GetIDListOfTrainUnitUsedPOSTrackTask(currentPOSTrakTask); // Train units used by the POSTrackTask
 
@@ -807,8 +807,8 @@ namespace ServiceSiteScheduling.Solutions
                 if (TrackTaskIndex == listOfPOSTrackTasks.Count)
                 {
                     ok = 0;
-               
-                  
+
+
 
                 }
             }
@@ -817,10 +817,10 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("|            From POSTrackTask inner Links (same Infrastructure used)              |");
             Console.WriteLine("-----------------------------------------------------------------------------------");
 
-            foreach(KeyValuePair<int, List<int>> pair in POSTrackTaskLinksSameInfrastructure.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value))
+            foreach (KeyValuePair<int, List<int>> pair in POSTrackTaskLinksSameInfrastructure.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value))
             {
                 Console.Write($"POSTrackTask {pair.Key} --> ");
-                foreach(int linkToPOStrackTask in pair.Value)
+                foreach (int linkToPOStrackTask in pair.Value)
                 {
                     Console.Write($"POSTrackTask {linkToPOStrackTask} ");
                 }
@@ -831,10 +831,10 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("|              From POSTrackTask inner Links (same Train Unit used)                |");
             Console.WriteLine("-----------------------------------------------------------------------------------");
 
-            foreach(KeyValuePair<int, List<int>> pair in POSTrackTaskLinksSameTrainUnits.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value))
+            foreach (KeyValuePair<int, List<int>> pair in POSTrackTaskLinksSameTrainUnits.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value))
             {
                 Console.Write($"POSTrackTask {pair.Key} --> ");
-                foreach(int linkToPOStrackTask in pair.Value)
+                foreach (int linkToPOStrackTask in pair.Value)
                 {
                     Console.Write($"POSTrackTask {linkToPOStrackTask} ");
                 }
@@ -847,10 +847,10 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("|              From POSTrackTask inner Links (same Train Unit used) - AdjacencyList            |");
             Console.WriteLine("-----------------------------------------------------------------------------------------------");
 
-            foreach(KeyValuePair<POSTrackTask, List<POSTrackTask>> Ttask in this.POSTrackTaskadjacencyListForTrainUsed)
+            foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> Ttask in this.POSTrackTaskadjacencyListForTrainUsed)
             {
                 Console.Write($"POSTrackTask {Ttask.Key.ID} --> ");
-                foreach(POSTrackTask linkToPOStrackTask in Ttask.Value)
+                foreach (POSTrackTask linkToPOStrackTask in Ttask.Value)
                 {
                     Console.Write($"POSTrackTask {linkToPOStrackTask.ID} ");
                 }
@@ -865,10 +865,10 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("|              From POSTrackTask inner Links (same Infrastructure used) - AdjacencyList            |");
             Console.WriteLine("--------------------------------------------------------------------------------------------------");
 
-            foreach(KeyValuePair<POSTrackTask, List<POSTrackTask>> Ttask in this.POSTrackTaskadjacencyListForInfrastructure)
+            foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> Ttask in this.POSTrackTaskadjacencyListForInfrastructure)
             {
                 Console.Write($"POSTrackTask {Ttask.Key.ID} --> ");
-                foreach(POSTrackTask linkToPOStrackTask in Ttask.Value)
+                foreach (POSTrackTask linkToPOStrackTask in Ttask.Value)
                 {
                     Console.Write($"POSTrackTask {linkToPOStrackTask.ID} ");
                 }
@@ -886,7 +886,7 @@ namespace ServiceSiteScheduling.Solutions
                 item.displayLinksByTrainUnits();
             }
             DisplayMovesSuccessorsAndPredeccessors();
-
+            ShowAllInfoAboutMove(7);
         }
 
         // Creates a list of POSTrackkTasks. POSTrackTasks are created by using the TrackTasks embedded between 
@@ -1138,7 +1138,7 @@ namespace ServiceSiteScheduling.Solutions
 
             foreach (POSTrackTask POStrackTask in listOfPOSTrackTasks)
             {
-                
+
                 foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> elementInfra in posAdjacencyListForInfrastructure)
                 {
                     POSTrackTask POStrackTaskInfra = elementInfra.Key;
@@ -1349,7 +1349,7 @@ namespace ServiceSiteScheduling.Solutions
 
         //     }
         // }
-        
+
 
         public POSMoveTask GetPOSMoveTaskByID(int ID, Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList)
         {
@@ -1384,7 +1384,7 @@ namespace ServiceSiteScheduling.Solutions
         }
 
 
-         public List<POSTrackTask> GetTrackTaskPredecessors(POSTrackTask POStrackTask, Dictionary<POSTrackTask, List<POSTrackTask>> POSadjacencyList)
+        public List<POSTrackTask> GetTrackTaskPredecessors(POSTrackTask POStrackTask, Dictionary<POSTrackTask, List<POSTrackTask>> POSadjacencyList)
         {
             List<POSTrackTask> PredecessorsOfPOStrackTask = new List<POSTrackTask>();
 
@@ -1405,6 +1405,17 @@ namespace ServiceSiteScheduling.Solutions
             return PredecessorsOfPOStrackTask;
         }
 
+        public void ShowAllInfoAboutMove(int moveID)
+        {
+            Console.WriteLine("------------------------------------------------------------");
+            Console.WriteLine($"|         All information about- move id : {moveID}        |");
+            Console.WriteLine("------------------------------------------------------------");
+            foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> item in this.POSadjacencyList)
+            {
+                if(item.Key.ID == moveID)
+                    Console.Write(item.Key);
+            }
+        }
         // Displays all the direct sucessors and predecessors of a given POS move
         // the move is identified by its ID (POSMoveTask POSmove.ID)
         // @linkType specifies the type of the links 'infrastructure' - same inrastructure used - populated from @POSadjacencyListForInfrastructure
@@ -1737,7 +1748,7 @@ namespace ServiceSiteScheduling.Solutions
 
             List<POSMoveTask> POSMoveList = new List<POSMoveTask>();
 
-        
+
             int id = 0;
             foreach (MoveTask moveTask in listOfMoves)
             {
@@ -1779,7 +1790,7 @@ namespace ServiceSiteScheduling.Solutions
             // Order Dictionary
             var orderedPOStrackTaskLinks = POSTrackTaskLinks.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
 
-            
+
 
             foreach (POSTrackTask trackTask in listOfPOSTrackTasks)
             {
