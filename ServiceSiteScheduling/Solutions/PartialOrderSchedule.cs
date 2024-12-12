@@ -706,7 +706,6 @@ namespace ServiceSiteScheduling.Solutions
             DisplayPOSMovementLinksInfrastructureUsed();
             DisplayPOSMovementLinksTrainUinitUsed();
             // DisplayTrainUnitSuccessorsAndPredeccessors();
-            DisplayMovesSuccessorsAndPredeccessors();
 
             this.ListOfPOSTrackTasks = CreatePOSTrackTaskList();
             DisplayListPOSTrackTracks();
@@ -875,6 +874,18 @@ namespace ServiceSiteScheduling.Solutions
                 }
                 Console.WriteLine();
             }
+
+            AddSuccessorsAndPredeccessorsPOSTrackTasks();
+
+            Console.WriteLine("----------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine("|  From POSTrackTask inner Links (same train unit used) - AdjacencyList  - AddSuccessorsAndPredeccessorsPOSTrackTasks |");
+            Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------");
+
+            foreach (POSTrackTask item in this.ListOfPOSTrackTasks)
+            {
+                item.displayLinksByTrainUnits();
+            }
+            DisplayMovesSuccessorsAndPredeccessors();
 
         }
 
@@ -1116,6 +1127,65 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
+
+        public void AddSuccessorsAndPredeccessorsPOSTrackTasks()
+        {
+
+            List<POSTrackTask> listOfPOSTrackTasks = this.ListOfPOSTrackTasks;
+
+            Dictionary<POSTrackTask, List<POSTrackTask>> posAdjacencyListForInfrastructure = this.POSTrackTaskadjacencyListForInfrastructure;
+            Dictionary<POSTrackTask, List<POSTrackTask>> posAdjacencyListForTrainUint = this.POSTrackTaskadjacencyListForTrainUsed;
+
+            foreach (POSTrackTask POStrackTask in listOfPOSTrackTasks)
+            {
+                
+                foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> elementInfra in posAdjacencyListForInfrastructure)
+                {
+                    POSTrackTask POStrackTaskInfra = elementInfra.Key;
+
+                    if (POStrackTask.ID == POStrackTaskInfra.ID)
+                    {
+                        List<POSTrackTask> Successors = elementInfra.Value;
+                        foreach (POSTrackTask successor in Successors)
+                        {
+                            POStrackTask.AddNewSuccessorByInfrastructure(successor);
+                        }
+
+                        List<POSTrackTask> Predeccessors = GetTrackTaskPredecessors(POStrackTaskInfra, posAdjacencyListForInfrastructure);
+                        foreach (POSTrackTask predeccessor in Predeccessors)
+                        {
+                            POStrackTask.AddNewPredeccessorByInfrastructure(predeccessor);
+                        }
+                    }
+                }
+
+                foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> elementTruinUnit in posAdjacencyListForTrainUint)
+                {
+                    POSTrackTask POStrackTaskTrainUint = elementTruinUnit.Key;
+
+                    if (POStrackTask.ID == POStrackTaskTrainUint.ID)
+                    {
+                        List<POSTrackTask> Successors = elementTruinUnit.Value;
+                        foreach (POSTrackTask successor in Successors)
+                        {
+                            POStrackTask.AddNewSuccessorByTrainUnits(successor);
+                        }
+
+                        List<POSTrackTask> Predeccessors = GetTrackTaskPredecessors(POStrackTaskTrainUint, posAdjacencyListForTrainUint);
+
+                        foreach (POSTrackTask predeccessor in Predeccessors)
+                        {
+                            POStrackTask.AddNewPredecessorByTrainUnits(predeccessor);
+
+                        }
+
+                    }
+                }
+
+
+
+            }
+        }
         // Takes all the POSMove linked when using the same infrastructure - POSadjacencyListForInfrastructure 
         // and assigns the POSMove successors and predeccessors to the POSMove taken. This function is very useful, since it adds new link information to the POSMoves used
         // in the Partial Order Schedule graph
@@ -1279,6 +1349,8 @@ namespace ServiceSiteScheduling.Solutions
 
         //     }
         // }
+        
+
         public POSMoveTask GetPOSMoveTaskByID(int ID, Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList)
         {
 
@@ -1309,6 +1381,28 @@ namespace ServiceSiteScheduling.Solutions
                 return PredecessorsOfPOSMove.OrderBy(element => element.ID).ToList();
             }
             return PredecessorsOfPOSMove;
+        }
+
+
+         public List<POSTrackTask> GetTrackTaskPredecessors(POSTrackTask POStrackTask, Dictionary<POSTrackTask, List<POSTrackTask>> POSadjacencyList)
+        {
+            List<POSTrackTask> PredecessorsOfPOStrackTask = new List<POSTrackTask>();
+
+            foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> pair in POSadjacencyList)
+            {
+                foreach (POSTrackTask trackTask in pair.Value)
+                {
+                    if (trackTask.ID == POStrackTask.ID)
+                        PredecessorsOfPOStrackTask.Add(pair.Key);
+                }
+
+            }
+
+            if (PredecessorsOfPOStrackTask.Count > 1)
+            {
+                return PredecessorsOfPOStrackTask.OrderBy(element => element.ID).ToList();
+            }
+            return PredecessorsOfPOStrackTask;
         }
 
         // Displays all the direct sucessors and predecessors of a given POS move
