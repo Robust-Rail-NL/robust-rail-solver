@@ -195,10 +195,11 @@ namespace ServiceSiteScheduling.Solutions
                 move = move.NextMove;
             }
             PartialOrderSchedule POS = new PartialOrderSchedule(start);
-            POS.CreatePOS(start);
-            POS.UpdatePOS();
+            POS.InitializePOS();
+            POS.CreatePOS();
             POS.DisplayInfrastructure();
             POS.DisplayMovements();
+            POS.DisplayMoveLinksOfPOSMove(24, "trainUint");
         
         }
 
@@ -1049,3 +1050,100 @@ namespace ServiceSiteScheduling.Solutions
         }
     }
 }
+
+
+// // Identify all the conflicting moves related to the infrastructure used by the movements - and link moves
+//                 if (InfraConflict(InfraOccupiedByMovesID, IDListOfInfraUsed, moveIndex, ref conflictingMoveIds) == false)
+//                 {
+//                     // No conflict occured
+
+//                     foreach (ulong infraID in IDListOfInfraUsed)
+//                     {
+//                         // Assign move to the infrastructure occupied
+//                         InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
+//                         InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
+//                     }
+
+//                 }
+//                 else
+//                 {
+
+//                     // Contains all the movments that was assigned to the same movements as the train unit of the cuurent move (moveIndex)
+//                     // this also mean that these movements are conflicting becasue of the same train used assigned to the movement
+//                     // and not only because of the same infrastructure used
+//                     List<int> movesUsingSameTrainUnit = CheckIfSameTrainUintUsed(conflictingMoveIds, listOfMoves, moveIndex);
+
+//                     foreach (int MoveId in conflictingMoveIds)
+//                     {
+//                         // 1st: link movements -> conflictingMoveId is now linked with the moveIndex (current move id)
+//                         LinkMovmentsByID(MovementLinks, MoveId, moveIndex);
+
+
+//                         if (movesUsingSameTrainUnit.Count != 0)
+//                         {
+//                             // This statement is used to link the movements conflicted because of using the same infrastrucure\
+//                             // and not because of same train unit assigned per movement {aka dashed line dependency}
+//                             if (!movesUsingSameTrainUnit.Contains(MoveId))
+//                                 LinkMovmentsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
+
+//                             // This statement is used to link the movements conflicted because of using the same train unit\
+//                             // and not because of same infrastructure assigned per movement {aka solid line dependency}
+//                             // if (movesUsingSameTrainUnit.Contains(MoveId))
+//                             //     LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
+//                         }
+//                         else
+//                         {
+//                             LinkMovmentsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
+//                         }
+
+//                     }
+//                     // 2nd Assign current movement to the required infrastructure
+//                     foreach (ulong infraID in IDListOfInfraUsed)
+//                     {
+//                         InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
+//                         InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
+//                     }
+
+
+
+//                 }
+            //     List<int> IDListOfTrainUnitUsed = GetIDListOfTrainUnitsUsed(currentMove); // Train units used by the movement
+
+            //     if (TrainUnitConflict(TrainUnitsOccupiedByMovesID, IDListOfTrainUnitUsed, ref conflictingMoveIds) == false)
+            //     {
+            //         // No conflict occured. Here the moves are not linked
+            //         foreach (int trainUnitID in IDListOfTrainUnitUsed)
+            //         {
+            //             // Assin the move to the Train Units used
+            //             TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
+            //         }
+            //     }
+            //     else
+            //     {
+            //         // The conflicting moves are linked
+            //         foreach (int MoveId in conflictingMoveIds)
+            //         {
+            //             LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
+
+            //         }
+
+            //         foreach (int trainUnitID in IDListOfTrainUnitUsed)
+            //         {
+
+            //             TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
+            //         }
+            //     }
+
+            //     moveIndex++;
+            //     if (moveIndex == listOfMoves.Count)
+            //     {
+            //         ok = 0;
+            //         // The last movement is not linked, it contains an empty list
+            //         MovementLinks.Add(moveIndex - 1, new List<int>());
+
+
+            //         MovementLinksSameInfrastructure.Add(moveIndex - 1, new List<int>());
+            //         MovementLinksSameTrainUnit.Add(moveIndex - 1, new List<int>());
+
+            //     }
+            // }
