@@ -36,6 +36,10 @@ namespace ServiceSiteScheduling.Solutions
 
         private bool[][] FreeServiceTaskFinished;
 
+        public PartialOrderSchedule POS { get; set; }
+
+        public int testIndex {get; set;}
+
         public PlanGraph(TrainMatching matching, RoutingGraph graph, ShuntTrainUnit[] shuntunits, ArrivalTask[] arrivals, DepartureTask[] departures)
         {
             this.RoutingGraph = graph;
@@ -69,6 +73,8 @@ namespace ServiceSiteScheduling.Solutions
             this.FreeServiceTaskFinished = new bool[ProblemInstance.Current.TrainUnits.Length][];
             for (int i = 0; i < ProblemInstance.Current.TrainUnits.Length; i++)
                 this.FreeServiceTaskFinished[i] = new bool[ProblemInstance.Current.FreeServices[i].Length];
+        
+            this.testIndex = 0;
         }
 
         public void UpdateRoutingOrder()
@@ -194,13 +200,29 @@ namespace ServiceSiteScheduling.Solutions
 
                 move = move.NextMove;
             }
-            PartialOrderSchedule POS = new PartialOrderSchedule(start);
-            POS.InitializePOS();
-            POS.CreatePOS();
-            POS.DisplayInfrastructure();
-            POS.DisplayMovements();
-            POS.DisplayMoveLinksOfPOSMove(24, "trainUint");
-        
+
+            if (this.POS == null)
+            {
+                POS = new PartialOrderSchedule(start);
+                POS.InitializePOS();
+                POS.CreatePOS();
+                POS.DisplayInfrastructure();
+                POS.DisplayMovements();
+                POS.DisplayMoveLinksOfPOSMove(24, "trainUint");
+            }
+            else
+            {
+                // TODO UpdatePOS() will be here
+                
+                if(this.testIndex == 100)
+                {
+                    Console.WriteLine($"Iteration: {this.testIndex}");
+                }
+                this.testIndex++;
+
+            }
+
+
         }
 
 
@@ -1107,43 +1129,43 @@ namespace ServiceSiteScheduling.Solutions
 
 
 //                 }
-            //     List<int> IDListOfTrainUnitUsed = GetIDListOfTrainUnitsUsed(currentMove); // Train units used by the movement
+//     List<int> IDListOfTrainUnitUsed = GetIDListOfTrainUnitsUsed(currentMove); // Train units used by the movement
 
-            //     if (TrainUnitConflict(TrainUnitsOccupiedByMovesID, IDListOfTrainUnitUsed, ref conflictingMoveIds) == false)
-            //     {
-            //         // No conflict occured. Here the moves are not linked
-            //         foreach (int trainUnitID in IDListOfTrainUnitUsed)
-            //         {
-            //             // Assin the move to the Train Units used
-            //             TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
-            //         }
-            //     }
-            //     else
-            //     {
-            //         // The conflicting moves are linked
-            //         foreach (int MoveId in conflictingMoveIds)
-            //         {
-            //             LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
+//     if (TrainUnitConflict(TrainUnitsOccupiedByMovesID, IDListOfTrainUnitUsed, ref conflictingMoveIds) == false)
+//     {
+//         // No conflict occured. Here the moves are not linked
+//         foreach (int trainUnitID in IDListOfTrainUnitUsed)
+//         {
+//             // Assin the move to the Train Units used
+//             TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
+//         }
+//     }
+//     else
+//     {
+//         // The conflicting moves are linked
+//         foreach (int MoveId in conflictingMoveIds)
+//         {
+//             LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
 
-            //         }
+//         }
 
-            //         foreach (int trainUnitID in IDListOfTrainUnitUsed)
-            //         {
+//         foreach (int trainUnitID in IDListOfTrainUnitUsed)
+//         {
 
-            //             TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
-            //         }
-            //     }
+//             TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
+//         }
+//     }
 
-            //     moveIndex++;
-            //     if (moveIndex == listOfMoves.Count)
-            //     {
-            //         ok = 0;
-            //         // The last movement is not linked, it contains an empty list
-            //         MovementLinks.Add(moveIndex - 1, new List<int>());
+//     moveIndex++;
+//     if (moveIndex == listOfMoves.Count)
+//     {
+//         ok = 0;
+//         // The last movement is not linked, it contains an empty list
+//         MovementLinks.Add(moveIndex - 1, new List<int>());
 
 
-            //         MovementLinksSameInfrastructure.Add(moveIndex - 1, new List<int>());
-            //         MovementLinksSameTrainUnit.Add(moveIndex - 1, new List<int>());
+//         MovementLinksSameInfrastructure.Add(moveIndex - 1, new List<int>());
+//         MovementLinksSameTrainUnit.Add(moveIndex - 1, new List<int>());
 
-            //     }
-            // }
+//     }
+// }
