@@ -455,7 +455,7 @@ namespace ServiceSiteScheduling.Solutions
         // TODO: rename it to CreatePOS - it should pobably be called only once
         // later un update function will basically be called when a recopute of POS
         // is needed
-        public void UpdatePOS()
+        public void CreatePOS()
         {
 
             // Index of the list is the ID assigned to a move
@@ -1244,15 +1244,6 @@ namespace ServiceSiteScheduling.Solutions
                     POSmove.AddNewPredecessorByTrainUnits(predeccessor);
                 }
 
-                // foreach(var s in Successors)
-                // {
-                //     if(!posAdjacencyListForTrainUint.ContainsKey(s))
-                //     {
-                //         posAdjacencyListForTrainUint[s] = new List<POSMoveTask>();
-                //         var tmp =  posAdjacencyListForTrainUint[s];
-
-                //     }
-                // }
             }
 
         }
@@ -1300,56 +1291,7 @@ namespace ServiceSiteScheduling.Solutions
 
             }
 
-            // Console.WriteLine("---------------------------------------------------");
-            // Console.WriteLine("|  From POS Movement Links - Same Train Unit used  |");
-            // Console.WriteLine("---------------------------------------------------");
-
-            // foreach(KeyValuePair<POSMoveTask, List<POSMoveTask>> element in this.POSadjacencyListForTrainUint)
-            // {
-            //     Console.WriteLine(element.Key);
-            // }
         }
-
-
-        // public List<POSTrackTask> CreatePOSTrackTask()
-        // {
-        //     Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = this.POSadjacencyList;
-
-        //     int id = 0;
-        //     foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> pair in posAdjacencyList)
-        //     {
-        //         MoveTask move = pair.Key.CorrespondingMoveTask;
-
-
-        //         if (move.AllPrevious.Count == 1)
-        //         {
-        //             TrackTask trackTask = move.AllPrevious[0];
-
-        //             POSTrackTask POStask = null;
-
-        //             if (trackTask.TaskType is TrackTaskType.Arrival)
-        //             {
-        //                 POStask = new POSTrackTask(id, POSTrackTaskType.Arrival, trackTask);
-
-        //             }
-        //         }
-
-
-        //         // foreach (TrackTask task in move.AllPrevious)
-        //         //         {
-        //         //             Console.WriteLine($"---{task}----");
-        //         //             // if (task is ParkingTask parkingTask)
-        //         //             //     Console.WriteLine("@It was a ParkingTask");
-        //         //             // if (task is ServiceTask serviceTask)
-        //         //             //     Console.WriteLine("@It was a ServiceTask");
-        //         //             // if (task is ArrivalTask arrivalTask)
-        //         //             //     Console.WriteLine("@It was a ArrivalTask");
-        //         //             // if (task is DepartureTask departureTask)
-        //         //             //     Console.WriteLine("@It was a DepartureTask");
-        //         //         }
-
-        //     }
-        // }
 
 
         public POSMoveTask GetPOSMoveTaskByID(int ID, Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList)
@@ -1880,7 +1822,7 @@ namespace ServiceSiteScheduling.Solutions
 
         // TODO; rename it to Initialize POS since it is a sort of Constructor
         // this function does not generate a POS graph only initialize some values
-        public void CreatePOS()
+        public void InitializePOS()
         {
             MoveTask move = this.First;
 
