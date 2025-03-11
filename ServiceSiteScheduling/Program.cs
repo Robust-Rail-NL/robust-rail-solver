@@ -9,6 +9,7 @@ using ServiceSiteScheduling.Matching;
 using System.Runtime.CompilerServices;
 using Google.Protobuf.Collections;
 using System.Data.Common;
+using AlgoIface;
 
 namespace ServiceSiteScheduling
 {
@@ -35,8 +36,10 @@ namespace ServiceSiteScheduling
             Solutions.SolutionCost best = null;
             Solutions.PlanGraph graph = null;
 
-            //ProblemInstance.Current = ProblemInstance.Parse("database/location.dat", "database/scenario.dat");
-            ProblemInstance.Current = ProblemInstance.Parse("database/other/location-10200.dat", "database/other/scenario-10200.dat");
+            // ProblemInstance.Current = ProblemInstance.Parse("database/location.dat", "database/scenario.dat");
+            // ProblemInstance.Current = ProblemInstance.Parse("database/other/location-10200.dat", "database/other/scenario-10200.dat");
+            
+            ProblemInstance.Current = ProblemInstance.ParseJson("database/fix/location-10200.json", "database/fix/scenario-10200.json");
 
             int solved = 0;
             for (int i = 0; i < 1; i++)
@@ -86,8 +89,32 @@ namespace ServiceSiteScheduling
                 }
                 Console.WriteLine($"solved: {solved}");
                 Console.WriteLine($"best = {best}");
-                Console.WriteLine("--------------------------");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine($"Generate JSON format plan");
+                Console.WriteLine("------------------------------");
+                
+                Plan plan_pb = sa.Graph.GenerateOutputPB();
+
+                string jsonPlan = JsonFormatter.Default.Format(plan_pb);
+                Console.WriteLine(jsonPlan);
+
+                // Save plan as json
+                string filePath = "./database/TUSS-Instance-Generator/plan.json"; 
+                File.WriteAllText(filePath, jsonPlan);
+
+                Console.WriteLine("----------------------------------------------------------------------");
+
+
+                sa.Graph.DisplayMovements();
+
+                // Plan plan_pb_extended = sa.Graph.GenerateOutputPB_extended();
+                // string jsonPlan_extended = JsonFormatter.Default.Format(plan_pb_extended);
+                // Console.WriteLine(jsonPlan_extended);
+
+
+
                 sa.Graph.Clear();
+
             }
 
             Console.WriteLine("------------ OVERALL BEST --------------");
