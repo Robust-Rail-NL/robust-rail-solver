@@ -66,6 +66,32 @@ namespace ServiceSiteScheduling
             }
         }
 
+
+        public static ProblemInstance ParseJson(string locationpath, string scenariopath)
+        {
+            // Location
+            AlgoIface.Location location;
+            using (var input = File.OpenRead(locationpath))
+            using (StreamReader reader = new StreamReader(input))
+            {
+                string jsonContent = reader.ReadToEnd();
+                location = AlgoIface.Location.Parser.ParseJson(jsonContent);
+
+            }
+
+            // Scenario
+            AlgoIface.Scenario scenario;
+            using (var input = File.OpenRead(scenariopath))
+            using (StreamReader reader = new StreamReader(input))
+            {
+                string jsonContent = reader.ReadToEnd();
+                scenario = AlgoIface.Scenario.Parser.ParseJson(jsonContent);
+
+            }
+
+            return Parse(location, scenario);
+        }
+
         public static ProblemInstance Parse(string locationpath, string scenariopath)
         {
             // Location
