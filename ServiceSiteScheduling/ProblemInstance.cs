@@ -5,6 +5,7 @@ using ServiceSiteScheduling.Utilities;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 
 namespace ServiceSiteScheduling
 {
@@ -168,6 +169,7 @@ namespace ServiceSiteScheduling
             // Connect the parts
             foreach (var part in location.TrackParts)
             {
+                Console.WriteLine($"Track Parts : {part}");
                 switch (part.Type)
                 {
                     case AlgoIface.TrackPartType.RailRoad:
@@ -205,7 +207,26 @@ namespace ServiceSiteScheduling
                         break;
                     case AlgoIface.TrackPartType.Bumper:
                         GateWay gateway = infrastructuremap[part.Id] as GateWay;
-                        gateway.Connect(infrastructuremap[part.ASide.First()]);
+
+                        Console.WriteLine($"gateway : {gateway}");
+                        if (part.ASide.Count() != 0)
+                        {
+                            Console.WriteLine($"Track part A: {part.Id}");
+                            Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
+
+                            gateway.Connect(infrastructuremap[part.ASide.First()]);
+                            
+                        }
+                        else if (part.BSide.Count() != 0)
+                        {
+                            Console.WriteLine($"Track part B: {part.Id}");
+                            Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
+                            gateway.Connect(infrastructuremap[part.BSide.First()]);
+                        }
+                        else
+                        { // Remove gateway from gateways dict
+                            gateways.Remove(gateway);
+                        }
                         break;
                     default:
                         break;
@@ -216,7 +237,11 @@ namespace ServiceSiteScheduling
             {
                 List<Infrastructure> path = new List<Infrastructure>();
                 path.Add(gateway);
+
+                //if(gateway.EndPoint.GetTracksConnectedTo(gateway, 0, path, false).Count() != 0)
                 gatewayconnections[gateway] = gateway.EndPoint.GetTracksConnectedTo(gateway, 0, path, false).First();
+                Console.WriteLine($"gatewayconnections[gateway]: {gateway}:{gatewayconnections[gateway]}");
+
             }
 
             // Services
@@ -412,13 +437,41 @@ namespace ServiceSiteScheduling
                     freeservicelists.Add(unit.Tasks.Where(task => taskmap[task.Type].LocationType == ServiceLocationType.Free).Select(task => new Service(taskmap[task.Type], (int)task.Duration)).ToArray());
                 }
 
-                var gateway = (GateWay)infrastructuremap[arrivaltrain.EntryTrackPart];
-                var connection = gatewayconnections[gateway];
-                instance.GatewayConversion[connection.Track.ID] = connection;
-                var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
+                Console.WriteLine($"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}");
+                // var gateway = (GateWay)infrastructuremap[arrivaltrain.EntryTrackPart];
 
-                var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, side, (int)arrivaltrain.Departure);
-                arrivals.Add(train);
+                GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
+
+                if (gateway != null)
+                {
+                    var connection = gatewayconnections[gateway];
+                    instance.GatewayConversion[connection.Track.ID] = connection;
+                    var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
+
+                    Console.WriteLine($"connection :{connection}");
+
+                    Console.WriteLine($"gateway :{gateway}");
+                    Console.WriteLine($"side :{side}");
+
+
+
+                    var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, side, (int)arrivaltrain.Departure);
+                    Console.WriteLine($"connection.Track :{connection.Track}");
+
+                    arrivals.Add(train);
+                }
+                // else{
+                //     var track =  infrastructuremap[arrivaltrain.EntryTrackPart] as Track;
+
+
+                //     var train = new ArrivalTrain(currenttrainunits.ToArray(), track, Side.A, (int)arrivaltrain.Departure);
+                //     arrivals.Add(train);
+                // }
+
+                foreach (var arrival in arrivals)
+                    Console.WriteLine($"Arrival train : {arrival}");
+
+
             }
 
             // only for harder instance
@@ -502,15 +555,49 @@ namespace ServiceSiteScheduling
                 var units = departuretrain.TrainUnits.Select(
                     unit => unit.Id == string.Empty ? new DepartureTrainUnit(traintypemap[unit.Type]) : new DepartureTrainUnit(trainunitmap[unit.Id]));
 
-                var gateway = (GateWay)infrastructuremap[departuretrain.LeaveTrackPart];
-                var connection = gatewayconnections[gateway];
-                instance.GatewayConversion[connection.Track.ID] = connection;
-                var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
+                // var gateway = (GateWay)infrastructuremap[departuretrain.LeaveTrackPart];
+                // TODO
 
-                var train = new DepartureTrain((int)departuretrain.Arrival, units.ToArray(), connection.Track, side);
-                departures.Add(train);
-                foreach (var unit in units)
-                    unit.Train = train;
+                GateWay gateway = infrastructuremap[departuretrain.LeaveTrackPart] as GateWay;
+
+                // GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
+
+                if (gateway != null)
+                {
+                    var connection = gatewayconnections[gateway];
+                    instance.GatewayConversion[connection.Track.ID] = connection;
+                    var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
+                    var train = new DepartureTrain((int)departuretrain.Arrival, units.ToArray(), connection.Track, side);
+                    departures.Add(train);
+
+                    foreach (var unit in units)
+                        unit.Train = train;
+
+                }
+                // else{
+                //     var tmp = infrastructuremap[departuretrain.LeaveTrackPart] as Track;
+                //     var train = new DepartureTrain((int)departuretrain.Arrival, units.ToArray(), tmp, Side.A);
+                //     departures.Add(train);
+                //     foreach (var unit in units)
+                //         unit.Train = train;
+
+
+                // }
+
+                foreach (var departure in departures)
+                    Console.WriteLine($"Departure train : {departure}");
+
+
+
+
+                // var connection = gatewayconnections[gateway];
+                // instance.GatewayConversion[connection.Track.ID] = connection;
+                // var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
+
+                // var train = new DepartureTrain((int)departuretrain.Arrival, units.ToArray(), connection.Track, side);
+                // departures.Add(train);
+                // foreach (var unit in units)
+                //     unit.Train = train;
             }
 
             // only for harder instance
@@ -540,7 +627,6 @@ namespace ServiceSiteScheduling
 
             foreach (var t in instance.Tracks.Where(track => arrivals.Any(train => train.Track == track) || departures.Any(train => train.Track == track)).ToArray())
                 t.IsActive = true;
-
             //instance.Tracks[25].CanReverse = true;
             //instance.Tracks[25].IsActive = true;
             //instance.Tracks[25].Length = 300;
@@ -549,6 +635,7 @@ namespace ServiceSiteScheduling
             foreach (var train in instance.DeparturesOrdered)
                 foreach (var unit in train.Units)
                     unit.ID = id++;
+
 
             return instance;
         }
