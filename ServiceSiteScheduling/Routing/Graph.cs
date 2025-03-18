@@ -150,9 +150,12 @@ namespace ServiceSiteScheduling.Routing
                     continue;
 
                 SuperVertex v = supervertices[track.Index];
+                var tmp = track.GetConnectionsAtSide(Side.A).Count();
+
 
                 if (track.Access.HasFlag(Side.A))
-                {
+                {   
+                    
                     foreach (var connection in track.GetConnectionsAtSide(Side.A))
                     {
                         SuperVertex w = supervertices[connection.Track.Index];

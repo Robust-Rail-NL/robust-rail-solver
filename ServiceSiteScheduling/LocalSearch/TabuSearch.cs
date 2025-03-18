@@ -19,6 +19,8 @@ namespace ServiceSiteScheduling.LocalSearch
             var graph = Initial.SimpleHeuristic.Construct(random);
             graph.Cost = graph.ComputeModel();
 
+           // Integrate here the POS creation?
+
             this.Graph = graph;
             this.random = random;
         }
@@ -75,6 +77,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
                 bool fullcost = this.Graph.Cost.IsFeasible;
 
+                Console.WriteLine("-------- Here --------");
                 foreach (var move in currentmoves)
                 {
                     move.Execute();

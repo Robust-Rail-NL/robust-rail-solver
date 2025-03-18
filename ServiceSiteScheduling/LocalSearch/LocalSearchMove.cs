@@ -29,6 +29,7 @@ namespace ServiceSiteScheduling.LocalSearch
         public virtual Solutions.SolutionCost Execute()
         {
 #if DEBUG
+            // Add POS here as well ?
             this.Graph.UpdateRoutingOrder();
 #endif
             this.Cost = this.Graph.ComputeModel(/*this.AffectedTracks, */this.executestart ?? this.Graph.First, this.executeend ?? this.Graph.Last);

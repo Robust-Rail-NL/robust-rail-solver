@@ -492,7 +492,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 Console.WriteLine($"Neighbors visited = {neighbors}");
                 //this.Graph.OutputForDemian();
                 //this.Graph.GenerateOutput("plan.dat");
-                diplayGraphDetails("All", "");
+                // diplayGraphDetails("All", "");
             }
         }
 

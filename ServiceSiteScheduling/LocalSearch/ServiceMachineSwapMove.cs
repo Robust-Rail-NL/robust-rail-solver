@@ -141,7 +141,7 @@ namespace ServiceSiteScheduling.LocalSearch
             var firstlocation = this.First.Resource as Servicing.ServiceLocation;
             var secondlocation = this.Second.Resource as Servicing.ServiceLocation;
             var secondside = this.Second.ArrivalSide;
-            
+
             this.Second.Track = firstlocation.Track;
             this.Second.ArrivalSide = this.First.ArrivalSide;
             this.Second.Previous.ToTrack = firstlocation.Track;

@@ -18,6 +18,7 @@ namespace ServiceSiteScheduling.TrackParts
         {
             path.Add(this);
             List<TrackSwitchContainer> result = new List<TrackSwitchContainer>();
+
             foreach (var infra in this.GetInfrastructureConnectedTo(infrastructure))
                 result.AddRange(infra.GetTracksConnectedTo(this, switches + this.cost, path, ignoreInactive));
             path.RemoveAt(path.Count - 1);

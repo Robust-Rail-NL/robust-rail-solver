@@ -149,7 +149,7 @@ namespace ServiceSiteScheduling.Initial
             foreach (var type in ProblemInstance.Current.ServiceTypes)
                 foreach (var resource in type.Resources)
                     schedule[resource] = new LinkedList<ServiceTask>();
-            
+                                
             List<ServiceTask> services = new List<ServiceTask>();
             List<ServiceTask> candidates = new List<ServiceTask>();
             List<ParkingTask> parkings = new List<ParkingTask>();
@@ -332,7 +332,9 @@ namespace ServiceSiteScheduling.Initial
             }
 
             var routinggraph = Routing.RoutingGraph.Construct();
+
             PlanGraph graph = new PlanGraph(matching, routinggraph, shunttrainunits, arrivals.ToArray(), departures.ToArray());
+
 
             // Connect movetasks
             MoveTask prev = null;
