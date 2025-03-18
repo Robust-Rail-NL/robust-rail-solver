@@ -180,10 +180,21 @@ namespace ServiceSiteScheduling
                         if (part.BSide.Count > 0)
                             infrastructuremap.TryGetValue(part.BSide.First(), out B);
                         track.Connect(A, B);
+
+                        // Console.WriteLine($"Track: {track.ID} - A side {track.GetInfrastructureAtSide(Side.A).ID}, B side {track.GetInfrastructureAtSide(Side.B).ID}");
                         break;
                     case AlgoIface.TrackPartType.Switch:
                         Switch @switch = infrastructuremap[part.Id] as Switch;
-                        @switch.Connect(infrastructuremap[part.ASide.First()], new Infrastructure[2] { infrastructuremap[part.BSide.First()], infrastructuremap[part.BSide.Last()] });
+                        if(part.ASide.Count() == 1)
+                        {   // A side is connected to two B side infrastructure
+                            @switch.Connect(infrastructuremap[part.ASide.First()], new Infrastructure[2] { infrastructuremap[part.BSide.First()], infrastructuremap[part.BSide.Last()] });
+                        }
+                        else
+                        {   // B side is connected to two A side infrastructure
+                            @switch.Connect(infrastructuremap[part.BSide.First()], new Infrastructure[2] { infrastructuremap[part.ASide.First()], infrastructuremap[part.ASide.Last()] });
+
+                        }
+
                         break;
                     case AlgoIface.TrackPartType.EnglishSwitch:
                         EnglishSwitch englishswitch = infrastructuremap[part.Id] as EnglishSwitch;
@@ -263,6 +274,7 @@ namespace ServiceSiteScheduling
                 ServiceType service = new ServiceType(i, type.Other, ServiceLocationType.Fixed);
                 instance.ServiceTypes[i] = service;
                 taskmap[type] = service;
+                Console.WriteLine($">>>>Service : {service}");
             }
 
 
@@ -274,6 +286,8 @@ namespace ServiceSiteScheduling
             var crews = new List<ServiceCrew>();
             foreach (var facility in location.Facilities)
             {
+                Console.WriteLine($">>>>Facility : {facility}");
+
                 var facilitytracks = new List<Track>();
                 foreach (var part in facility.RelatedTrackParts)
                 {
@@ -324,6 +338,8 @@ namespace ServiceSiteScheduling
                     service.Resources.Add(instance.ServiceLocations[track.Index]);
 
 
+            foreach(var track in servicetracks)
+                Console.WriteLine($"Service location: {instance.ServiceLocations[track.Index]}");
             /*
             // only for database/*.dat
             servicetracks.Add(instance.Tracks[10]);
