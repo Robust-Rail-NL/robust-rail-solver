@@ -1,6 +1,46 @@
 # Description 
 
 
+## Dependencies
+
+To ensure that the code compiles, **dotnet net8.0 framework is required**. The code was tested with `dotnet v8.0.404`.
+
+If you are a Ubuntu user, please go to [Install .NET SDK]("https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install?pivots=os-linux-ubuntu-2204&tabs=dotnet9") and chooes your Ubuntu version.
+
+
+### First step:
+Example of installation on Ubuntu 20.04:
+
+```bash
+wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+sudo apt-get update
+```
+After the packages are located:
+
+```bash
+sudo apt-get install -y dotnet-sdk-8.0
+```
+
+
+Other packages might also needed to be installed on the system:
+* ca-certificates
+* libc6
+* libgcc-s1
+* libgssapi-krb5-2
+* libicu70
+* liblttng-ust1
+* libssl3
+* libstdc++6
+* libunwind8
+* zlib1g
+
+
+```bash
+sudo apt install name-of-the-package
+```
+
 ## ProtoBuffers
 
 * New version of protobufers are used to create scenario, location and plan structures. 
