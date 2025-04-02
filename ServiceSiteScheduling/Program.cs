@@ -22,8 +22,12 @@ namespace ServiceSiteScheduling
                 plan = AlgoIface.Plan.Parser.Parse
                 From(reader.BaseStream);*/
             // RunForStudents();
+            // TS();
+            Test_json();
+            Console.WriteLine("***************** Test TS() *****************");
             TS();
-            //Test();
+
+            // Test();
         }
 
         static void TS()
@@ -38,8 +42,11 @@ namespace ServiceSiteScheduling
 
             // ProblemInstance.Current = ProblemInstance.Parse("database/location.dat", "database/scenario.dat");
             // ProblemInstance.Current = ProblemInstance.Parse("database/other/location-10200.dat", "database/other/scenario-10200.dat");
-            
-            ProblemInstance.Current = ProblemInstance.ParseJson("database/fix/location-10200.json", "database/fix/scenario-10200.json");
+            // ProblemInstance.Current = ProblemInstance.Parse("./database/TUSS-Instance-Generator/location.dat", "./database/TUSS-Instance-Generator/scenario.dat");
+
+
+
+            ProblemInstance.Current = ProblemInstance.ParseJson("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
 
             int solved = 0;
             for (int i = 0; i < 1; i++)
@@ -58,7 +65,7 @@ namespace ServiceSiteScheduling
                 sa.Graph.OutputMovementSchedule();
                 Console.WriteLine("--------------------------");
                 Console.WriteLine("");
-                
+
 
                 Console.WriteLine("----------------------------");
                 Console.WriteLine(" Output Train Unit Schedule ");
@@ -92,14 +99,14 @@ namespace ServiceSiteScheduling
                 Console.WriteLine("------------------------------");
                 Console.WriteLine($"Generate JSON format plan");
                 Console.WriteLine("------------------------------");
-                
+
                 Plan plan_pb = sa.Graph.GenerateOutputPB();
 
                 string jsonPlan = JsonFormatter.Default.Format(plan_pb);
                 Console.WriteLine(jsonPlan);
 
                 // Save plan as json
-                string filePath = "./database/TUSS-Instance-Generator/plan.json"; 
+                string filePath = "./database/TUSS-Instance-Generator/plan.json";
                 File.WriteAllText(filePath, jsonPlan);
 
                 Console.WriteLine("----------------------------------------------------------------------");
@@ -185,12 +192,13 @@ namespace ServiceSiteScheduling
 
         static void Test()
         {
+
             try
             {
 
                 // Location
                 AlgoIface.Location location;
-                using (var input = File.OpenRead("database/other/location-10200.dat"))
+                using (var input = File.OpenRead("database/TUSS-Instance-Generator/location.dat"))
                     location = AlgoIface.Location.Parser.ParseFrom(input);
 
                 Console.WriteLine("Location:");
@@ -225,7 +233,7 @@ namespace ServiceSiteScheduling
 
             // Scenario
             AlgoIface.Scenario scenario;
-            using (var inputSecenario = File.OpenRead("database/other/scenario-10200.dat"))
+            using (var inputSecenario = File.OpenRead("database/Kleine_binckhorst/scenario.dat"))
             {
                 try
                 {
@@ -284,6 +292,93 @@ namespace ServiceSiteScheduling
 
             }
         }
+        static void Test_json()
+        {
+            ProblemInstance.Current = ProblemInstance.ParseJson("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
+
+            // ProblemInstance.Current = ProblemInstance.ParseJson("/home/roland/Documents/REIT/LPT_Robust_Rail_project/Test/HIP/Baseline-HIP/ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "/home/roland/Documents/REIT/LPT_Robust_Rail_project/Test/HIP/Baseline-HIP/ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
+
+            // ProblemInstance.Current = ProblemInstance.ParseJson("/home/roland/Documents/REIT/LPT_Robust_Rail_project/Test/HIP/Baseline-HIP/ServiceSiteScheduling/database/fix/location-10200.json", "/home/roland/Documents/REIT/LPT_Robust_Rail_project/Test/HIP/Baseline-HIP/ServiceSiteScheduling/database/fix/scenario-10200.json");
+
+            try
+            {
+
+
+
+                var location_TrackParts = ProblemInstance.Current.InterfaceLocation.TrackParts;
+
+                if (location_TrackParts == null)
+                {
+                    throw new NullReferenceException("Parsed message is null.");
+
+                }
+
+                foreach (AlgoIface.TrackPart trackType in location_TrackParts)
+                {
+                    Console.WriteLine("ID : " + trackType.Id);
+                }
+                
+                string json = JsonFormatter.Default.Format( ProblemInstance.Current.InterfaceLocation);
+
+                Console.WriteLine("JSON: \n " + json);
+
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException("error during parsing", e);
+            }
+
+            // Scenario
+            // AlgoIface.Scenario scenario;
+            // using (var inputSecenario = File.OpenRead("database/Kleine_binckhorst/scenario.dat"))
+            // {
+                try
+                {
+                   
+                    string json = JsonFormatter.Default.Format(ProblemInstance.Current.InterfaceScenario);
+                    Console.WriteLine("JSON: \n " + json);
+                    
+
+
+                    var scenario_in = ProblemInstance.Current.InterfaceScenario.In;
+
+                    
+
+                    // AlgoIface.ScenarioIn scenario_in = AlgoIface.ScenarioIn.Parser.ParseFrom(inputSecenario);
+
+                    if (scenario_in == null)
+                    {
+                        throw new NullReferenceException("Parsed message is null.");
+                    }
+
+                    List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(scenario_in.Trains);
+                    foreach (AlgoIface.IncomingTrain train in scenario_in.Trains)
+                    {
+                        incomingTrains.Add(train);
+                    }
+
+                    foreach (AlgoIface.IncomingTrain train in incomingTrains)
+                    {
+                        Console.WriteLine("Parcking track" + train.FirstParkingTrackPart + " for train (id) " + train.Id);
+                    }
+
+                    
+
+
+                }
+                catch (Exception e)
+                {
+                    throw new ArgumentException("error during parsing", e);
+                }
+
+
+
+
+            // }
+        }
+
+
+
 
 
 
