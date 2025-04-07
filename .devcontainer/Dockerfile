@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     build-essential \
+    apt-transport-https \
+    ca-certificates \
     software-properties-common
 
 # Install Microsoft package repository for .NET
