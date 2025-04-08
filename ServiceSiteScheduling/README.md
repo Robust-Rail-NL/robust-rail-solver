@@ -58,6 +58,7 @@ sudo apt install name-of-the-package
 
 ## ProtoBuffers
 
+* **Optional step** - all the protobufers used are pre-compiled. Nevertheless, when modifications must be added a proper compilation of protobufs is required.
 * New version of protobufers are used to create scenario, location and plan structures. 
 * `protoc-28.3-linux-x86_64` (libprotoc 28.3) contains the `protoc` compiler and other proto files.
 
@@ -79,7 +80,30 @@ protoc --proto_path=protos --csharp_out=generated protos/Plan.proto
 
 Some of the input location and scenarios (scenario.data and location.data) cannot be read in the main program by parsing with the protobuffres. 
 
-In [database/fix](database/fix) a selection of readable scenario and location data is available.
+* In [database/fix](database/fix) a selection of readable scenario and location data is available.
+
+* In [database/TUSS-Instance-Generator/featured](database/TUSS-Instance-Generator/featured) a collection of scenarios can be found run on the [Kleine Binckhorst shunting yard](Kleine_Binckhorst.png). The standard location file of Kleine Binckhorst is described as [location.json](database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json).
+
+    * [scenario_kleineBinckhorst_HIP_dump](database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json) is a working scenarion on Kleine Binckhorst location.
+
+
+## How To Use ?
+
+The [main program](Program.cs) contains several functions with different features. It is advised to first call `Test_Location_Scenario_Parsing(string location_path, string scenario_path)` function:
+
+* It will test if the given location and scenario (json format) files can be parsed correctly. As part of the test, the overall infrastructure of the location (e.g.,track parts) will be displayed. If the parsing from `location.json` `->` `protobuf location object` is successfull, the json format location will be displayed. When the the parsing from `sceenario.json` `->` `protobuf scenario object` is successfull, the json format scenario will be displayed and some detalis about the Incoming and Outgoing trains.
+
+
+Usage of the parsing test:
+```bash
+Test_Location_Scenario_Parsing(string location_path, string scenario_path)
+```
+Example: 
+
+```bash
+Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured scenario_kleineBinckhorst_HIP_dump.json");
+
+```
 
 
 ## POS - can we find POS or everithing is Totally Ordred ?
