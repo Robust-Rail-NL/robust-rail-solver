@@ -5,6 +5,7 @@ using ServiceSiteScheduling.Utilities;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.ExceptionServices;
 
 namespace ServiceSiteScheduling
@@ -65,6 +66,20 @@ namespace ServiceSiteScheduling
                     this.DeparturesByType[type].Add(departure);
                 }
             }
+        }
+
+        // Parses a json format file to string
+        public static string ParseJsonToString(string path)
+        {
+            string jsonContent;
+            using (var input = File.OpenRead(path))
+
+            using (StreamReader reader = new StreamReader(input))
+            {
+                jsonContent = reader.ReadToEnd();
+            }
+            return jsonContent;
+
         }
 
 
@@ -185,7 +200,7 @@ namespace ServiceSiteScheduling
                         break;
                     case AlgoIface.TrackPartType.Switch:
                         Switch @switch = infrastructuremap[part.Id] as Switch;
-                        if(part.ASide.Count() == 1)
+                        if (part.ASide.Count() == 1)
                         {   // A side is connected to two B side infrastructure
                             @switch.Connect(infrastructuremap[part.ASide.First()], new Infrastructure[2] { infrastructuremap[part.BSide.First()], infrastructuremap[part.BSide.Last()] });
                         }
@@ -226,7 +241,7 @@ namespace ServiceSiteScheduling
                             Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
 
                             gateway.Connect(infrastructuremap[part.ASide.First()]);
-                            
+
                         }
                         else if (part.BSide.Count() != 0)
                         {
@@ -338,7 +353,7 @@ namespace ServiceSiteScheduling
                     service.Resources.Add(instance.ServiceLocations[track.Index]);
 
 
-            foreach(var track in servicetracks)
+            foreach (var track in servicetracks)
                 Console.WriteLine($"Service location: {instance.ServiceLocations[track.Index]}");
             /*
             // only for database/*.dat

@@ -10,6 +10,8 @@ using System.Runtime.CompilerServices;
 using Google.Protobuf.Collections;
 using System.Data.Common;
 using AlgoIface;
+using Microsoft.VisualBasic;
+using System.Text.Json;
 
 namespace ServiceSiteScheduling
 {
@@ -23,9 +25,9 @@ namespace ServiceSiteScheduling
                 From(reader.BaseStream);*/
             // RunForStudents();
             // TS();
-            Test_json();
+            Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
             Console.WriteLine("***************** Test TS() *****************");
-            TS();
+            // TS();
 
             // Test();
         }
@@ -292,13 +294,11 @@ namespace ServiceSiteScheduling
 
             }
         }
-        static void Test_json()
+        static void Test_Location_Scenario_Parsing(string location_path, string scenario_path)
         {
-            ProblemInstance.Current = ProblemInstance.ParseJson("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
+            ProblemInstance.Current = ProblemInstance.ParseJson(location_path, scenario_path);
 
-            // ProblemInstance.Current = ProblemInstance.ParseJson("/home/roland/Documents/REIT/LPT_Robust_Rail_project/Test/HIP/Baseline-HIP/ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "/home/roland/Documents/REIT/LPT_Robust_Rail_project/Test/HIP/Baseline-HIP/ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
-
-            // ProblemInstance.Current = ProblemInstance.ParseJson("/home/roland/Documents/REIT/LPT_Robust_Rail_project/Test/HIP/Baseline-HIP/ServiceSiteScheduling/database/fix/location-10200.json", "/home/roland/Documents/REIT/LPT_Robust_Rail_project/Test/HIP/Baseline-HIP/ServiceSiteScheduling/database/fix/scenario-10200.json");
+            // ProblemInstance.Current = ProblemInstance.ParseJson("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
 
             try
             {
@@ -309,19 +309,33 @@ namespace ServiceSiteScheduling
 
                 if (location_TrackParts == null)
                 {
-                    throw new NullReferenceException("Parsed message is null.");
+                    throw new NullReferenceException("Parsed location is null.");
 
                 }
 
-                foreach (AlgoIface.TrackPart trackType in location_TrackParts)
+                // foreach (AlgoIface.TrackPart trackType in location_TrackParts)
+                // {
+                //     Console.WriteLine("ID : " + trackType.Id);
+                // }
+
+                string json_parsed = JsonFormatter.Default.Format(ProblemInstance.Current.InterfaceLocation);
+
+                string json_original = ProblemInstance.ParseJsonToString(location_path);
+
+                // Test the parsing - if the the json file converted from the protobuf object
+                // is the same as the original input location, then the parsing was successful
+                var token_parsed = JsonDocument.Parse(json_parsed);
+                var token_original = JsonDocument.Parse(json_original);
+
+                if (token_parsed.ToString() == token_parsed.ToString())
                 {
-                    Console.WriteLine("ID : " + trackType.Id);
+                    Console.WriteLine("The Location file parsing was successful !");
+                    Console.WriteLine("JSON: \n " + json_parsed);
                 }
-                
-                string json = JsonFormatter.Default.Format( ProblemInstance.Current.InterfaceLocation);
-
-                Console.WriteLine("JSON: \n " + json);
-
+                else
+                {
+                    Console.WriteLine("The Location file parsing was not successful! ");
+                }
             }
             catch (Exception e)
             {
@@ -329,58 +343,78 @@ namespace ServiceSiteScheduling
             }
 
             // Scenario
-            // AlgoIface.Scenario scenario;
-            // using (var inputSecenario = File.OpenRead("database/Kleine_binckhorst/scenario.dat"))
-            // {
-                try
+            try
+            {
+
+                string json_parsed = JsonFormatter.Default.Format(ProblemInstance.Current.InterfaceScenario);
+
+                var scenario_in = ProblemInstance.Current.InterfaceScenario.In;
+                var scenario_out = ProblemInstance.Current.InterfaceScenario.Out;
+
+                if (scenario_in == null)
                 {
-                   
-                    string json = JsonFormatter.Default.Format(ProblemInstance.Current.InterfaceScenario);
-                    Console.WriteLine("JSON: \n " + json);
-                    
-
-
-                    var scenario_in = ProblemInstance.Current.InterfaceScenario.In;
-
-                    
-
-                    // AlgoIface.ScenarioIn scenario_in = AlgoIface.ScenarioIn.Parser.ParseFrom(inputSecenario);
-
-                    if (scenario_in == null)
-                    {
-                        throw new NullReferenceException("Parsed message is null.");
-                    }
-
-                    List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(scenario_in.Trains);
-                    foreach (AlgoIface.IncomingTrain train in scenario_in.Trains)
-                    {
-                        incomingTrains.Add(train);
-                    }
-
-                    foreach (AlgoIface.IncomingTrain train in incomingTrains)
-                    {
-                        Console.WriteLine("Parcking track" + train.FirstParkingTrackPart + " for train (id) " + train.Id);
-                    }
-
-                    
-
-
-                }
-                catch (Exception e)
-                {
-                    throw new ArgumentException("error during parsing", e);
+                    // Scenario.In is probably null or not well formated
+                    throw new NullReferenceException("Parsed scenario in filed is null.");
                 }
 
 
+                if (scenario_out == null)
+                {
+                    // Scenario.Out is probably null or not well formated
+                    throw new NullReferenceException("Parsed scenario out field is null.");
+                }
+
+                string json_original = ProblemInstance.ParseJsonToString(scenario_path);
+
+                // Test the parsing - if the the json file converted from the protobuf object
+                // is the same as the original input scenario, then the parsing was successful
+                var token_parsed = JsonDocument.Parse(json_parsed);
+                var token_original = JsonDocument.Parse(json_original);
+
+                if (token_parsed.ToString() == token_parsed.ToString())
+                {
+                    Console.WriteLine("The Scenario file parsing was successful !");
+                    Console.WriteLine("JSON: \n " + json_parsed);
+                }
+                else
+                {
+                    Console.WriteLine("The Location file parsing was not successful! ");
+                }
+                
+                Console.WriteLine("Scenario details: ");
+                Console.WriteLine("---- Incoming Trains ----");
+                List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(scenario_in.Trains);
+                foreach (AlgoIface.IncomingTrain train in scenario_in.Trains)
+                {
+                    incomingTrains.Add(train);
+                }
+
+                Console.WriteLine("---- Outgoing Trains ----");
+                foreach (AlgoIface.IncomingTrain train in incomingTrains)
+                {
+                    Console.WriteLine("Parcking track " + train.FirstParkingTrackPart + " for train (id) " + train.Id);
+                }
+
+                List<AlgoIface.TrainRequest> outgoingTrains = new List<AlgoIface.TrainRequest>(scenario_out.TrainRequests);
+                foreach(AlgoIface.TrainRequest train in scenario_out.TrainRequests)
+                {
+                    outgoingTrains.Add(train);
+                }
+
+                foreach(AlgoIface.TrainRequest train in outgoingTrains)
+                {
+                    Console.WriteLine("Parcking track " + train.LastParkingTrackPart + " for train (id) " + train.DisplayName);
+
+                }
 
 
-            // }
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException("error during parsing", e);
+            }
+
         }
-
-
-
-
-
 
     }
 
