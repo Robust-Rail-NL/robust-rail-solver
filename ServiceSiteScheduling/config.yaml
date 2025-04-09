@@ -1,0 +1,23 @@
+
+LocationPath: "./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json"
+ScenarioPath: "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json"
+PlanPath: "./database/TUSS-Instance-Generator/plan.json"
+
+TabuSearch:
+  Iterations: 40
+  IterationsUntilReset: 100
+  TabuListLength: 16
+  Bias: 0.5
+  SuppressConsoleOutput: false
+
+SimulatedAnnealing:
+  MaxDuration: 3600
+  StopWhenFeasible: true
+  IterationsUntilReset: 150000
+  T: 15
+  A: 0.97
+  Q: 2000
+  Reset: 2000
+  Bias: 0.2
+  SuppressConsoleOutput: false
+  IintensifyOnImprovement: false
