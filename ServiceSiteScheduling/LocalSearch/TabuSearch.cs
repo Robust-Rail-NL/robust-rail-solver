@@ -31,6 +31,10 @@ namespace ServiceSiteScheduling.LocalSearch
             this.random = random;
         }
 
+        //@iterations: maximum iterations in the searching algorithm if it is achieved the search ends
+        //@iterationsUntilReset: the current solution should be improved until that number of iteration if this number is hit, the current solution  cannot be improved -> the current solution is reverted to the original solution
+        //@bias: restricted probability (e.g., 0.75)
+        //@suppressConsoleOutput: enables extra logs
         public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, bool suppressConsoleOutput = false)
         {
             //if (iterations == 0)
