@@ -89,9 +89,12 @@ Some of the input location and scenarios (scenario.data and location.data) canno
 
 ## How To Use ?
 
-The [main program](Program.cs) contains several functions with different features. It is advised to first call `Test_Location_Scenario_Parsing(string location_path, string scenario_path)` function:
+The [main program](Program.cs) contains several functions with different features.
 
-* It will test if the given location and scenario (json format) files can be parsed correctly. As part of the test, the overall infrastructure of the location (e.g.,track parts) will be displayed. If the parsing from `location.json` `->` `protobuf location object` is successfull, the json format location will be displayed. When the the parsing from `sceenario.json` `->` `protobuf scenario object` is successfull, the json format scenario will be displayed and some detalis about the Incoming and Outgoing trains.
+### Location Scenario Parsing
+
+It is advised to first call `Test_Location_Scenario_Parsing(string location_path, string scenario_path)` function:
+* It will test if the given location and scenario (json format) files can be parsed correctly into protobuf objects (`ProblemInstance`). As part of the test, the overall infrastructure of the location (e.g.,track parts) will be displayed. If the parsing from `location.json` `->` `protobuf location object` is successfull, the json format location will be displayed. When the the parsing from `sceenario.json` `->` `protobuf scenario object` is successfull, the json format scenario will be displayed and some detalis about the Incoming and Outgoing trains.
 
 
 Usage of the parsing test:
@@ -102,8 +105,51 @@ Example:
 
 ```bash
 Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured scenario_kleineBinckhorst_HIP_dump.json");
-
 ```
+### Create Plan with Tabu and Local Search methods
+
+* This function takse as input the path to location file `location_path` and the path to the scenario file `scenario_path`. 
+    * E.g., of the location is shunting yard - [location.json](database/TUSS-Instance-Generator/featur\ed/location_kleineBinckhorst_HIP_dump.json). 
+    * E.g., of the sceenario is the time of arrivals & departures, train types/composition - [scenario.json](database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json).
+
+* The function returns a schedule plan as solution to the scenario. The function uses Tabu Search and Simulated Annealing mehods to find a Totally Ordered Graph which is finally converted into a schedule plan.
+    *  The plan is stored in json format and the path/name of the plan defined by `plan_path` input argument (e.g., database/plans/plan.json).  
+
+```bash
+CreatePlan(string location_path, string scenario_path, string plan_path)
+```
+
+*Note*: default the parameters are used for the Tabu Search and Simulated Annealing methods. However, these parameters can be modified.
+
+* **Tabu Search parameters**:
+    * **iterations**: maximum iterations in the searching algorithm if it is achieved the search ends
+    * **iterationsUntilReset**: the current solution should be improved until that number of iteration if this number is hit, the current solution  cannot be improved -> the current solution is reverted to the original solution
+    * **bias**: restricted probability (e.g., 0.75)
+    * **suppressConsoleOutput**: enables extra logs
+
+
+* Example of usage: `ts.Run(40, 100, 16, 0.5);`
+
+
+
+* **Simulated Annealing parameters**:
+
+    * **maxduration**: maximum duration of the serach in seconds (e.g., Time.Hour is 3600 seconds)
+    * **stopWhenFeasible**: stops serach when it is feaseable (bool)
+    * **iterations**: maximum iterations in the searching algorithm if it is achieved the search ends
+    * **t**: the T parameter in the equation P = exp([cost(a') - cost(b')]/T), where e T is a control parameter that will be decreased  during the search to accept less deterioration in solution quality later on in the process
+    * **a**: the rate of the decrease of T (e.g., a=0.97 -> 3% of decrease every time q iteration has been achieved)
+    * **q**: number of iterations until the next decrease of T
+    * **reset**: the current solution should be improved until that number of iteration if this number is hit, the current solution cannot be improved -> the current solution is reverted to the original solution
+    * **bias**: restricted probability (e.g., 0.4)
+    * **suppressConsoleOutput**: enables extra logs
+    * **intensifyOnImprovement**: enables further improvments
+
+* Example of usage: `sa.Run(Time.Hour, true, 150000, 15, 0.97, 2000, 2000, 0.2, false);`
+
+
+### Create Plan with Tabu and Local Search methods - from configuration file (TODO)
+
 
 
 ## POS - can we find POS or everithing is Totally Ordred ?
