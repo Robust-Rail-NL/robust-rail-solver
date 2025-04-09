@@ -185,6 +185,18 @@ namespace ServiceSiteScheduling.LocalSearch
             }
         }
 
+        // Core function to find a solution graph => schedule plan
+        // @maxduration: Maximum duration of the serach in seconds (e.g., Time.Hour is 3600 seconds)
+        // @stopWhenFeasible: stop serach when it is feaseable (bool)
+        // @iterations: maximum iterations in the searching algorithm if it is achieved the search ends
+        // @t: the T parameter in the equation P = exp([cost(a') - cost(b')]/T), where e T is a control parameter that will be decreased 
+        // during the search to accept less deterioration in solution quality later on in the process
+        // @a: the rate of the decrease of T (e.g., a=0.97 -> 3% of decrease every time q iteration has been achieved)
+        // @q: number of iterations until the next decrease of T
+        // @reset: the current solution should be improved until that number of iteration if this number is hit, the current solution 
+        // cannot be improved -> the current solution is reverted to the original solution
+        // @bias: Restricted probability (e.g., 0.4)
+        // @suppressConsoleOutput: enables extra logs
         public void Run(Time maxduration, bool stopWhenFeasible, int iterations, double t, double a, int q, int reset, double bias = 0.4, bool suppressConsoleOutput = false, bool intensifyOnImprovement = false)
         {
             double T = t, alpha = a;
@@ -213,7 +225,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
             while (true)
             {
-                Console.WriteLine($" => =>  => => Log Iteration: {iteration} -- iterations {iterations}");
+                // Console.WriteLine($" => =>  => => Log Iteration: {iteration} -- iterations {iterations}");
 
                 bool fullcost = this.Graph.Cost.IsFeasible;
 
