@@ -1088,7 +1088,8 @@ namespace ServiceSiteScheduling.Solutions
                             }
                         }
                         // remove first
-                        moveaction.Resources.RemoveAt(0);
+                        if(moveaction.Resources.Count > 0)
+                            moveaction.Resources.RemoveAt(0);
                         // add to plan
                         plan.Actions.Add(moveaction);
 
