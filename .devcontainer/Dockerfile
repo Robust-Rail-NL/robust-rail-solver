@@ -1,5 +1,5 @@
 # Use Ubuntu 20.04 base image
-FROM ubuntu:20.04
+FROM  --platform=linux/amd64 ubuntu:20.04
 
 # Set non-interactive mode to avoid prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     apt-transport-https \
     ca-certificates \
+    gnupg \
     software-properties-common
 
 # Install Microsoft package repository for .NET
@@ -19,7 +20,6 @@ RUN wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-p
 RUN chmod 755 packages-microsoft-prod.deb
 RUN dpkg -i packages-microsoft-prod.deb
 RUN rm packages-microsoft-prod.deb
-
 
 
 # Install .NET SDK 8.0
