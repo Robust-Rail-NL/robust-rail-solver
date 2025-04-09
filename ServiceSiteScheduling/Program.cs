@@ -19,17 +19,57 @@ namespace ServiceSiteScheduling
     {
         static void Main(string[] args)
         {
-            /*AlgoIface.Plan plan = null;
-            using (StreamReader reader = new StreamReader("test1"))
-                plan = AlgoIface.Plan.Parser.Parse
-                From(reader.BaseStream);*/
-            // RunForStudents();
-            // TS();
-            Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
-            Console.WriteLine("***************** CreatePlan() *****************");
-            CreatePlan("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/plan.json");
 
-            // Test();
+            if (args.Length != 0)
+            {
+                // Run the program from config file
+                string config_file = "";
+                foreach (string arg in args)
+                {
+                    if (arg.StartsWith("--config="))
+                    {
+                        config_file = arg.Substring("--config=".Length);
+
+
+                        if (!File.Exists(config_file))
+                        {
+                            Console.Error.WriteLine($"Error: Config file '{config_file}' not found.");
+                            Environment.Exit(1);
+                        }
+
+                        string yaml = File.ReadAllText(config_file);
+
+                        var deserializer = new Deserializer();
+                        Config config = deserializer.Deserialize<Config>(new StringReader(yaml));
+
+                        Console.WriteLine("***************** Test_Location_Scenario_Parsing() *****************");
+
+                        Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath);
+
+                        Console.WriteLine("***************** CreatePlan() *****************");
+                        CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
+
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine("Unknown --parameter name");
+                        Environment.Exit(1);
+                    }
+                }
+            }
+            else
+            {   // If there is no argument specified, the program is run from here
+                // RunForStudents();
+                Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
+                Console.WriteLine("***************** CreatePlan() *****************");
+                CreatePlan("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/plan.json");
+
+                // Test();
+
+            }
+
+
+
         }
 
         // Input:   @location_path: path to the location (.json) file
@@ -37,7 +77,7 @@ namespace ServiceSiteScheduling
         // Output:  @plan_path: path to where the plan (.json) file will be written
         // Method: First it calls a Tabu Search method to find an initial plan (Graph) that is used by 
         //         a Simulated Annealing method to find the final schedle plan (Totally Ordered Graph)
-        static void CreatePlan(string location_path, string scenario_path, string plan_path)
+        static void CreatePlan(string location_path, string scenario_path, string plan_path, Config config = null)
         {
             // Console.WriteLine("seed?");
             // var line = Console.ReadLine();
@@ -60,10 +100,25 @@ namespace ServiceSiteScheduling
             {
                 Console.WriteLine(i);
                 LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random);
-                ts.Run(40, 100, 16, 0.5);
+                if (config != null)
+                {
+                    ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, config.TabuSearch.SuppressConsoleOutput);
+                }
+                else
+                {
+                    ts.Run(40, 100, 16, 0.5);
+                }
                 LocalSearch.SimulatedAnnealing sa = new LocalSearch.SimulatedAnnealing(random, ts.Graph);
-                sa.Run(Time.Hour, true, 150000, 15, 0.97, 2000, 2000, 0.2, false);
-                
+                if (config != null)
+                {
+                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, config.SimulatedAnnealing.SuppressConsoleOutput, config.SimulatedAnnealing.IintensifyOnImprovement);
+                }
+                else
+                {
+                    sa.Run(Time.Hour, true, 150000, 15, 0.97, 2000, 2000, 0.2, false);
+
+                }
+
                 Console.WriteLine("--------------------------");
                 Console.WriteLine(" Output Movement Schedule ");
                 Console.WriteLine("--------------------------");
@@ -113,8 +168,16 @@ namespace ServiceSiteScheduling
 
                 // Save plan as json
                 // string filePath = "./database/TUSS-Instance-Generator/plan.json";
+                string directoryPath = Path.GetDirectoryName(plan_path);
 
-                
+                if (!Directory.Exists(directoryPath) && directoryPath != null)
+                {   
+
+                    // Create the directory if it does not exist
+                    Directory.CreateDirectory(directoryPath);
+                    Console.WriteLine($"Directory created: {directoryPath}");
+                }
+
                 File.WriteAllText(plan_path, jsonPlan);
 
                 Console.WriteLine("----------------------------------------------------------------------");
@@ -388,7 +451,7 @@ namespace ServiceSiteScheduling
                 {
                     Console.WriteLine("The Location file parsing was not successful! ");
                 }
-                
+
                 Console.WriteLine("Scenario details: ");
                 Console.WriteLine("---- Incoming Trains ----");
                 List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(scenario_in.Trains);
@@ -404,12 +467,12 @@ namespace ServiceSiteScheduling
                 }
 
                 List<AlgoIface.TrainRequest> outgoingTrains = new List<AlgoIface.TrainRequest>(scenario_out.TrainRequests);
-                foreach(AlgoIface.TrainRequest train in scenario_out.TrainRequests)
+                foreach (AlgoIface.TrainRequest train in scenario_out.TrainRequests)
                 {
                     outgoingTrains.Add(train);
                 }
 
-                foreach(AlgoIface.TrainRequest train in outgoingTrains)
+                foreach (AlgoIface.TrainRequest train in outgoingTrains)
                 {
                     Console.WriteLine("Parcking track " + train.LastParkingTrackPart + " for train (id) " + train.DisplayName);
 
@@ -428,9 +491,37 @@ namespace ServiceSiteScheduling
 
     class Config
     {
+        public ConfigTabuSearch TabuSearch { get; set; }
+        public ConfigSimulatedAnnealing SimulatedAnnealing { get; set; }
+        public class ConfigTabuSearch
+        {
+            public int Iterations { get; set; }
+            public int IterationsUntilReset { get; set; }
+            public int TabuListLength { get; set; }
+            public float Bias { get; set; }
+            public bool SuppressConsoleOutput { get; set; }
+
+        }
+        public class ConfigSimulatedAnnealing
+        {
+            public int MaxDuration { get; set; }
+            public bool StopWhenFeasible { get; set; }
+            public int IterationsUntilReset { get; set; }
+            public int T { get; set; }
+            public float A { get; set; }
+            public int Q { get; set; }
+            public int Reset { get; set; }
+            public float Bias { get; set; }
+            public bool SuppressConsoleOutput { get; set; }
+            public bool IintensifyOnImprovement { get; set; }
+
+        }
         public int Seed { get; set; }
         public int MaxDuration { get; set; }
         public bool StopWhenFeasible { get; set; }
+        public string LocationPath { get; set; }
+        public string ScenarioPath { get; set; }
+        public string PlanPath { get; set; }
         public string OutputPath { get; set; }
     }
 }
