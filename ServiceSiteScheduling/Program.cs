@@ -26,13 +26,18 @@ namespace ServiceSiteScheduling
             // RunForStudents();
             // TS();
             Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
-            Console.WriteLine("***************** Test TS() *****************");
-            // TS();
+            Console.WriteLine("***************** CreatePlan() *****************");
+            CreatePlan("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/plan.json");
 
             // Test();
         }
 
-        static void TS()
+        // Input:   @location_path: path to the location (.json) file
+        //          @scenario_path: path to the scenario (.json) file
+        // Output:  @plan_path: path to where the plan (.json) file will be written
+        // Method: First it calls a Tabu Search method to find an initial plan (Graph) that is used by 
+        //         a Simulated Annealing method to find the final schedle plan (Totally Ordered Graph)
+        static void CreatePlan(string location_path, string scenario_path, string plan_path)
         {
             // Console.WriteLine("seed?");
             // var line = Console.ReadLine();
@@ -47,8 +52,8 @@ namespace ServiceSiteScheduling
             // ProblemInstance.Current = ProblemInstance.Parse("./database/TUSS-Instance-Generator/location.dat", "./database/TUSS-Instance-Generator/scenario.dat");
 
 
-
-            ProblemInstance.Current = ProblemInstance.ParseJson("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
+            ProblemInstance.Current = ProblemInstance.ParseJson(location_path, scenario_path);
+            // ProblemInstance.Current = ProblemInstance.ParseJson("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
 
             int solved = 0;
             for (int i = 0; i < 1; i++)
@@ -58,8 +63,7 @@ namespace ServiceSiteScheduling
                 ts.Run(40, 100, 16, 0.5);
                 LocalSearch.SimulatedAnnealing sa = new LocalSearch.SimulatedAnnealing(random, ts.Graph);
                 sa.Run(Time.Hour, true, 150000, 15, 0.97, 2000, 2000, 0.2, false);
-                //ts = new LocalSearch.TabuSearch(random, sa.Graph);
-                //ts.Run(100, 100, 16);
+                
                 Console.WriteLine("--------------------------");
                 Console.WriteLine(" Output Movement Schedule ");
                 Console.WriteLine("--------------------------");
@@ -108,8 +112,10 @@ namespace ServiceSiteScheduling
                 Console.WriteLine(jsonPlan);
 
                 // Save plan as json
-                string filePath = "./database/TUSS-Instance-Generator/plan.json";
-                File.WriteAllText(filePath, jsonPlan);
+                // string filePath = "./database/TUSS-Instance-Generator/plan.json";
+
+                
+                File.WriteAllText(plan_path, jsonPlan);
 
                 Console.WriteLine("----------------------------------------------------------------------");
 
@@ -294,12 +300,14 @@ namespace ServiceSiteScheduling
 
             }
         }
+
+        // Tests if the given location and scenario (json format) files can be parsed correctly int protobuf objects (ProblemInstance)
+        // As partial results, the function displays the details about the infrstructure of the location, and the incoming and outgoing trains of the scenario
+        // Input:   @location_path: path to the location (.json) file
+        //          @scenario_path: path to the scenario (.json) file
         static void Test_Location_Scenario_Parsing(string location_path, string scenario_path)
         {
             ProblemInstance.Current = ProblemInstance.ParseJson(location_path, scenario_path);
-
-            // ProblemInstance.Current = ProblemInstance.ParseJson("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
-
             try
             {
 
