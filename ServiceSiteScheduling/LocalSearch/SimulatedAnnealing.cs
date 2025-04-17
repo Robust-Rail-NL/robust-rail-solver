@@ -197,6 +197,7 @@ namespace ServiceSiteScheduling.LocalSearch
         // cannot be improved -> the current solution is reverted to the original solution
         // @bias: Restricted probability (e.g., 0.4)
         // @suppressConsoleOutput: enables extra logs
+        // @intensifyOnImprovement: enables further improvments
         public void Run(Time maxduration, bool stopWhenFeasible, int iterations, double t, double a, int q, int reset, double bias = 0.4, bool suppressConsoleOutput = false, bool intensifyOnImprovement = false)
         {
             double T = t, alpha = a;

@@ -187,7 +187,7 @@ namespace ServiceSiteScheduling.Tasks
             this.SuccessorTrackTaskByInfrastructure.Add(successor);
         }
 
-        public void AddNewPredeccessorByInfrastructure(POSTrackTask predeccessor)
+        public void AddNewPredecessorByInfrastructure(POSTrackTask predeccessor)
         {
             this.PredecessorTrackTaskByInfrastructure.Add(predeccessor);
         }

@@ -67,7 +67,7 @@ namespace ServiceSiteScheduling.Solutions
         public MoveTask First { get; set; }
         public MoveTask Last { get; set; }
 
-        // List of moves got from the Totaly Ordered Solution
+        // List of moves got from the Totally Ordered Solution
         // the moves already contain the relations with the tasks
         // this list should be initiated only once and the order of moves should not be changed
         public List<MoveTask> ListOfMoves { get; set; }
@@ -75,7 +75,7 @@ namespace ServiceSiteScheduling.Solutions
         public List<POSTrackTask> ListOfPOSTrackTasks { get; set; }
 
         // Dictionary that contains the overall Infrastructure used in the scenario
-        public Dictionary<ulong, Infrastructure> DictOfInrastructure { get; set; }
+        public Dictionary<ulong, Infrastructure> DictOfInfrastructure { get; set; }
         public PartialOrderSchedule(MoveTask first)
         {
             this.First = first;
@@ -100,9 +100,9 @@ namespace ServiceSiteScheduling.Solutions
             return trains;
         }
 
-        // Get the infrastrucure describing the shunting yard
+        // Get the infrastructure describing the shunting yard
         // this information is obtained from the ProblemInstance, created from the `location.data` file
-        public Dictionary<ulong, Infrastructure> GetInfrasturcture()
+        public Dictionary<ulong, Infrastructure> GetInfrastructure()
         {
             ProblemInstance instance = ProblemInstance.Current;
 
@@ -184,20 +184,20 @@ namespace ServiceSiteScheduling.Solutions
 
         public List<ulong> GetIDListOfInfraUsedByTrackTasks(POSTrackTask posTrackTask)
         {
-            List<ulong> IDListOfInstraUsed = [
+            List<ulong> IDListOfInfraUsed = [
                 posTrackTask.Track.ASide.ID,
                 posTrackTask.Track.ID,
                 posTrackTask.Track.BSide.ID,
             ];
 
-            return IDListOfInstraUsed;
+            return IDListOfInfraUsed;
         }
 
 
         // Returns list of the IDs of the Infrastructure used by a movement (MoveTask)
         public List<ulong> GetIDListOfInfraUsed(MoveTask move)
         {
-            List<ulong> IDListOfInstraUsed = new List<ulong>();
+            List<ulong> IDListOfInfraUsed = new List<ulong>();
 
             var routing = move as RoutingTask;
 
@@ -210,9 +210,9 @@ namespace ServiceSiteScheduling.Solutions
                 foreach (Track track in tracks)
                 {
 
-                    IDListOfInstraUsed.Add(track.ASide.ID);
-                    IDListOfInstraUsed.Add(track.ID);
-                    IDListOfInstraUsed.Add(track.BSide.ID);
+                    IDListOfInfraUsed.Add(track.ASide.ID);
+                    IDListOfInfraUsed.Add(track.ID);
+                    IDListOfInfraUsed.Add(track.BSide.ID);
 
                 }
             }
@@ -228,42 +228,42 @@ namespace ServiceSiteScheduling.Solutions
                         var listOfRoutes = routingDeparture.GetRoutes();
 
                         // // TODO: display more infrastructure
-                        int numbrerOfInfraUsed = 0;
+                        int numberOfInfraUsed = 0;
                         int k = 0;
                         foreach (Route route in listOfRoutes)
                         {
                             var tracks = route.Tracks;
                             var lastTrack = tracks.Last();
 
-                            List<ulong> IDListOfInstraUsedIntermediate = new List<ulong>();
+                            List<ulong> IDListOfInfraUsedIntermediate = new List<ulong>();
 
                             foreach (Track track in tracks)
                             {
 
-                                IDListOfInstraUsedIntermediate.Add(track.ASide.ID);
-                                IDListOfInstraUsedIntermediate.Add(track.ID);
-                                IDListOfInstraUsedIntermediate.Add(track.BSide.ID);
+                                IDListOfInfraUsedIntermediate.Add(track.ASide.ID);
+                                IDListOfInfraUsedIntermediate.Add(track.ID);
+                                IDListOfInfraUsedIntermediate.Add(track.BSide.ID);
 
                             }
                             // TODO: review this, probably a different logic should be used her
                             // maybe calculate the distance for each route ?
                             if (k == 0)
                             {
-                                numbrerOfInfraUsed = IDListOfInstraUsedIntermediate.Count;
-                                foreach (ulong trackID in IDListOfInstraUsedIntermediate)
-                                    IDListOfInstraUsed.Add(trackID);
+                                numberOfInfraUsed = IDListOfInfraUsedIntermediate.Count;
+                                foreach (ulong trackID in IDListOfInfraUsedIntermediate)
+                                    IDListOfInfraUsed.Add(trackID);
 
                             }
                             else
                             {
-                                if (IDListOfInstraUsedIntermediate.Count < numbrerOfInfraUsed)
+                                if (IDListOfInfraUsedIntermediate.Count < numberOfInfraUsed)
                                 {
-                                    // Less infrasturcure used
-                                    numbrerOfInfraUsed = IDListOfInstraUsedIntermediate.Count;
-                                    IDListOfInstraUsed = new List<ulong>();
+                                    // Less infrastructure used
+                                    numberOfInfraUsed = IDListOfInfraUsedIntermediate.Count;
+                                    IDListOfInfraUsed = new List<ulong>();
 
-                                    foreach (ulong trackID in IDListOfInstraUsedIntermediate)
-                                        IDListOfInstraUsed.Add(trackID);
+                                    foreach (ulong trackID in IDListOfInfraUsedIntermediate)
+                                        IDListOfInfraUsed.Add(trackID);
                                 }
 
                             }
@@ -276,30 +276,30 @@ namespace ServiceSiteScheduling.Solutions
                 }
             }
 
-            return IDListOfInstraUsed;
+            return IDListOfInfraUsed;
         }
 
-        // Returns true if the same infrastrucure is used by previous moves as the requireied in @IDListOfInfraUsed
+        // Returns true if the same infrastructure is used by previous moves as the required in @IDListOfInfraUsed
         // @IDListOfInfraUsed contains the infrastructure the current move will use
         // @InfraOccupiedByMovesID is a dictionary (Key:Value) contains all the infrastructures (Key) and
         // their occupation by a specific move (Value) - note: the moves are specified by their IDs
-        // @conflictingMoveIds contains all the conflicting moves, that use the same infrastrucure the current move requires to occupy
+        // @conflictingMoveIds contains all the conflicting moves, that use the same infrastructure the current move requires to occupy
         public bool InfraConflict(Dictionary<Infrastructure, int> InfraOccupiedByMovesID, List<ulong> IDListOfInfraUsed, int moveID, ref List<int> conflictingMoveIds)
         {
 
-            Dictionary<ulong, Infrastructure> DictOfInfrastrucure = this.DictOfInrastructure;
+            Dictionary<ulong, Infrastructure> DictOfInfrastructure = this.DictOfInfrastructure;
 
             conflictingMoveIds = new List<int>();
             foreach (ulong id in IDListOfInfraUsed)
             {
-                if (InfraOccupiedByMovesID[DictOfInfrastrucure[id]] == 999)
+                if (InfraOccupiedByMovesID[DictOfInfrastructure[id]] == 999)
                 {
-                    // conflictingMoveId = InfraOccupiedByMovesID[DictOfInfrastrucure[id]];
+                    // conflictingMoveId = InfraOccupiedByMovesID[DictOfInfrastructure[id]];
                 }
                 else
                 {
-                    if (conflictingMoveIds.Contains(InfraOccupiedByMovesID[DictOfInfrastrucure[id]]) == false)
-                        conflictingMoveIds.Add(InfraOccupiedByMovesID[DictOfInfrastrucure[id]]);
+                    if (conflictingMoveIds.Contains(InfraOccupiedByMovesID[DictOfInfrastructure[id]]) == false)
+                        conflictingMoveIds.Add(InfraOccupiedByMovesID[DictOfInfrastructure[id]]);
                 }
 
 
@@ -310,7 +310,7 @@ namespace ServiceSiteScheduling.Solutions
             return false;
         }
 
-        // Returns true if the same train unit is used by previous moves as the requireied in @IDListOfTrainUnitUsed
+        // Returns true if the same train unit is used by previous moves as the required in @IDListOfTrainUnitUsed
         // @IDListOfTrainUnitUsed contains the train units of the current move
         // @TrainUnitsOccupiedByMovesID is a dictionary (Key:Value) contains all the train units (Key) and
         // their appearance by a specific move (Value) - note: the moves are specified by their IDs
@@ -343,7 +343,7 @@ namespace ServiceSiteScheduling.Solutions
         }
 
 
-        // Returns true if the same train unit is used by previous POSTrackTask as the requireied in @IDListOfTrainUnitUsed
+        // Returns true if the same train unit is used by previous POSTrackTask as the required in @IDListOfTrainUnitUsed
         // @IDListOfTrainUnitUsed contains the train units of the current POSTrackTask
         // @TrainUnitsOccupiedByTrackTaskID is a dictionary (Key:Value) contains all the train units (Key) and
         // their appearance by a specific POSTrackTask (Value) - note: the POSTrackTasks are specified by their IDs
@@ -378,7 +378,7 @@ namespace ServiceSiteScheduling.Solutions
         // Links the previous move -@parentMovementID- this move was conflicting since it previously used the same infrastructure/train unit as the
         // the current move -@childMovementID-
         // @MovementLinks is a dictionary with move IDs as Key, and value as List of all the linked moves
-        public void LinkMovmentsByID(Dictionary<int, List<int>> MovementLinks, int parentMovementID, int childMovementID)
+        public void LinkMovementsByID(Dictionary<int, List<int>> MovementLinks, int parentMovementID, int childMovementID)
         {
 
             if (!MovementLinks.ContainsKey(parentMovementID))
@@ -406,7 +406,7 @@ namespace ServiceSiteScheduling.Solutions
 
 
 
-        public void MergeMovements(Dictionary<Infrastructure, MoveTask> InfraOccupiedByMoves, Dictionary<Infrastructure, int> InfraOccupiedByMovesID, Dictionary<ulong, Infrastructure> DictOfInfrastrucure, int currentID)
+        public void MergeMovements(Dictionary<Infrastructure, MoveTask> InfraOccupiedByMoves, Dictionary<Infrastructure, int> InfraOccupiedByMovesID, Dictionary<ulong, Infrastructure> DictOfInfrastructure, int currentID)
         {
             List<MoveTask> listOfMoves = this.ListOfMoves;
 
@@ -415,32 +415,32 @@ namespace ServiceSiteScheduling.Solutions
 
             foreach (ulong infraID in IDListOfInfraUsed)
             {
-                InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
-                InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = currentID;
+                InfraOccupiedByMoves[DictOfInfrastructure[infraID]] = currentMove;
+                InfraOccupiedByMovesID[DictOfInfrastructure[infraID]] = currentID;
             }
         }
 
-        // Returns true if the same infrastrucure is used by previous POSTrackTask as the requireied in @IDListOfInfraUsed
+        // Returns true if the same infrastructure is used by previous POSTrackTask as the required in @IDListOfInfraUsed
         // @IDListOfInfraUsed contains the infrastructure the current POSTrackTask will use
         // @InfraOccupiedByTrackTaskID is a dictionary (Key:Value) contains all the infrastructures (Key) and
         // their occupation by a specific POSTrackTask (Value) - note: the POSTrackTask are specified by their IDs
-        // @conflictingTrackTaskIds contains all the conflicting moves, that use the same infrastrucure the current POSTrackTask requires to occupy
+        // @conflictingTrackTaskIds contains all the conflicting moves, that use the same infrastructure the current POSTrackTask requires to occupy
         public bool InfraConflictByTrackTasks(Dictionary<Infrastructure, int> InfraOccupiedByTrackTaskID, List<ulong> IDListOfInfraUsed, ref List<int> conflictingTrackTaskIds)
         {
 
-            Dictionary<ulong, Infrastructure> DictOfInfrastrucure = this.DictOfInrastructure;
+            Dictionary<ulong, Infrastructure> DictOfInfrastructure = this.DictOfInfrastructure;
 
             conflictingTrackTaskIds = new List<int>();
             foreach (ulong id in IDListOfInfraUsed)
             {
-                if (InfraOccupiedByTrackTaskID[DictOfInfrastrucure[id]] == 999)
+                if (InfraOccupiedByTrackTaskID[DictOfInfrastructure[id]] == 999)
                 {
-                    // conflictingMoveId = InfraOccupiedByMovesID[DictOfInfrastrucure[id]];
+                    // conflictingMoveId = InfraOccupiedByMovesID[DictOfInfrastructure[id]];
                 }
                 else
                 {
-                    if (conflictingTrackTaskIds.Contains(InfraOccupiedByTrackTaskID[DictOfInfrastrucure[id]]) == false)
-                        conflictingTrackTaskIds.Add(InfraOccupiedByTrackTaskID[DictOfInfrastrucure[id]]);
+                    if (conflictingTrackTaskIds.Contains(InfraOccupiedByTrackTaskID[DictOfInfrastructure[id]]) == false)
+                        conflictingTrackTaskIds.Add(InfraOccupiedByTrackTaskID[DictOfInfrastructure[id]]);
                 }
 
 
@@ -452,8 +452,8 @@ namespace ServiceSiteScheduling.Solutions
 
         }
 
-        // TODO: rename it to CreatePOS - it should pobably be called only once
-        // later un update function will basically be called when a recopute of POS
+        // TODO: rename it to CreatePOS - it should probably be called only once
+        // later un update function will basically be called when a recompute of POS
         // is needed
         public void CreatePOS()
         {
@@ -468,8 +468,8 @@ namespace ServiceSiteScheduling.Solutions
             // the current move even if it is trivial when the same train unit is used in the previous and the current move,
             // Value: list of linked movements (IDs child moves)
             // 0:{1,3} OR 1:{2,3}
-            // Idea is to onbtain multiple directed graphs -> dependency between linked movements
-            // To Note: here the links are the links of infrastructure conflicts and same train units per movment
+            // Idea is to obtain multiple directed graphs -> dependency between linked movements
+            // To Note: here the links are the links of infrastructure conflicts and same train units per movement
             // @MovementLinksSameInfrastructure contains the linked moves related to the same infrastructure used
             // @MovementLinksSameTrainUnit contains the linked moves related to the same train unit used
             Dictionary<int, List<int>> MovementLinks = new Dictionary<int, List<int>>();
@@ -487,29 +487,29 @@ namespace ServiceSiteScheduling.Solutions
             Dictionary<int, List<int>> MovementLinksSameTrainUnit = new Dictionary<int, List<int>>();
 
 
-            // Dictionary with all infrastrucures, for each infrastructure a movement is assigned
+            // Dictionary with all infrastructures, for each infrastructure a movement is assigned
             Dictionary<Infrastructure, MoveTask> InfraOccupiedByMoves = new Dictionary<Infrastructure, MoveTask>();
 
-            // Dictionary with all infrastrucures, for each infrastructure a movement ID is assigned, the IDs
+            // Dictionary with all infrastructures, for each infrastructure a movement ID is assigned, the IDs
             // are used to access a move which is stored in 'listOfMoves' or  'this.ListOfMoves'
-            // the InfraOccupiedByMovesID is initialized with 999, meaning that there in no valid movment ID
+            // the InfraOccupiedByMovesID is initialized with 999, meaning that there in no valid movement ID
             // assigned yet to the for the given infrastructure
             Dictionary<Infrastructure, int> InfraOccupiedByMovesID = new Dictionary<Infrastructure, int>();
 
             Dictionary<Infrastructure, int> InfraOccupiedByTrackTaskID = new Dictionary<Infrastructure, int>();
 
 
-            //List of al train uinit used the movement present in this scenario
+            //List of al train uint used the movement present in this scenario
             List<Trains.TrainUnit> ListOfTrainUnits = this.ListOfTrainUnits;
 
             // Dictionary with all train units, for each train unit a movement ID is assigned, the IDs
             // are used to access a move which is stored in 'listOfMoves' or  'this.ListOfMoves'
-            // the TrainUnitsOccupiedByMovesID is initialized with 999, meaning that there in no valid movment ID
+            // the TrainUnitsOccupiedByMovesID is initialized with 999, meaning that there in no valid movement ID
             // assigned yet to given train unit
             Dictionary<Trains.TrainUnit, int> TrainUnitsOccupiedByMovesID = new Dictionary<Trains.TrainUnit, int>();
 
-            // Dictionary conatining all the infrasturcutre, index:infrastructure
-            Dictionary<ulong, Infrastructure> DictOfInfrastrucure = this.DictOfInrastructure;
+            // Dictionary containing all the infrastructure, index:infrastructure
+            Dictionary<ulong, Infrastructure> DictOfInfrastructure = this.DictOfInfrastructure;
 
 
             // Dictionary with POSTrackTask IDs as Key, and value as List of linked POSTrackTask using the same train unit,
@@ -536,7 +536,7 @@ namespace ServiceSiteScheduling.Solutions
             bool Test = true;
 
             // Initialize dictionaries
-            foreach (KeyValuePair<ulong, Infrastructure> infra in DictOfInfrastrucure)
+            foreach (KeyValuePair<ulong, Infrastructure> infra in DictOfInfrastructure)
             {
                 InfraOccupiedByMoves[infra.Value] = null; // Maybe later this can be removed
                 InfraOccupiedByMovesID[infra.Value] = 999;
@@ -592,53 +592,53 @@ namespace ServiceSiteScheduling.Solutions
                 // Identify all the conflicting moves related to the infrastructure used by the movements - and link moves
                 if (InfraConflict(InfraOccupiedByMovesID, IDListOfInfraUsed, moveIndex, ref conflictingMoveIds) == false)
                 {
-                    // No conflict occured
+                    // No conflict occurred
 
                     foreach (ulong infraID in IDListOfInfraUsed)
                     {
                         // Assign move to the infrastructure occupied
-                        InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
-                        InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
+                        InfraOccupiedByMoves[DictOfInfrastructure[infraID]] = currentMove;
+                        InfraOccupiedByMovesID[DictOfInfrastructure[infraID]] = moveIndex;
                     }
 
                 }
                 else
                 {
 
-                    // Contains all the movments that was assigned to the same movements as the train unit of the cuurent move (moveIndex)
-                    // this also mean that these movements are conflicting becasue of the same train used assigned to the movement
+                    // Contains all the movements that was assigned to the same movements as the train unit of the current move (moveIndex)
+                    // this also mean that these movements are conflicting because of the same train used assigned to the movement
                     // and not only because of the same infrastructure used
                     List<int> movesUsingSameTrainUnit = CheckIfSameTrainUintUsed(conflictingMoveIds, listOfMoves, moveIndex);
 
                     foreach (int MoveId in conflictingMoveIds)
                     {
                         // 1st: link movements -> conflictingMoveId is now linked with the moveIndex (current move id)
-                        LinkMovmentsByID(MovementLinks, MoveId, moveIndex);
+                        LinkMovementsByID(MovementLinks, MoveId, moveIndex);
 
 
                         if (movesUsingSameTrainUnit.Count != 0)
                         {
-                            // This statement is used to link the movements conflicted because of using the same infrastrucure\
+                            // This statement is used to link the movements conflicted because of using the same infrastructure\
                             // and not because of same train unit assigned per movement {aka dashed line dependency}
                             if (!movesUsingSameTrainUnit.Contains(MoveId))
-                                LinkMovmentsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
+                                LinkMovementsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
 
                             // This statement is used to link the movements conflicted because of using the same train unit\
                             // and not because of same infrastructure assigned per movement {aka solid line dependency}
                             // if (movesUsingSameTrainUnit.Contains(MoveId))
-                            //     LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
+                            //     LinkMovementsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
                         }
                         else
                         {
-                            LinkMovmentsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
+                            LinkMovementsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
                         }
 
                     }
                     // 2nd Assign current movement to the required infrastructure
                     foreach (ulong infraID in IDListOfInfraUsed)
                     {
-                        InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
-                        InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
+                        InfraOccupiedByMoves[DictOfInfrastructure[infraID]] = currentMove;
+                        InfraOccupiedByMovesID[DictOfInfrastructure[infraID]] = moveIndex;
                     }
 
 
@@ -650,10 +650,10 @@ namespace ServiceSiteScheduling.Solutions
 
                 if (TrainUnitConflict(TrainUnitsOccupiedByMovesID, IDListOfTrainUnitUsed, ref conflictingMoveIds) == false)
                 {
-                    // No conflict occured. Here the moves are not linked
+                    // No conflict occurred. Here the moves are not linked
                     foreach (int trainUnitID in IDListOfTrainUnitUsed)
                     {
-                        // Assin the move to the Train Units used
+                        // Assign the move to the Train Units used
                         TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
                     }
                 }
@@ -662,7 +662,7 @@ namespace ServiceSiteScheduling.Solutions
                     // The conflicting moves are linked
                     foreach (int MoveId in conflictingMoveIds)
                     {
-                        LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
+                        LinkMovementsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
 
                     }
 
@@ -693,19 +693,18 @@ namespace ServiceSiteScheduling.Solutions
             this.LastPOS = POSadjacencyList.Last().Key;
 
             this.POSadjacencyListForInfrastructure = CreatePOSAdjacencyList(MovementLinksSameInfrastructure);
-            AddInfrastructurePredeccessorSuccessorLinksToPOSMoves();
+            AddInfrastructurePredecessorSuccessorLinksToPOSMoves();
             this.POSadjacencyListForTrainUint = CreatePOSAdjacencyList(MovementLinksSameTrainUnit);
 
 
-            AddTrainUnitPredeccessorSuccessorLinksToPOSMoves();
+            AddTrainUnitPredecessorSuccessorLinksToPOSMoves();
 
 
-            AddSuccessorsAndPredeccessors();
+            AddSuccessorsAndPredecessors();
 
             // DisplayAllPOSMovementLinks();
             DisplayPOSMovementLinksInfrastructureUsed();
-            DisplayPOSMovementLinksTrainUinitUsed();
-            // DisplayTrainUnitSuccessorsAndPredeccessors();
+            DisplayPOSMovementLinksTrainUnitUsed();
 
             this.ListOfPOSTrackTasks = CreatePOSTrackTaskList();
             DisplayListPOSTrackTracks();
@@ -721,26 +720,26 @@ namespace ServiceSiteScheduling.Solutions
             while (ok != 0)
             {
 
-                var currentPOSTrakTask = listOfPOSTrackTasks[TrackTaskIndex];
+                var currentPOSTrackTask = listOfPOSTrackTasks[TrackTaskIndex];
 
-                List<ulong> IDListOfInfraUsed = GetIDListOfInfraUsedByTrackTasks(currentPOSTrakTask);
+                List<ulong> IDListOfInfraUsed = GetIDListOfInfraUsedByTrackTasks(currentPOSTrackTask);
 
-                // Identify all the conflicting POSTrackTask related to the infrastructure used by the POSTrakTask - and links POSTrackTasks
+                // Identify all the conflicting POSTrackTask related to the infrastructure used by the POSTrackTask - and links POSTrackTasks
                 if (InfraConflictByTrackTasks(InfraOccupiedByTrackTaskID, IDListOfInfraUsed, ref conflictingTrackTaskIds) == false)
                 {
-                    // No conflict occured
+                    // No conflict occurred
 
                     foreach (ulong infraID in IDListOfInfraUsed)
                     {
                         // Assign POSTrackTask to the infrastructure occupied
-                        InfraOccupiedByTrackTaskID[DictOfInfrastrucure[infraID]] = TrackTaskIndex;
+                        InfraOccupiedByTrackTaskID[DictOfInfrastructure[infraID]] = TrackTaskIndex;
                     }
 
                 }
                 else
                 {
                     // Contains all the POSTrackTasks that was assigned to the same POSTrackTask as the train unit of the current POSTrackTask (TrackTaskIndex)
-                    // this also mean that these POSTrackTasks are conflicting becasue of the same train used (assigned to the POSTrackTask)
+                    // this also mean that these POSTrackTasks are conflicting because of the same train used (assigned to the POSTrackTask)
                     // and not only because of the same infrastructure used
                     List<int> trackTaskUsingSameTrainUnit = CheckIfSameTrainUintUsedByPOSTrackTask(conflictingTrackTaskIds, listOfPOSTrackTasks, TrackTaskIndex);
 
@@ -752,7 +751,7 @@ namespace ServiceSiteScheduling.Solutions
 
                         if (trackTaskUsingSameTrainUnit.Count != 0)
                         {
-                            // This statement is used to link the POSTrackTasks conflicted because of using the same infrastrucure\
+                            // This statement is used to link the POSTrackTasks conflicted because of using the same infrastructure\
                             // and not because of same train unit assigned per POSTrackTask {aka dashed line dependency}
                             if (!trackTaskUsingSameTrainUnit.Contains(trackTaskId))
                                 LinkTrackTaskByID(POSTrackTaskLinksSameInfrastructure, trackTaskId, TrackTaskIndex);
@@ -768,20 +767,20 @@ namespace ServiceSiteScheduling.Solutions
                     // 2nd Assign current POSTrackTask to the required infrastructure
                     foreach (ulong infraID in IDListOfInfraUsed)
                     {
-                        InfraOccupiedByTrackTaskID[DictOfInfrastrucure[infraID]] = TrackTaskIndex;
+                        InfraOccupiedByTrackTaskID[DictOfInfrastructure[infraID]] = TrackTaskIndex;
                     }
                 }
 
                 // Identify all the conflicting POSTrackTask related to the same train units used by the POSTrackTask - and link POSTrackTask
 
-                List<int> IDListOfTrainUnitUsed = GetIDListOfTrainUnitUsedPOSTrackTask(currentPOSTrakTask); // Train units used by the POSTrackTask
+                List<int> IDListOfTrainUnitUsed = GetIDListOfTrainUnitUsedPOSTrackTask(currentPOSTrackTask); // Train units used by the POSTrackTask
 
                 if (TrainUnitConflictByPOSTrackTask(TrainUnitsOccupiedByPOSTrackTaskID, IDListOfTrainUnitUsed, ref conflictingTrackTaskIds) == false)
                 {
-                    // No conflict occured. Here the POSTrackTasks are not linked
+                    // No conflict occurred. Here the POSTrackTasks are not linked
                     foreach (int trainUnitID in IDListOfTrainUnitUsed)
                     {
-                        // Assin the POSTrackTask to the Train Units used
+                        // Assign the POSTrackTask to the Train Units used
                         TrainUnitsOccupiedByPOSTrackTaskID[ListOfTrainUnits[trainUnitID]] = TrackTaskIndex;
                     }
                 }
@@ -847,10 +846,10 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("|              From POSTrackTask inner Links (same Train Unit used) - AdjacencyList            |");
             Console.WriteLine("-----------------------------------------------------------------------------------------------");
 
-            foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> Ttask in this.POSTrackTaskadjacencyListForTrainUsed)
+            foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> Task in this.POSTrackTaskadjacencyListForTrainUsed)
             {
-                Console.Write($"POSTrackTask {Ttask.Key.ID} --> ");
-                foreach (POSTrackTask linkToPOStrackTask in Ttask.Value)
+                Console.Write($"POSTrackTask {Task.Key.ID} --> ");
+                foreach (POSTrackTask linkToPOStrackTask in Task.Value)
                 {
                     Console.Write($"POSTrackTask {linkToPOStrackTask.ID} ");
                 }
@@ -865,34 +864,34 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("|              From POSTrackTask inner Links (same Infrastructure used) - AdjacencyList            |");
             Console.WriteLine("--------------------------------------------------------------------------------------------------");
 
-            foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> Ttask in this.POSTrackTaskadjacencyListForInfrastructure)
+            foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> Task in this.POSTrackTaskadjacencyListForInfrastructure)
             {
-                Console.Write($"POSTrackTask {Ttask.Key.ID} --> ");
-                foreach (POSTrackTask linkToPOStrackTask in Ttask.Value)
+                Console.Write($"POSTrackTask {Task.Key.ID} --> ");
+                foreach (POSTrackTask linkToPOStrackTask in Task.Value)
                 {
                     Console.Write($"POSTrackTask {linkToPOStrackTask.ID} ");
                 }
                 Console.WriteLine();
             }
 
-            AddSuccessorsAndPredeccessorsPOSTrackTasks();
+            AddSuccessorsAndPredecessorsPOSTrackTasks();
 
             Console.WriteLine("----------------------------------------------------------------------------------------------------------------------");
-            Console.WriteLine("|  From POSTrackTask inner Links (same train unit used) - AdjacencyList  - AddSuccessorsAndPredeccessorsPOSTrackTasks |");
+            Console.WriteLine("|  From POSTrackTask inner Links (same train unit used) - AdjacencyList  - AddSuccessorsAndPredecessorsPOSTrackTasks |");
             Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------");
 
             foreach (POSTrackTask item in this.ListOfPOSTrackTasks)
             {
                 item.displayLinksByTrainUnits();
             }
-            DisplayMovesSuccessorsAndPredeccessors();
+            DisplayMovesSuccessorsAndPredecessors();
             ShowAllInfoAboutMove(7);
             ShowAllInfoAboutTrackTask(17);
         }
 
-        // Creates a list of POSTrackkTasks. POSTrackTasks are created by using the TrackTasks embedded between 
+        // Creates a list of POSTrackTasks. POSTrackTasks are created by using the TrackTasks embedded between 
         // the MoveTasks. 
-        // The extraction of POSMTrackTask information is done by using the dependecies (links) between the POSMoveTasks @POSadjacencyList.
+        // The extraction of POSTrackTask information is done by using the dependencies (links) between the POSMoveTasks @POSadjacencyList.
         // When a successor of a POSMoveTask has the same TrackTask as predecessor TrackTask a POSTrackTask is created. POSTrackTask is also created
         // in case of arrival TrackTask.
         // The function also links the POSMoveTasks and POSTrackTasks - in several cases between two POSMoveTasks a POSTrackTasks is included (such as
@@ -901,8 +900,8 @@ namespace ServiceSiteScheduling.Solutions
         // Example of linking: POSMoveTask_j -> POSMoveTask_k and POSMoveTask_j -> POSMoveTask_l, and POSMoveTask_j next TrackTask is POSTrackTask_i
         // and POSMoveTask_k previous TrackTask is POSTrackTask_i, and POSMoveTask_l previous POSTrackTask is POSTrackTask_b
         // then it might be the case that:
-        // POSMoveTask_j <- POSTrackTask_i -> POSMoveTask_k ,but POSMoveTask_l is not linked with POSTrackTask_i becuase they didn't have 
-        // a commun POSTrackTask
+        // POSMoveTask_j <- POSTrackTask_i -> POSMoveTask_k ,but POSMoveTask_l is not linked with POSTrackTask_i because they didn't have 
+        // a common POSTrackTask
         public List<POSTrackTask> CreatePOSTrackTaskList()
         {
 
@@ -912,7 +911,7 @@ namespace ServiceSiteScheduling.Solutions
 
             int id = 0;
 
-            // Study all the POSMoveTasl moves
+            // Study all the POSMoveTask moves
             foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> element in POSadjacencyList)
             {
                 POSMoveTask POSmove = element.Key;
@@ -920,13 +919,13 @@ namespace ServiceSiteScheduling.Solutions
                 MoveTask corrMoveTask = POSmove.CorrespondingMoveTask;
 
                 // Next TrackTask(s) following the movement (MoveTask)
-                IList<TrackTask> trackTaskNexts = corrMoveTask.AllNext;
+                IList<TrackTask> trackTaskNext = corrMoveTask.AllNext;
 
                 // Previous TrackTask(s) preceding the movement (MoveTask)
                 IList<TrackTask> trackTaskPrevious = corrMoveTask.AllPrevious;
 
 
-                // Create new POSTrackTask(s) when the POSMoveTask's predeccessor is an arrival task
+                // Create new POSTrackTask(s) when the POSMoveTask's predecessor is an arrival task
                 if (trackTaskPrevious.Count == 1)
                 {
                     TrackTask previousTrackTask = trackTaskPrevious[0];
@@ -947,12 +946,12 @@ namespace ServiceSiteScheduling.Solutions
 
                 // When the TrackTask is not an arrival
 
-                foreach (TrackTask nextTrackTask in trackTaskNexts)
+                foreach (TrackTask nextTrackTask in trackTaskNext)
                 {
                     POSTrackTask newTrackTask = new POSTrackTask(nextTrackTask);
                     newTrackTask.ID = id;
-                    // More than 1 successor task means that a train unit was splited
-                    if (trackTaskNexts.Count > 1)
+                    // More than 1 successor task means that a train unit was spited
+                    if (trackTaskNext.Count > 1)
                     {
                         newTrackTask.setPOSTrackTaskType(POSTrackTaskType.Split);
                         newTrackTask.TaskType = POSTrackTaskType.Split;
@@ -964,20 +963,20 @@ namespace ServiceSiteScheduling.Solutions
                     // Check for dependencies when same train unit used - successors
                     // if the current POSMoveTask successor's previous TrackTask matches
                     // the next TrackTask of the POSMoveTask successor, then link POSTackTask
-                    // with the successor POSMoveTasl 
+                    // with the successor POSMoveTask 
                     foreach (POSMoveTask successor in POSmove.SuccessorMovesByTrainUnits)
                     {
 
-                        MoveTask corrSucessorMoveTask = successor.CorrespondingMoveTask;
-                        IList<TrackTask> previousTrackTasksOfSuccessor = corrSucessorMoveTask.AllPrevious;
+                        MoveTask corrSuccessorMoveTask = successor.CorrespondingMoveTask;
+                        IList<TrackTask> previousTrackTasksOfSuccessor = corrSuccessorMoveTask.AllPrevious;
 
                         foreach (TrackTask task in previousTrackTasksOfSuccessor)
                         {
-                            string nextTrackTaskCharacteristicks = $"{nextTrackTask.Start} - {nextTrackTask.End} : {nextTrackTask.Train} at {nextTrackTask.Track.ID}";
+                            string nextTrackTaskCharacteristics = $"{nextTrackTask.Start} - {nextTrackTask.End} : {nextTrackTask.Train} at {nextTrackTask.Track.ID}";
 
-                            string trackTrackTaskCharacteristicks = $"{task.Start} - {task.End} : {task.Train} at {task.Track.ID}";
+                            string trackTrackTaskCharacteristics = $"{task.Start} - {task.End} : {task.Train} at {task.Track.ID}";
 
-                            if (nextTrackTaskCharacteristicks == trackTrackTaskCharacteristicks)
+                            if (nextTrackTaskCharacteristics == trackTrackTaskCharacteristics)
                             {
                                 POSMoveTask explicitSuccessor = GetPOSMoveTaskByID(successor.ID, POSadjacencyList);
 
@@ -997,16 +996,16 @@ namespace ServiceSiteScheduling.Solutions
                     foreach (POSMoveTask successor in POSmove.SuccessorMovesByInfrastructure)
                     {
 
-                        MoveTask corrSucessorMoveTask = successor.CorrespondingMoveTask;
-                        IList<TrackTask> previousTrackTaskOfSuccessor = corrSucessorMoveTask.AllPrevious;
+                        MoveTask corrSuccessorMoveTask = successor.CorrespondingMoveTask;
+                        IList<TrackTask> previousTrackTaskOfSuccessor = corrSuccessorMoveTask.AllPrevious;
 
                         foreach (TrackTask task in previousTrackTaskOfSuccessor)
                         {
-                            string nextTrackTaskCharacteristicks = $"{nextTrackTask.Start} - {nextTrackTask.End} : {nextTrackTask.Train} at {nextTrackTask.Track.ID}";
+                            string nextTrackTaskCharacteristics = $"{nextTrackTask.Start} - {nextTrackTask.End} : {nextTrackTask.Train} at {nextTrackTask.Track.ID}";
 
-                            string trackTrackTaskCharacteristicks = $"{task.Start} - {task.End} : {task.Train} at {task.Track.ID}";
+                            string trackTrackTaskCharacteristics = $"{task.Start} - {task.End} : {task.Train} at {task.Track.ID}";
 
-                            if (nextTrackTaskCharacteristicks == trackTrackTaskCharacteristicks)
+                            if (nextTrackTaskCharacteristics == trackTrackTaskCharacteristics)
                             {
                                 POSMoveTask explicitSuccessor = GetPOSMoveTaskByID(successor.ID, POSadjacencyList);
 
@@ -1060,10 +1059,10 @@ namespace ServiceSiteScheduling.Solutions
                 POSMoveTask POSmove = element.Key;
 
                 List<POSMoveTask> SuccessorsByTrainUnit = POSmove.SuccessorMovesByTrainUnits;
-                List<POSMoveTask> PredeccessorsByTrainUnit = POSmove.PredecessorMovesByTrainUnits;
+                List<POSMoveTask> PredecessorsByTrainUnit = POSmove.PredecessorMovesByTrainUnits;
 
-                List<POSMoveTask> SuccessorsByIntfrastructure = POSmove.SuccessorMovesByInfrastructure;
-                List<POSMoveTask> PredeccessorsByIntfrastructure = POSmove.PredecessorMovesByInfrastructure;
+                List<POSMoveTask> SuccessorsByInfrastructure = POSmove.SuccessorMovesByInfrastructure;
+                List<POSMoveTask> PredecessorsByInfrastructure = POSmove.PredecessorMovesByInfrastructure;
 
 
 
@@ -1071,7 +1070,7 @@ namespace ServiceSiteScheduling.Solutions
         }
 
 
-        public void AddSuccessorsAndPredeccessors()
+        public void AddSuccessorsAndPredecessors()
         {
             Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = this.POSadjacencyList;
             Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyListForInfrastructure = this.POSadjacencyListForInfrastructure;
@@ -1092,31 +1091,31 @@ namespace ServiceSiteScheduling.Solutions
                             POSmove.AddNewSuccessorByInfrastructure(successor);
                         }
 
-                        List<POSMoveTask> Predeccessors = GetMovePredecessors(POSmoveInfra, posAdjacencyListForInfrastructure);
-                        foreach (POSMoveTask predeccessor in Predeccessors)
+                        List<POSMoveTask> Predecessors = GetMovePredecessors(POSmoveInfra, posAdjacencyListForInfrastructure);
+                        foreach (POSMoveTask predecessor in Predecessors)
                         {
-                            POSmove.AddNewPredeccessorByInfrastructure(predeccessor);
+                            POSmove.AddNewPredecessorByInfrastructure(predecessor);
                         }
                     }
                 }
 
-                foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> elementTruinUnit in posAdjacencyListForTrainUint)
+                foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> elementTrainUnit in posAdjacencyListForTrainUint)
                 {
-                    POSMoveTask POSmoveTrainUint = elementTruinUnit.Key;
+                    POSMoveTask POSmoveTrainUint = elementTrainUnit.Key;
 
                     if (POSmove.ID == POSmoveTrainUint.ID)
                     {
-                        List<POSMoveTask> Successors = elementTruinUnit.Value;
+                        List<POSMoveTask> Successors = elementTrainUnit.Value;
                         foreach (POSMoveTask successor in Successors)
                         {
                             POSmove.AddNewSuccessorByTrainUnits(successor);
                         }
 
-                        List<POSMoveTask> Predeccessors = GetMovePredecessors(POSmoveTrainUint, posAdjacencyListForTrainUint);
+                        List<POSMoveTask> Predecessors = GetMovePredecessors(POSmoveTrainUint, posAdjacencyListForTrainUint);
 
-                        foreach (POSMoveTask predeccessor in Predeccessors)
+                        foreach (POSMoveTask predecessor in Predecessors)
                         {
-                            POSmove.AddNewPredecessorByTrainUnits(predeccessor);
+                            POSmove.AddNewPredecessorByTrainUnits(predecessor);
 
                         }
 
@@ -1129,7 +1128,7 @@ namespace ServiceSiteScheduling.Solutions
         }
 
 
-        public void AddSuccessorsAndPredeccessorsPOSTrackTasks()
+        public void AddSuccessorsAndPredecessorsPOSTrackTasks()
         {
 
             List<POSTrackTask> listOfPOSTrackTasks = this.ListOfPOSTrackTasks;
@@ -1152,31 +1151,31 @@ namespace ServiceSiteScheduling.Solutions
                             POStrackTask.AddNewSuccessorByInfrastructure(successor);
                         }
 
-                        List<POSTrackTask> Predeccessors = GetTrackTaskPredecessors(POStrackTaskInfra, posAdjacencyListForInfrastructure);
-                        foreach (POSTrackTask predeccessor in Predeccessors)
+                        List<POSTrackTask> Predecessors = GetTrackTaskPredecessors(POStrackTaskInfra, posAdjacencyListForInfrastructure);
+                        foreach (POSTrackTask predecessor in Predecessors)
                         {
-                            POStrackTask.AddNewPredeccessorByInfrastructure(predeccessor);
+                            POStrackTask.AddNewPredecessorByInfrastructure(predecessor);
                         }
                     }
                 }
 
-                foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> elementTruinUnit in posAdjacencyListForTrainUint)
+                foreach (KeyValuePair<POSTrackTask, List<POSTrackTask>> elementTrainUnit in posAdjacencyListForTrainUint)
                 {
-                    POSTrackTask POStrackTaskTrainUint = elementTruinUnit.Key;
+                    POSTrackTask POStrackTaskTrainUint = elementTrainUnit.Key;
 
                     if (POStrackTask.ID == POStrackTaskTrainUint.ID)
                     {
-                        List<POSTrackTask> Successors = elementTruinUnit.Value;
+                        List<POSTrackTask> Successors = elementTrainUnit.Value;
                         foreach (POSTrackTask successor in Successors)
                         {
                             POStrackTask.AddNewSuccessorByTrainUnits(successor);
                         }
 
-                        List<POSTrackTask> Predeccessors = GetTrackTaskPredecessors(POStrackTaskTrainUint, posAdjacencyListForTrainUint);
+                        List<POSTrackTask> Predecessors = GetTrackTaskPredecessors(POStrackTaskTrainUint, posAdjacencyListForTrainUint);
 
-                        foreach (POSTrackTask predeccessor in Predeccessors)
+                        foreach (POSTrackTask predecessor in Predecessors)
                         {
-                            POStrackTask.AddNewPredecessorByTrainUnits(predeccessor);
+                            POStrackTask.AddNewPredecessorByTrainUnits(predecessor);
 
                         }
 
@@ -1188,15 +1187,15 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
         // Takes all the POSMove linked when using the same infrastructure - POSadjacencyListForInfrastructure 
-        // and assigns the POSMove successors and predeccessors to the POSMove taken. This function is very useful, since it adds new link information to the POSMoves used
+        // and assigns the POSMove successors and Predecessors to the POSMove taken. This function is very useful, since it adds new link information to the POSMoves used
         // in the Partial Order Schedule graph
-        public void AddInfrastructurePredeccessorSuccessorLinksToPOSMoves()
+        public void AddInfrastructurePredecessorSuccessorLinksToPOSMoves()
         {
             Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyListForInfrastructure = this.POSadjacencyListForInfrastructure;
 
             foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> element in posAdjacencyListForInfrastructure)
             {
-                // Add sucessors to each POSMoves contained by the adjacency list
+                // Add successors to each POSMoves contained by the adjacency list
                 POSMoveTask POSmove = element.Key;
                 List<POSMoveTask> Successors = element.Value;
 
@@ -1205,12 +1204,12 @@ namespace ServiceSiteScheduling.Solutions
                     POSmove.AddNewSuccessorByInfrastructure(successor);
                 }
 
-                // Add predeccessors to each POSMoves contained by the adjacency list
-                List<POSMoveTask> Predeccessors = GetMovePredecessors(POSmove, posAdjacencyListForInfrastructure);
+                // Add Predecessors to each POSMoves contained by the adjacency list
+                List<POSMoveTask> Predecessors = GetMovePredecessors(POSmove, posAdjacencyListForInfrastructure);
 
-                foreach (POSMoveTask predeccessor in Predeccessors)
+                foreach (POSMoveTask predecessor in Predecessors)
                 {
-                    POSmove.AddNewPredeccessorByInfrastructure(predeccessor);
+                    POSmove.AddNewPredecessorByInfrastructure(predecessor);
                 }
 
             }
@@ -1218,15 +1217,15 @@ namespace ServiceSiteScheduling.Solutions
 
 
         // Takes all the POSMove linked when using the same train unit - POSadjacencyListForTrainUint and assigns the POSMove
-        // successors and predeccessors to the POSMove taken. This function is very useful, since it adds new link information to the POSMoves used
+        // successors and Predecessors to the POSMove taken. This function is very useful, since it adds new link information to the POSMoves used
         // in the Partial Order Schedule graph
-        public void AddTrainUnitPredeccessorSuccessorLinksToPOSMoves()
+        public void AddTrainUnitPredecessorSuccessorLinksToPOSMoves()
         {
             Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyListForTrainUint = this.POSadjacencyListForTrainUint;
 
             foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> element in posAdjacencyListForTrainUint)
             {
-                // Add sucessors to each POSMoves contained by the adjacency list
+                // Add successors to each POSMoves contained by the adjacency list
                 POSMoveTask POSmove = element.Key;
                 List<POSMoveTask> Successors = element.Value;
 
@@ -1236,19 +1235,19 @@ namespace ServiceSiteScheduling.Solutions
                 }
 
 
-                // Add predeccessors to each POSMoves contained by the adjacency list
-                List<POSMoveTask> Predeccessors = GetMovePredecessors(POSmove, posAdjacencyListForTrainUint);
+                // Add Predecessors to each POSMoves contained by the adjacency list
+                List<POSMoveTask> Predecessors = GetMovePredecessors(POSmove, posAdjacencyListForTrainUint);
 
-                foreach (POSMoveTask predeccessor in Predeccessors)
+                foreach (POSMoveTask predecessor in Predecessors)
                 {
-                    POSmove.AddNewPredecessorByTrainUnits(predeccessor);
+                    POSmove.AddNewPredecessorByTrainUnits(predecessor);
                 }
 
             }
 
         }
 
-        public void DisplayMovesSuccessorsAndPredeccessors()
+        public void DisplayMovesSuccessorsAndPredecessors()
         {
             Console.WriteLine("---------------------------------------------------");
             Console.WriteLine("|            From POS Movement Links               |");
@@ -1261,12 +1260,12 @@ namespace ServiceSiteScheduling.Solutions
         }
 
 
-        // Displays all the POSMove predeccessors and successors - these links are represents the 
+        // Displays all the POSMove Predecessors and successors - these links are represents the 
         // relations between the moves using the same train unit
-        public void DisplayTrainUnitSuccessorsAndPredeccessors()
+        public void DisplayTrainUnitSuccessorsAndPredecessors()
         {
             Console.WriteLine("--------------------------------------------------------------------------");
-            Console.WriteLine("|       POS Movement predeccessors and successors - TrainUnit (solid arcs) |");
+            Console.WriteLine("|       POS Movement Predecessors and successors - TrainUnit (solid arcs) |");
             Console.WriteLine("--------------------------------------------------------------------------");
             // Show connections per Move
             Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = this.POSadjacencyListForTrainUint;
@@ -1274,7 +1273,7 @@ namespace ServiceSiteScheduling.Solutions
             foreach (KeyValuePair<POSMoveTask, List<POSMoveTask>> pair in posAdjacencyList.OrderBy(pair => pair.Key.ID).ToDictionary(pair => pair.Key, pair => pair.Value))
             {
                 Console.Write($"Move{pair.Key.ID} --> \n");
-                Console.WriteLine("Predeccessors:");
+                Console.WriteLine("Predecessors:");
                 foreach (POSMoveTask element in pair.Key.PredecessorMovesByTrainUnits)
                 {
                     Console.Write($"Move:{element.ID} ");
@@ -1376,9 +1375,9 @@ namespace ServiceSiteScheduling.Solutions
                     Console.Write(item.Key);
             }
         }
-        // Displays all the direct sucessors and predecessors of a given POS move
+        // Displays all the direct successors and predecessors of a given POS move
         // the move is identified by its ID (POSMoveTask POSmove.ID)
-        // @linkType specifies the type of the links 'infrastructure' - same inrastructure used - populated from @POSadjacencyListForInfrastructure
+        // @linkType specifies the type of the links 'infrastructure' - same infrastructure used - populated from @POSadjacencyListForInfrastructure
         // 'trainUint' - same train unit(s) used - populated from @POSadjacencyListForTrainUint
         public void DisplayMoveLinksOfPOSMove(int POSId, string linkType)
         {
@@ -1394,14 +1393,14 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     POSMoveTask POSmove = GetPOSMoveTaskByID(POSId, POSadjacencyList);
 
-                    List<POSMoveTask> sucessorPOSMoves = POSadjacencyList[POSmove];
+                    List<POSMoveTask> successorPOSMoves = POSadjacencyList[POSmove];
 
                     List<POSMoveTask> predecessorsPOSMoves = GetMovePredecessors(POSmove, POSadjacencyList);
 
-                    Console.WriteLine("|  Direct Sucessors |");
+                    Console.WriteLine("|  Direct Successors |");
                     Console.Write("[ ");
 
-                    foreach (POSMoveTask move in sucessorPOSMoves)
+                    foreach (POSMoveTask move in successorPOSMoves)
                     {
                         Console.Write($"Move {move.ID}, ");
                     }
@@ -1434,14 +1433,14 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     POSMoveTask POSmove = GetPOSMoveTaskByID(POSId, POSadjacencyList);
 
-                    List<POSMoveTask> sucessorPOSMoves = POSadjacencyList[POSmove];
+                    List<POSMoveTask> successorPOSMoves = POSadjacencyList[POSmove];
 
                     List<POSMoveTask> predecessorsPOSMoves = GetMovePredecessors(POSmove, POSadjacencyList);
 
-                    Console.WriteLine("|  Direct Sucessors |");
+                    Console.WriteLine("|  Direct Successors |");
 
                     Console.Write("[ ");
-                    foreach (POSMoveTask move in sucessorPOSMoves)
+                    foreach (POSMoveTask move in successorPOSMoves)
                     {
                         Console.Write($"Move {move.ID}, ");
                     }
@@ -1472,27 +1471,27 @@ namespace ServiceSiteScheduling.Solutions
         }
 
 
-        // Get all the direct sucessors and predecessors of a given POS move, the move is identified by its ID (POSMoveTask POSmove.ID)
-        // Successors stored in @sucessorPOSMoves; Predecessors stored in @predecessorsPOSMoves
-        // @linkType specifies the type of the links 'infrastructure' - same inrastructure used - populated from @POSadjacencyListForInfrastructure
+        // Get all the direct successors and predecessors of a given POS move, the move is identified by its ID (POSMoveTask POSmove.ID)
+        // Successors stored in @successorPOSMoves; Predecessors stored in @predecessorsPOSMoves
+        // @linkType specifies the type of the links 'infrastructure' - same infrastructure used - populated from @POSadjacencyListForInfrastructure
         // 'trainUint' - same train unit(s) used - populated from @POSadjacencyListForTrainUint
-        public void GetMoveLinksOfPOSMove(int POSId, string linkType, out List<POSMoveTask> sucessorPOSMoves, out List<POSMoveTask> predecessorsPOSMoves)
+        public void GetMoveLinksOfPOSMove(int POSId, string linkType, out List<POSMoveTask> successorPOSMoves, out List<POSMoveTask> predecessorsPOSMoves)
         {
-            sucessorPOSMoves = new List<POSMoveTask>();
+            successorPOSMoves = new List<POSMoveTask>();
             predecessorsPOSMoves = new List<POSMoveTask>();
 
             if (linkType == "infrastructure")
             {
                 Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList = this.POSadjacencyListForInfrastructure;
 
-                // sucessorPOSMoves.Clear();
+                // successorPOSMoves.Clear();
                 // predecessorsPOSMoves.Clear();
                 try
                 {
 
                     POSMoveTask POSmove = GetPOSMoveTaskByID(POSId, POSadjacencyList);
 
-                    sucessorPOSMoves.AddRange(POSadjacencyList[POSmove]);
+                    successorPOSMoves.AddRange(POSadjacencyList[POSmove]);
 
                     predecessorsPOSMoves.AddRange(GetMovePredecessors(POSmove, POSadjacencyList));
 
@@ -1515,7 +1514,7 @@ namespace ServiceSiteScheduling.Solutions
 
                     POSMoveTask POSmove = GetPOSMoveTaskByID(POSId, POSadjacencyList);
 
-                    sucessorPOSMoves.AddRange(POSadjacencyList[POSmove]);
+                    successorPOSMoves.AddRange(POSadjacencyList[POSmove]);
 
                     predecessorsPOSMoves.AddRange(GetMovePredecessors(POSmove, POSadjacencyList));
 
@@ -1535,7 +1534,7 @@ namespace ServiceSiteScheduling.Solutions
 
         // Shows train unit relations between the POS movements, meaning that
         // links per move using the same train unit are displayed - links by train unit
-        public void DisplayPOSMovementLinksTrainUinitUsed()
+        public void DisplayPOSMovementLinksTrainUnitUsed()
         {
             Console.WriteLine("----------------------------------------------------------");
             Console.WriteLine("|      POS Movement Links - Train Unit (solid arcs)     |");
@@ -1592,11 +1591,11 @@ namespace ServiceSiteScheduling.Solutions
                 // Train Units used in the move in conflict
                 List<ShuntTrainUnit> trainUnitsOfConflictingMove = moveInConflict.Train.Units;
 
-                List<ShuntTrainUnit> trainUintsOfCurrentMove = currentMove.Train.Units;
+                List<ShuntTrainUnit> trainUnitsOfCurrentMove = currentMove.Train.Units;
 
                 foreach (ShuntTrainUnit shuntTrainOfConflictingMove in trainUnitsOfConflictingMove)
                 {
-                    foreach (ShuntTrainUnit shuntTrainOfCurrentMove in trainUintsOfCurrentMove)
+                    foreach (ShuntTrainUnit shuntTrainOfCurrentMove in trainUnitsOfCurrentMove)
                     {
                         // if the one of the train units are the same, that means that there is a conflict in using
                         // the same train unit between the conflicting moves by the infrastructure used
@@ -1638,11 +1637,11 @@ namespace ServiceSiteScheduling.Solutions
                 // Train Units used in the track task in conflict
                 List<ShuntTrainUnit> trainUnitsOfConflictingTrackTask = taskInConflict.Train.Units;
 
-                List<ShuntTrainUnit> trainUintsOfCurrentTrackTask = currentTrackTask.Train.Units;
+                List<ShuntTrainUnit> trainUnitsOfCurrentTrackTask = currentTrackTask.Train.Units;
 
                 foreach (ShuntTrainUnit shuntTrainOfConflictingTrackTask in trainUnitsOfConflictingTrackTask)
                 {
-                    foreach (ShuntTrainUnit shuntTrainOfCurrentTrackTask in trainUintsOfCurrentTrackTask)
+                    foreach (ShuntTrainUnit shuntTrainOfCurrentTrackTask in trainUnitsOfCurrentTrackTask)
                     {
                         // if the one of the train units are the same, that means that there is a conflict in using
                         // the same train unit between the conflicting track task by the same infrastructure used
@@ -1840,7 +1839,7 @@ namespace ServiceSiteScheduling.Solutions
             this.ListOfMoves = listOfMoves;
             this.First = listOfMoves.First();
 
-            this.DictOfInrastructure = GetInfrasturcture();
+            this.DictOfInfrastructure = GetInfrastructure();
 
             this.ListOfTrainUnits = GetTrainFleet();
 
@@ -1853,11 +1852,11 @@ namespace ServiceSiteScheduling.Solutions
 
             Console.WriteLine("-------------------------------");
 
-            Dictionary<ulong, Infrastructure> infrastructuremap = GetInfrasturcture();
+            Dictionary<ulong, Infrastructure> infrastructuremap = GetInfrastructure();
 
             foreach (KeyValuePair<ulong, Infrastructure> infra in infrastructuremap)
             {
-                Console.WriteLine($"id: {infra.Key} : Inrastructure {infra.Value}");
+                Console.WriteLine($"id: {infra.Key} : Infrastructure {infra.Value}");
 
             }
 
@@ -1867,7 +1866,7 @@ namespace ServiceSiteScheduling.Solutions
 
         }
 
-        // Shows rich information about the movements and infrastructure used in the Totaly Ordered Solution
+        // Shows rich information about the movements and infrastructure used in the Totally Ordered Solution
         public void DisplayMovements()
         {
             MoveTask move = this.First;
@@ -1881,7 +1880,7 @@ namespace ServiceSiteScheduling.Solutions
 
                 if (routing != null)
                 {
-                    Console.WriteLine("Infrastrucre used (tracks):");
+                    Console.WriteLine("Infrastructure used (tracks):");
                     var tracks = routing.Route.Tracks;
                     var lastTrack = tracks.Last();
 
@@ -1978,7 +1977,7 @@ namespace ServiceSiteScheduling.Solutions
                         {
                             var listOfRoutes = routingDeparture.GetRoutes();
 
-                            Console.WriteLine($"Infrastrucre used (tracks) number of routes {listOfRoutes.Count}:");
+                            Console.WriteLine($"Infrastructure used (tracks) number of routes {listOfRoutes.Count}:");
 
 
                             // // TODO: display more infrastructure
