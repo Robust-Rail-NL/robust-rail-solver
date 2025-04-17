@@ -100,6 +100,60 @@ dotnet run
 ```
 
 
+
+
+
+## Partial Order Schedule (POS) - Other helper functions 
+
+There are optional functions to display movement actions and other Partial Order Schedule graphs (relations among the actions i.e., moves using the same infrastructure, service resource, activities that require the same train unit). Example of the partial order schedule of a shunting plan. ![Partial Order Schedule](./ServiceSiteScheduling/POS.png). Reference to the figure: [A Local Search Algorithm for Train Unit Shunting with Service Scheduling](https://pubsonline.informs.org/doi/10.1287/trsc.2021.1090), by Roel van den Broek.
+
+### Helper functions: 
+These functions are optional they help to display the current partial order schedule and look for relations between the actions during the Local Search.
+* `InitializePOS`: Initialize some values needed to create the POS structure
+* `CreatePOS`: Creates a Partial Order Schedule representation from the Totally ordered Solution
+
+Usage:
+```bash
+POS = new PartialOrderSchedule(start);
+POS.InitializePOS();
+POS.CreatePOS();
+```
+Where `start` is the first MoveTask of the totally ordered solution in the `PlanGraph`. Typically, it should be called in the end of the `ComputeLocation()` see `SolutionCost ComputeModel()` -> `ComputeLocation()` in `PlanGraph.cs`.
+ 
+
+
+
+
+
+* `ShowAllInfoAboutTrackTask`: Shows all kind of information about a specific track task
+
+* `ShowAllInfoAboutMove`: Shows all kind of information about a specific Move
+
+* `GetMoveLinksOfPOSMove`: Get all the direct successors and predecessors of a given POS move, the move is identified by its ID (POSMoveTask POSmove.ID). Successors stored in @sucessorPOSMoves; Predecessors stored in @predecessorsPOSMoves @linkType specifies the type of the links 'infrastructure' - same infrastructure used - populated from @POSadjacencyListForInfrastructure 'trainUint' - same train unit(s) used - populated from @POSadjacencyListForTrainUint
+      
+* `DisplayListPOSTrackTracks`: Displays the all POSTrackTask list identified in the POS solution
+
+
+* `DisplayTrainUnitSuccessorsAndPredeccessors`: Displays all the POSMove predecessors and successors - these links are represents the relations between the moves using the same train unit
+
+
+* `DisplayMoveLinksOfPOSMove`: Displays all the direct successors and predecessors of a given POS move the move is identified by its ID (POSMoveTask POSmove.ID) @linkType specifies the type of the links 'infrastructure' - same inrastructure used - populated from @POSadjacencyListForInfrastructure 'trainUint' - same train unit(s) used - populated from @POSadjacencyListForTrainUint
+
+* `DisplayPOSMovementLinksTrainUnitUsed`: Shows train unit relations between the POS movements, meaning that links per move using the same train unit are displayed - links by train unit
+ 
+
+* `DisplayPOSMovementLinksInfrastructureUsed`: Shows infrastructure relations between the POS movements, meaning that links per move using the same infrastructure are displayed - links by infrastructure
+
+
+* `DisplayAllPOSMovementLinks`: Shows all the relations between the POS movements, meaning that all kind of links per move are displayed - links by infrastructure links by same train unit used
+
+
+* `DisplayInfrastructure`: Shows the Infrastructure of the given location (e.g., shunting yard)
+
+
+* `DisplayMovements`: Shows rich information about the movements and infrastructure used in the Totally Ordered Solution
+
+
 ## Issue with input data
 
 Some input location and scenarios (scenario.data and location.data) cannot be read in the main program by parsing with the protobuffres. 
