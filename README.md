@@ -120,9 +120,7 @@ POS.CreatePOS();
 ```
 Where `start` is the first MoveTask of the totally ordered solution in the `PlanGraph`. Typically, it should be called in the end of the `ComputeLocation()` see `SolutionCost ComputeModel()` -> `ComputeLocation()` in `PlanGraph.cs`.
  
-
-
-
+ After the POS is created many functions can be called: 
 
 
 * `ShowAllInfoAboutTrackTask`: Shows all kind of information about a specific track task
