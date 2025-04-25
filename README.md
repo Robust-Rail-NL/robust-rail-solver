@@ -156,11 +156,25 @@ Where `start` is the first MoveTask of the totally ordered solution in the `Plan
 
 Some input location and scenarios (scenario.data and location.data) cannot be read in the main program by parsing with the protobuffres. 
 
-* In [database/fix](database/fix) a selection of readable scenario and location data is available.
+* In [database/fix](ServiceSiteScheduling/database/fix) a selection of readable scenario and location data is available.
 
-* In [database/TUSS-Instance-Generator/featured](database/TUSS-Instance-Generator/featured) a collection of scenarios can be found run on the [Kleine Binckhorst shunting yard](Kleine_Binckhorst.png). The standard location file of Kleine Binckhorst is described as [location.json](database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json).
+* In [database/TUSS-Instance-Generator/featured](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured) a collection of scenarios can be found run on the [Kleine Binckhorst shunting yard](Kleine_Binckhorst.png). The standard location file of Kleine Binckhorst is described as [location.json](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json).
 
-    * [scenario_kleineBinckhorst_HIP_dump](database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json) is a working scenario on Kleine Binckhorst location.
+    * [scenario_kleineBinckhorst_HIP_dump](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json) is a working scenario on Kleine Binckhorst location.
+
+## New Location file and scenario
+A new more realistic [**Kleine Binckhorst**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/location_kleineBinckhorst_HIP_dump.json) location is now available.
+
+Other new running scenarios under this location are now available.
+
+* [**Folder - scenario_kleineBinckhorst_6t_custom_config2**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config2/) 
+    - [**scenario_kleineBinckhorst_6t_custom_config2_hip.json**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config2/scenario_kleineBinckhorst_6t_custom_config2_hip.json)
+* [**Folder - scenario_kleineBinckhorst_6t_custom_config3**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config3/)
+    - [**scenario_kleineBinckhorst_6t_custom_config3_hip.json**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config3/scenario_kleineBinckhorst_6t_custom_config3_hip.json)
+* [**Folder - scenario_kleineBinckhorst_10t_random_42s_distribution1**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution1/)
+    - [**scenario_kleineBinckhorst_10t_random_42s_distribution1.json**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution1/scenario_kleineBinckhorst_10t_random_42s_distribution1_hip.json)
+* [**Folder - scenario_kleineBinckhorst_10t_random_42s_distribution2**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution2/)
+    - [**scenario_kleineBinckhorst_10t_random_42s_distribution1.json**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution2/scenario_kleineBinckhorst_10t_random_42s_distribution2_hip.json)
 
 
 
