@@ -70,7 +70,7 @@ namespace ServiceSiteScheduling.Tasks
             this.SuccessorMovesByInfrastructure.Add(successor);
         }
 
-        public void AddNewPredeccessorByInfrastructure(POSMoveTask predeccessor)
+        public void AddNewPredecessorByInfrastructure(POSMoveTask predeccessor)
         {
             this.PredecessorMovesByInfrastructure.Add(predeccessor);
         }
