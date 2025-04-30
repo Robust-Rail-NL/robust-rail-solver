@@ -100,8 +100,15 @@ dotnet run
 ```
 
 
+## Validated scenarios
+Some of the scenarios were successfully solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver) and the plans were validated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator). *Note* that all these scenarios were run on a [**new version of Kleine Binckhorst location**](data/validated/location/KleineBinckhorst_v2/).
 
 
+* [**Scenarios:**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/)
+    * [**Scenario 6t custom config2**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config2/scenario_kleineBinckhorst_6t_custom_config2_hip.json)
+    * [**Scenario 6t custom config3**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config3/scenario_kleineBinckhorst_6t_custom_config3_hip.json)
+    * [**Scenario 10t random 42s distribution1**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution1/scenario_kleineBinckhorst_10t_random_42s_distribution1_hip.json)
+    * [**Scenario 10t random 42s distribution2**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution2/scenario_kleineBinckhorst_10t_random_42s_distribution2_hip.json)
 
 ## Partial Order Schedule (POS) - Other helper functions 
 
