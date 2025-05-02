@@ -707,7 +707,7 @@ namespace ServiceSiteScheduling.Solutions
             DisplayPOSMovementLinksTrainUnitUsed();
 
             this.ListOfPOSTrackTasks = CreatePOSTrackTaskList();
-            DisplayListPOSTrackTracks();
+            DisplayListPOSTrackTask();
 
 
             // TODO: -------------------------------------------------------------------------------------------------------------------------------------------
@@ -1037,7 +1037,7 @@ namespace ServiceSiteScheduling.Solutions
         }
 
         // Displays the all POSTrackTask list identified in the POS solution
-        public void DisplayListPOSTrackTracks()
+        public void DisplayListPOSTrackTask()
         {
             Console.WriteLine("-----------------------------------------------------------------");
             Console.WriteLine("|            From POS TrackTask Links with POSMoves              |");

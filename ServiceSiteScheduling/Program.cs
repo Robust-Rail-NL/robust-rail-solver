@@ -171,7 +171,7 @@ namespace ServiceSiteScheduling
                 string directoryPath = Path.GetDirectoryName(plan_path);
 
                 if (!Directory.Exists(directoryPath) && directoryPath != null)
-                {   
+                {
 
                     // Create the directory if it does not exist
                     Directory.CreateDirectory(directoryPath);
@@ -370,12 +370,10 @@ namespace ServiceSiteScheduling
         //          @scenario_path: path to the scenario (.json) file
         static void Test_Location_Scenario_Parsing(string location_path, string scenario_path)
         {
+
             ProblemInstance.Current = ProblemInstance.ParseJson(location_path, scenario_path);
             try
             {
-
-
-
                 var location_TrackParts = ProblemInstance.Current.InterfaceLocation.TrackParts;
 
                 if (location_TrackParts == null)

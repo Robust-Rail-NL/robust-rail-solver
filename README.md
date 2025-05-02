@@ -136,7 +136,7 @@ Where `start` is the first MoveTask of the totally ordered solution in the `Plan
 
 * `GetMoveLinksOfPOSMove`: Get all the direct successors and predecessors of a given POS move, the move is identified by its ID (POSMoveTask POSmove.ID). Successors stored in @sucessorPOSMoves; Predecessors stored in @predecessorsPOSMoves @linkType specifies the type of the links 'infrastructure' - same infrastructure used - populated from @POSadjacencyListForInfrastructure 'trainUint' - same train unit(s) used - populated from @POSadjacencyListForTrainUint
       
-* `DisplayListPOSTrackTracks`: Displays the all POSTrackTask list identified in the POS solution
+* `DisplayListPOSTrackTask`: Displays the all POSTrackTask list identified in the POS solution
 
 
 * `DisplayTrainUnitSuccessorsAndPredeccessors`: Displays all the POSMove predecessors and successors - these links are represents the relations between the moves using the same train unit
