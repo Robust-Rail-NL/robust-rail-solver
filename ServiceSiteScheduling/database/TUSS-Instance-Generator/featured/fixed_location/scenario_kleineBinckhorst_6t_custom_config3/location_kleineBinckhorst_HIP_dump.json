@@ -17,7 +17,7 @@
             "bSide": [
                 "71"
             ],
-            "length": 48000.0,
+            "length": 480.0,
             "name": "52",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -30,7 +30,7 @@
             "bSide": [
                 "54"
             ],
-            "length": 43100.0,
+            "length": 431.0,
             "name": "53",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -43,7 +43,7 @@
             "bSide": [
                 "54"
             ],
-            "length": 38700.0,
+            "length": 387.0,
             "name": "54",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -56,7 +56,7 @@
             "bSide": [
                 "53"
             ],
-            "length": 35700.0,
+            "length": 357.0,
             "name": "55",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -69,7 +69,7 @@
             "bSide": [
                 "70"
             ],
-            "length": 22200.0,
+            "length": 222.0,
             "name": "56",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -82,7 +82,7 @@
             "bSide": [
                 "70"
             ],
-            "length": 20200.0,
+            "length": 202.0,
             "name": "57",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -95,7 +95,7 @@
             "bSide": [
                 "69"
             ],
-            "length": 20300.0,
+            "length": 203.0,
             "name": "58",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -108,7 +108,7 @@
             "bSide": [
                 "67"
             ],
-            "length": 27100.0,
+            "length": 271.0,
             "name": "59",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -121,7 +121,7 @@
             "bSide": [
                 "60"
             ],
-            "length": 24800.0,
+            "length": 248.0,
             "name": "60",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -134,7 +134,7 @@
             "bSide": [
                 "61"
             ],
-            "length": 24700.0,
+            "length": 247.0,
             "name": "61",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -147,7 +147,7 @@
             "bSide": [
                 "61"
             ],
-            "length": 24700.0,
+            "length": 247.0,
             "name": "62",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -160,7 +160,7 @@
             "bSide": [
                 "44"
             ],
-            "length": 27200.0,
+            "length": 272.0,
             "name": "63",
             "sawMovementAllowed": true
         },
@@ -172,7 +172,7 @@
             "bSide": [
                 "45"
             ],
-            "length": 21000.0,
+            "length": 210.0,
             "name": "64"
         },
         {
@@ -183,7 +183,7 @@
             "bSide": [
                 "46"
             ],
-            "length": 47500.0,
+            "length": 475.0,
             "name": "104a",
             "sawMovementAllowed": true,
             "parkingAllowed": true
@@ -196,7 +196,7 @@
             "bSide": [
                 "42"
             ],
-            "length": 25500.0,
+            "length": 480.0,
             "name": "906b",
             "sawMovementAllowed": false,
             "parkingAllowed": true
@@ -459,7 +459,7 @@
             "bSide": [
 				"59"
             ],
-            "length": 20000.0,
+            "length": 480.0,
             "name": "906a",
             "parkingAllowed": true
         },
