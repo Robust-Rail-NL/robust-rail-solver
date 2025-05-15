@@ -264,3 +264,21 @@ Other packages might also be needed to be installed on the system:
 ```bash
 sudo apt install name-of-the-package
 ```
+
+
+## Compile Protobuf
+In case the protobuf structures must be modified the under [ProtoBuf](./ServiceSiteScheduling/ProtoBuf/), the must be compiled so the main program can call their functionalities.
+
+If first usage:
+
+```bash
+conda env create -f env.yml
+source ~/.bashrc
+```
+
+Activate the enviornment:
+
+```bash
+conda activate my_proto_env_solver
+protoc --proto_path="/workspace/robust-rail-solver/ServiceSiteScheduling/ProtoBuf" --csharp_out="/workspace/robust-rail-solver/ServiceSiteScheduling/ProtoBuf" /workspace/robust-rail-solver/ServiceSiteScheduling/ProtoBuf/name_of_the_file_to_compile.proto
+```
