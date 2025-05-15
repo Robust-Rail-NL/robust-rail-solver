@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServiceSiteScheduling.Utilities;
+﻿using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.Solutions
 {
@@ -55,8 +50,6 @@ namespace ServiceSiteScheduling.Solutions
                     ArrivalDelayWeight * this.ArrivalDelays +
                     ArrivalDelaySumWeight * this.ArrivalDelaySum / (this.ArrivalDelays + 1) +
                     TrackWeight * this.TrackLengthViolations +
-                    //TrackSumWeight * this.TrackLengthViolationSum +
-                    //ShuntWeight * this.ShuntMoves +
                     MaintenanceWeight * this.UnplannedMaintenance + 
                     CombineDepartureWeight * this.CombineOnDepartureTrack;
             }

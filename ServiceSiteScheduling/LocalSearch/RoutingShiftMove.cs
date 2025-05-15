@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using ServiceSiteScheduling.Solutions;
+﻿using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.LocalSearch
@@ -19,29 +17,6 @@ namespace ServiceSiteScheduling.LocalSearch
             this.Position = position;
             this.BeforePosition = before;
             this.originalprevious = selected.PreviousMove;
-
-            /*if (this.BeforePosition)
-            {
-                this.executestart = selected;
-                this.executeend = selected.PreviousMove;
-                this.revertstart = position;
-                this.revertend = selected;
-            }
-            else
-            {
-                this.executestart = selected.NextMove;
-                this.executeend = selected;
-                this.revertstart = selected;
-                this.revertend = position;
-            }*/
-
-            /*this.AffectedTracks = new BitSet(ProblemInstance.Current.Tracks.Length);
-            this.AffectedTracks[this.Selected.ToTrack.Index] = true;
-            this.AffectedTracks[this.Position.ToTrack.Index] = true;
-            foreach (var task in this.Selected.AllPrevious)
-                this.AffectedTracks[task.Track.Index] = true;
-            foreach (var task in this.Position.AllPrevious)
-                this.AffectedTracks[task.Track.Index] = true;*/
         }
 
         public override SolutionCost Execute()
@@ -87,13 +62,6 @@ namespace ServiceSiteScheduling.LocalSearch
                 foreach (var task in second.AllNext)
                     if (task.TaskType == Tasks.TrackTaskType.Service && (task as Tasks.ServiceTask).Resource == resource)
                         return false;
-
-            // Allowed if there are no service resource conflicts
-            //if (first.GetPrevious(task => task is Tasks.ServiceTask).Select(task  => (task as Tasks.ServiceTask).Resource).Intersect(second.GetNext(task => task is Tasks.ServiceTask).Select(task => (task as Tasks.ServiceTask).Resource)).Count() > 0)
-            //    return false;
-
-            //if (second.GetPrevious(task => task is Tasks.ServiceTask).Select(task => (task as Tasks.ServiceTask).Resource).Intersect(first.GetNext(task => task is Tasks.ServiceTask).Select(task => (task as Tasks.ServiceTask).Resource)).Count() > 0)
-            //    return false;
 
             // Allowed if not both tasks have a fixed time schedule
             if (first.AllPreviousSatisfy(task => !(task is Tasks.IFixedSchedule)) && first.AllNextSatisfy(task => !(task is Tasks.IFixedSchedule)))

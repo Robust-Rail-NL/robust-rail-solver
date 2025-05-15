@@ -1,10 +1,4 @@
 ﻿using ServiceSiteScheduling.Tasks;
-using ServiceSiteScheduling.Trains;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServiceSiteScheduling.Parking
 {
@@ -84,9 +78,9 @@ namespace ServiceSiteScheduling.Parking
             }
 
             if (side == Side.A)
-                this.CrossingsA = states.Count > 0 ? 1: 0;// states.Count;
+                this.CrossingsA = states.Count > 0 ? 1: 0;
             else
-                this.CrossingsB = states.Count > 0 ? 1 : 0;// states.Count;
+                this.CrossingsB = states.Count > 0 ? 1 : 0;
         }
     }
 }

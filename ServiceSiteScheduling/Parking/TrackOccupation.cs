@@ -2,10 +2,6 @@
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ServiceSiteScheduling.Parking
 {
@@ -201,7 +197,6 @@ namespace ServiceSiteScheduling.Parking
 
         public override int CountCrossingsIfTurning(ShuntTrain train, Side side)
         {
-            //return this.StateDeque.Count;
             int count = 0;
             if (side == Side.A)
             {
@@ -285,9 +280,6 @@ namespace ServiceSiteScheduling.Parking
         public override int CountCrossingsIfTurning(ShuntTrain train, Side side)
         {
             return this.Track.Length - this.occupation >= train.Length ? 0 : 1;
-            /*if (this.space.Count == 0)
-                return 0;
-            return this.space[this.space.Count - 1] > train.Length ? 0 : 1;*/
         }
 
         public override bool HasSufficientSpace(ShuntTrain train, double start, double end)

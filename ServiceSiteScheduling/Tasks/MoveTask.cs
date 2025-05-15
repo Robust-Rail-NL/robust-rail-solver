@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace ServiceSiteScheduling.Tasks
 {
     public enum MoveTaskType { Standard, Departure }
@@ -47,9 +42,6 @@ namespace ServiceSiteScheduling.Tasks
             this.Train = train;
             this.tasktype = tasktype;
         }
-
-        // TODO:
-        // public abstract MoveTask DeepCopy();
 
         public abstract bool IsParkingSkipped(Trains.ShuntTrain train);
         public abstract ParkingTask GetSkippedParking(Trains.ShuntTrain train);

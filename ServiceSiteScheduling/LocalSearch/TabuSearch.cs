@@ -1,9 +1,6 @@
 ﻿using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Utilities;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -18,8 +15,6 @@ namespace ServiceSiteScheduling.LocalSearch
         {
             var graph = Initial.SimpleHeuristic.Construct(random);
             graph.Cost = graph.ComputeModel();
-
-           // Integrate here the POS creation?
 
             this.Graph = graph;
             this.random = random;
@@ -38,8 +33,6 @@ namespace ServiceSiteScheduling.LocalSearch
         //@suppressConsoleOutput: enables extra logs
         public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, bool suppressConsoleOutput = false)
         {
-            //if (iterations == 0)
-            //    return;
 
             List<LocalSearchMove> moves = new List<LocalSearchMove>();
             moves.Add(new IdentityMove(this.Graph));
@@ -81,8 +74,6 @@ namespace ServiceSiteScheduling.LocalSearch
                 neighborsvisited += currentmoves.Count;
 
                 bool fullcost = this.Graph.Cost.IsFeasible;
-
-                // Console.WriteLine("-------- Here --------");
                 foreach (var move in currentmoves)
                 {
                     move.Execute();
@@ -200,7 +191,6 @@ namespace ServiceSiteScheduling.LocalSearch
                             possiblemoves = currentmoves;
                         }
 
-                        // Select a random move
                         next = possiblemoves[this.random.Next(possiblemoves.Count)];
                     }
                 }
@@ -213,27 +203,6 @@ namespace ServiceSiteScheduling.LocalSearch
                 this.Graph.Cost = next.Execute();
                 next.Finish();
                 current = next.Cost;
-
-                //if (this.Graph.Cost.IsFeasible)
-                //    break;
-
-                /*if ((stopwatch.ElapsedMilliseconds / 1000) > TimeUntilRestart && !this.Graph.Cost.IsFeasible)
-                {
-                    this.Graph.Clear();
-                    this.Graph = Initial.SimpleHeuristic.Construct(random);
-                    this.Graph.Cost = this.Graph.ComputeModel();
-                    current = double.PositiveInfinity;
-                    bestcost = this.Graph.Cost.Cost;
-                    tabu.Clear();
-                    moves.Clear();
-                    bestindex = -1;
-                    index = 0;
-                    noimprovement = 0;
-                    TimeUntilRestart *= 2;
-                    Console.WriteLine("Restart");
-                    Console.WriteLine($"{this.Graph.Cost}");
-                }*/
-
 
                 if (iteration >= iterations)
                     break;
@@ -249,11 +218,6 @@ namespace ServiceSiteScheduling.LocalSearch
                 this.Revert(moves, this.Graph.Cost.IsFeasible);
                 Console.WriteLine("-----------------------");
                 Console.WriteLine($"{this.Graph.ComputeModel()}");
-                /*this.Graph.OutputMovementSchedule();
-                Console.WriteLine("-----------------------");
-                this.Graph.OutputTrainUnitSchedule();
-                Console.WriteLine("-----------------------");
-                this.Graph.OutputConstraintViolations();*/
                 Console.WriteLine("-----------------------");
                 Console.WriteLine($"Finished after {(stopwatch.ElapsedMilliseconds / (double)1000).ToString("N2")} seconds");
                 Console.WriteLine($"Neighbors visited = {neighborsvisited}");

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ServiceSiteScheduling.TrackParts;
-using ServiceSiteScheduling.Utilities;
+﻿using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.Tasks
 {
@@ -92,7 +88,6 @@ namespace ServiceSiteScheduling.Tasks
 
         public override bool IsParkingSkipped(Trains.ShuntTrain train)
         {
-            //return this.skippedparkings.ContainsKey(train) && this.skippedparkings[train].Count > 0 && (!this.skippedparkings[train].Peek().IsInserted || this.skippedparkings[train].Peek().Previous.SkipsParking);
             return this.Previous.Any(task => task.TaskType != TrackTaskType.Parking && task.Train.Equals(train));
         }
 
