@@ -188,7 +188,7 @@ namespace ServiceSiteScheduling
             {
 
                 AlgoIface.Location location;
-                using (var input = File.OpenRead("database/TUSS-Instance-Generator/location.dat"))
+                using (var input = File.OpenRead("database/TUSS-Instance-Generator/location.json"))
                     location = AlgoIface.Location.Parser.ParseFrom(input);
 
                 Console.WriteLine("Location:");
@@ -221,62 +221,6 @@ namespace ServiceSiteScheduling
                 throw new ArgumentException("error during parsing", e);
             }
 
-            AlgoIface.Scenario scenario;
-            using (var inputSecenario = File.OpenRead("database/Kleine_binckhorst/scenario.dat"))
-            {
-                try
-                {
-                    Console.WriteLine(" Length : " + inputSecenario.Length);
-
-
-                    scenario = AlgoIface.Scenario.Parser.ParseFrom(inputSecenario);
-                    Console.WriteLine("Scenario :");
-
-                    byte[] scenarioBytes = scenario.ToByteArray();
-
-                    Console.WriteLine(" Length : " + scenarioBytes.Length);
-
-
-                    Console.WriteLine(Convert.ToBase64String(scenario.ToByteArray()));
-
-                    if (scenario == null)
-                    {
-                        throw new NullReferenceException("Parsed message is null.");
-                    }
-
-                    string json = JsonFormatter.Default.Format(scenario);
-
-                    Console.WriteLine("JSON: \n " + json);
-
-
-                    var scenario_in = scenario.In;
-
-                    if (scenario_in == null)
-                    {
-                        throw new NullReferenceException("Parsed message is null.");
-                    }
-
-                    List<AlgoIface.IncomingTrain> incomingTrains = new List<AlgoIface.IncomingTrain>(scenario_in.Trains);
-                    foreach (AlgoIface.IncomingTrain train in scenario_in.Trains)
-                    {
-                        incomingTrains.Add(train);
-                    }
-
-                    foreach (AlgoIface.IncomingTrain train in incomingTrains)
-                    {
-                        Console.WriteLine("Parcking track" + train.FirstParkingTrackPart + " for train (id) " + train.Id);
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    throw new ArgumentException("error during parsing", e);
-                }
-
-
-
-
-            }
         }
 
         // Tests if the given location and scenario (json format) files can be parsed correctly int protobuf objects (ProblemInstance)

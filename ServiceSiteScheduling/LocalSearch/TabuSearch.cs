@@ -257,7 +257,6 @@ namespace ServiceSiteScheduling.LocalSearch
                 Console.WriteLine("-----------------------");
                 Console.WriteLine($"Finished after {(stopwatch.ElapsedMilliseconds / (double)1000).ToString("N2")} seconds");
                 Console.WriteLine($"Neighbors visited = {neighborsvisited}");
-                //this.Graph.GenerateOutput("plan.dat");
             }
         }
 
