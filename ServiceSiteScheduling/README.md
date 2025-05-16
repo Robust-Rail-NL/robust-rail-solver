@@ -111,6 +111,7 @@ Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/featured/loca
 
 Usage: 
 ```bash 
+cd ServiceSiteScheduling
 dotnet run -- --config=./config.yaml
 ```
 Where [config.yaml](./config.yaml) contains all the parameters needed to specify path to the `location file`, `scenario file` and to define path of the `plan file`. Moreover, the configuration parameters for the Tabu Search and Simulated Annealing are also included in this config file. 

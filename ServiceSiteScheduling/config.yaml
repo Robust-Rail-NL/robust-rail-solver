@@ -1,7 +1,7 @@
 
-LocationPath: "./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json"
-ScenarioPath: "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json"
-PlanPath: "./database/TUSS-Instance-Generator/plan.json"
+LocationPath: "./database/TUSS-Instance-Generator/featured/fixed_location/instandingTest/location_kleineBinckhorst_HIP_dump.json"
+ScenarioPath: "./database/TUSS-Instance-Generator/featured/fixed_location/instandingTest/scenario_instandingTest_hip.json"
+PlanPath: "./database/TUSS-Instance-Generator/featured/fixed_location/instandingTest/plan_scenario_instandingTest_hip.json"
 
 TabuSearch:
   Iterations: 40
