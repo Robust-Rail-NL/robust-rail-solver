@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ServiceSiteScheduling.Utilities;
-
+﻿
 namespace ServiceSiteScheduling.LocalSearch
 {
     class ParkingSwitchMove : LocalSearchMove
@@ -30,13 +26,6 @@ namespace ServiceSiteScheduling.LocalSearch
                 this.originaltracks[i] = tasks[i].Track;
                 this.originalsides[i] = tasks[i].ArrivalSide;
             }
-
-            //this.executestart = this.revertstart = tasks.MinItem(t => t.Previous.MoveOrder).Previous;
-            //this.executeend = this.revertend = tasks.MaxItem(t => t.Next?.MoveOrder ?? double.NegativeInfinity)?.Next ?? this.Graph.Last;
-
-            /*this.AffectedTracks = new Utilities.BitSet(ProblemInstance.Current.Tracks.Length);
-            this.AffectedTracks[this.Track.Index] = true;
-            this.AffectedTracks[this.originaltrack.Index] = true;*/
         }
 
         public override Solutions.SolutionCost Execute()
@@ -104,31 +93,14 @@ namespace ServiceSiteScheduling.LocalSearch
                     {
                         if (track.Access.HasFlag(Side.A) && !(track == currenttrack && currentside == Side.A))
                         {
-                            /*if (graph.RoutingGraph.RoutePossible(routing.Train, routing.Previous.Track, Side.A, track, Side.A) ||
-                                graph.RoutingGraph.RoutePossible(routing.Train, routing.Previous.Track, Side.B, track, Side.A))
-                            {
-                                if (routing.AllNext.All(t =>
-                                    graph.RoutingGraph.RoutePossible(t.Train, track, Side.A, t.Next.ToTrack, t.Next.ToSide) ||
-                                    graph.RoutingGraph.RoutePossible(t.Train, track, Side.B, t.Next.ToTrack, t.Next.ToSide)))
-                                {*/
                             ParkingSwitchMove move = new ParkingSwitchMove(graph, tasks, track, Side.A);
                             moves.Add(move);
-                            /*}
-                        }*/
                         }
                         if (track.Access.HasFlag(Side.B) && !(track == currenttrack && currentside == Side.B))
                         {
-                            /*if (graph.RoutingGraph.RoutePossible(routing.Train, routing.Previous.Track, Side.A, track, Side.B) ||
-                                graph.RoutingGraph.RoutePossible(routing.Train, routing.Previous.Track, Side.B, track, Side.B))
-                            {
-                                if (routing.AllNext.All(t =>
-                                    graph.RoutingGraph.RoutePossible(t.Train, track, Side.A, t.Next.ToTrack, t.Next.ToSide) ||
-                                    graph.RoutingGraph.RoutePossible(t.Train, track, Side.B, t.Next.ToTrack, t.Next.ToSide)))
-                                {*/
+
                             ParkingSwitchMove move = new ParkingSwitchMove(graph, tasks, track, Side.B);
                             moves.Add(move);
-                            /*}
-                        }*/
                         }
                     }
                 }
@@ -154,7 +126,7 @@ namespace ServiceSiteScheduling.LocalSearch
             if (shiftmove == null)
                 return false;
 
-            return this.RelatedTasks.Intersect(shiftmove.RelatedTasks).Count() > 0;// || this.Track == shiftmove.Track || this.originaltrack == shiftmove.Track;
+            return this.RelatedTasks.Intersect(shiftmove.RelatedTasks).Count() > 0;
         }
 
         public override string ToString()

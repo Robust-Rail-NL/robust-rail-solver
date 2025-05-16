@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿
 namespace ServiceSiteScheduling.TrackParts
 {
     abstract class Connection : Infrastructure

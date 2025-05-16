@@ -1,25 +1,8 @@
-using ServiceSiteScheduling.Parking;
 using ServiceSiteScheduling.Routing;
-using ServiceSiteScheduling.Matching;
 using ServiceSiteScheduling.Tasks;
 using ServiceSiteScheduling.Trains;
-using ServiceSiteScheduling.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using ServiceSiteScheduling.TrackParts;
-using Google.Protobuf;
-using System.ComponentModel.DataAnnotations;
-using System.Transactions;
-using System.Runtime.CompilerServices;
 using ServiceSiteScheduling.Servicing;
-using System.Xml;
-using System.Security;
-using YamlDotNet.Core.Tokens;
-using System.Linq.Expressions;
-using AlgoIface;
-using System.Net.Http.Metrics;
-using System.Security.Cryptography.X509Certificates;
 
 
 namespace ServiceSiteScheduling.Solutions
@@ -101,7 +84,7 @@ namespace ServiceSiteScheduling.Solutions
         }
 
         // Get the infrastructure describing the shunting yard
-        // this information is obtained from the ProblemInstance, created from the `location.data` file
+        // this information is obtained from the ProblemInstance, created from the `location.json` file
         public Dictionary<ulong, Infrastructure> GetInfrastructure()
         {
             ProblemInstance instance = ProblemInstance.Current;
@@ -116,7 +99,6 @@ namespace ServiceSiteScheduling.Solutions
                     case AlgoIface.TrackPartType.RailRoad:
                         Track track = new Track(part.Id, part.Name, ServiceType.None, (int)part.Length, Side.None, part.ParkingAllowed, part.SawMovementAllowed);
                         track.Index = index++;
-                        // tracks.Add(track);
                         infrastructuremap[part.Id] = track;
                         break;
                     case AlgoIface.TrackPartType.Switch:
@@ -134,7 +116,6 @@ namespace ServiceSiteScheduling.Solutions
                     case AlgoIface.TrackPartType.Bumper:
                         var gateway = new GateWay(part.Id, part.Name);
                         infrastructuremap[part.Id] = gateway;
-                        // gateways.Add(gateway);
                         break;
                     default:
                         break;
@@ -245,8 +226,7 @@ namespace ServiceSiteScheduling.Solutions
                                 IDListOfInfraUsedIntermediate.Add(track.BSide.ID);
 
                             }
-                            // TODO: review this, probably a different logic should be used her
-                            // maybe calculate the distance for each route ?
+               
                             if (k == 0)
                             {
                                 numberOfInfraUsed = IDListOfInfraUsedIntermediate.Count;
@@ -341,7 +321,6 @@ namespace ServiceSiteScheduling.Solutions
             return false;
 
         }
-
 
         // Returns true if the same train unit is used by previous POSTrackTask as the required in @IDListOfTrainUnitUsed
         // @IDListOfTrainUnitUsed contains the train units of the current POSTrackTask
@@ -452,16 +431,11 @@ namespace ServiceSiteScheduling.Solutions
 
         }
 
-        // TODO: rename it to CreatePOS - it should probably be called only once
-        // later un update function will basically be called when a recompute of POS
-        // is needed
         public void CreatePOS()
         {
 
             // Index of the list is the ID assigned to a move
             List<MoveTask> listOfMoves = this.ListOfMoves;
-
-
 
             // Dictionary with move IDs as Key, and value as List of all the linked moves
             // Key: movement ID (parent move) this move was conflicting since it previously used the same infrastructure as the
@@ -474,18 +448,15 @@ namespace ServiceSiteScheduling.Solutions
             // @MovementLinksSameTrainUnit contains the linked moves related to the same train unit used
             Dictionary<int, List<int>> MovementLinks = new Dictionary<int, List<int>>();
 
-
             // Dictionary with move IDs as Key, and value as List linked moves using the same infrastructure,
             // in this dictionary a movement is linked to another movement (parent move) if and only if they used the same
             // infrastructure aka dashed arcs Move_i---> Move_j
             Dictionary<int, List<int>> MovementLinksSameInfrastructure = new Dictionary<int, List<int>>();
 
-
             // Dictionary with move IDs as Key, and value as List of linked moves using the same train unit,
             // in this dictionary a movement is linked to another movement (parent move) if and only if they used the same
             // train unit aka solid arcs Move_i -> Move_j
             Dictionary<int, List<int>> MovementLinksSameTrainUnit = new Dictionary<int, List<int>>();
-
 
             // Dictionary with all infrastructures, for each infrastructure a movement is assigned
             Dictionary<Infrastructure, MoveTask> InfraOccupiedByMoves = new Dictionary<Infrastructure, MoveTask>();
@@ -497,7 +468,6 @@ namespace ServiceSiteScheduling.Solutions
             Dictionary<Infrastructure, int> InfraOccupiedByMovesID = new Dictionary<Infrastructure, int>();
 
             Dictionary<Infrastructure, int> InfraOccupiedByTrackTaskID = new Dictionary<Infrastructure, int>();
-
 
             //List of al train uint used the movement present in this scenario
             List<Trains.TrainUnit> ListOfTrainUnits = this.ListOfTrainUnits;
@@ -511,20 +481,16 @@ namespace ServiceSiteScheduling.Solutions
             // Dictionary containing all the infrastructure, index:infrastructure
             Dictionary<ulong, Infrastructure> DictOfInfrastructure = this.DictOfInfrastructure;
 
-
             // Dictionary with POSTrackTask IDs as Key, and value as List of linked POSTrackTask using the same train unit,
             // in this dictionary a POSTrackTask is linked to another POSTrackTask (parent POSTrackTask) if and only if they used the same
             // train unit aka dotted arcs (version 2) Task_i...> Task_j
             Dictionary<int, List<int>> POSTrackTaskLinksSameInfrastructure = new Dictionary<int, List<int>>();
 
 
-
             // Dictionary with POSTrackTask IDs as Key, and value as List linked POSTrackTask using the same infrastructure,
             // in this dictionary a POSTrackTask is linked to another POSTrackTask (parent POSTrackTask) if and only if they used the same
             // infrastructure aka dotted arcs (version 1) Task_i...> Task_j
             Dictionary<int, List<int>> POSTrackTaskLinksSameTrainUnits = new Dictionary<int, List<int>>();
-
-
 
             // Dictionary with all train units, for each train unit a POSTrackTask ID is assigned, the IDs
             // are used to access a POSTrackTask which is stored in 'this.ListOfPOSTrackTasks'
@@ -538,7 +504,7 @@ namespace ServiceSiteScheduling.Solutions
             // Initialize dictionaries
             foreach (KeyValuePair<ulong, Infrastructure> infra in DictOfInfrastructure)
             {
-                InfraOccupiedByMoves[infra.Value] = null; // Maybe later this can be removed
+                InfraOccupiedByMoves[infra.Value] = null;
                 InfraOccupiedByMovesID[infra.Value] = 999;
                 InfraOccupiedByTrackTaskID[infra.Value] = 999;
             }
@@ -640,9 +606,6 @@ namespace ServiceSiteScheduling.Solutions
                         InfraOccupiedByMoves[DictOfInfrastructure[infraID]] = currentMove;
                         InfraOccupiedByMovesID[DictOfInfrastructure[infraID]] = moveIndex;
                     }
-
-
-
                 }
                 // Identify all the conflicting moves related to the same train units used by the movements - and link moves
 
@@ -702,15 +665,12 @@ namespace ServiceSiteScheduling.Solutions
 
             AddSuccessorsAndPredecessors();
 
-            // DisplayAllPOSMovementLinks();
             DisplayPOSMovementLinksInfrastructureUsed();
             DisplayPOSMovementLinksTrainUnitUsed();
 
             this.ListOfPOSTrackTasks = CreatePOSTrackTaskList();
             DisplayListPOSTrackTask();
 
-
-            // TODO: -------------------------------------------------------------------------------------------------------------------------------------------
             ok = 1;
             int TrackTaskIndex = 0;
 
@@ -856,7 +816,6 @@ namespace ServiceSiteScheduling.Solutions
                 Console.WriteLine();
             }
 
-            // TODO: -------------------------------------------------------------------------------------------------------------------------------------------
 
             this.POSTrackTaskadjacencyListForInfrastructure = CreatePOSAdjacencyListTrackTask(POSTrackTaskLinksSameInfrastructure);
 
@@ -1018,7 +977,6 @@ namespace ServiceSiteScheduling.Solutions
 
 
                             }
-                            // if(nextTrackTask.Start == task.Start && nextTrackTask.End == task.End && nextTrackTask.Train == task.Train && )   
                         }
 
                     }
@@ -1484,8 +1442,6 @@ namespace ServiceSiteScheduling.Solutions
             {
                 Dictionary<POSMoveTask, List<POSMoveTask>> POSadjacencyList = this.POSadjacencyListForInfrastructure;
 
-                // successorPOSMoves.Clear();
-                // predecessorsPOSMoves.Clear();
                 try
                 {
 
@@ -1510,8 +1466,6 @@ namespace ServiceSiteScheduling.Solutions
 
                 try
                 {
-
-
                     POSMoveTask POSmove = GetPOSMoveTaskByID(POSId, POSadjacencyList);
 
                     successorPOSMoves.AddRange(POSadjacencyList[POSmove]);
@@ -1539,6 +1493,7 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("----------------------------------------------------------");
             Console.WriteLine("|      POS Movement Links - Train Unit (solid arcs)     |");
             Console.WriteLine("----------------------------------------------------------");
+
             // Show connections per Move
             Dictionary<POSMoveTask, List<POSMoveTask>> posAdjacencyList = this.POSadjacencyListForTrainUint;
 
@@ -1775,9 +1730,6 @@ namespace ServiceSiteScheduling.Solutions
 
         public void DisplayPartialResults(Dictionary<int, List<int>> MovementLinks)
         {
-
-
-            // TODO: It is used for an old version, it most be modified accordingly
             foreach (KeyValuePair<int, List<int>> pair in MovementLinks)
             {
 
@@ -1818,9 +1770,6 @@ namespace ServiceSiteScheduling.Solutions
 
             }
         }
-
-        // TODO; rename it to Initialize POS since it is a sort of Constructor
-        // this function does not generate a POS graph only initialize some values
         public void InitializePOS()
         {
             MoveTask move = this.First;
@@ -1829,8 +1778,6 @@ namespace ServiceSiteScheduling.Solutions
 
             while (move != null)
             {
-                // TODO : Probably a Clone method will be needed here
-
                 MoveTask move_clone = move;
                 listOfMoves.Add(move_clone);
 
@@ -1888,31 +1835,13 @@ namespace ServiceSiteScheduling.Solutions
                     foreach (TrackTask task in routing.AllPrevious)
                     {
                         Console.WriteLine($"---{task}----");
-                        // if (task is ParkingTask parkingTask)
-                        //     Console.WriteLine("@It was a ParkingTask");
-                        // if (task is ServiceTask serviceTask)
-                        //     Console.WriteLine("@It was a ServiceTask");
-                        // if (task is ArrivalTask arrivalTask)
-                        //     Console.WriteLine("@It was a ArrivalTask");
-                        // if (task is DepartureTask departureTask)
-                        //     Console.WriteLine("@It was a DepartureTask");
                     }
 
                     Console.WriteLine("All Next tasks:");
                     foreach (TrackTask task in routing.AllNext)
                     {
                         Console.WriteLine($"---{task}----");
-                        // if (task is ParkingTask parkingTask)
-                        //     Console.WriteLine("@It was a ParkingTask");
-                        // if (task is ServiceTask serviceTask)
-                        //     Console.WriteLine("@It was a ServiceTask");
-                        // if (task is ArrivalTask arrivalTask)
-                        //     Console.WriteLine("@It was a ArrivalTask");
-                        // if (task is DepartureTask departureTask)
-                        //     Console.WriteLine("@It was a DepartureTask");
                     }
-
-                    // TODO: display more infrastructure
 
                     foreach (Track track in tracks)
                     {
@@ -1928,9 +1857,6 @@ namespace ServiceSiteScheduling.Solutions
                             Console.Write($" {track} -->");
 
                             Console.Write($" B side {track.BSide} ");
-
-
-
                         }
 
                     }
@@ -1941,33 +1867,16 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     if (move.TaskType is MoveTaskType.Departure)
                     {
-                        // var previousTasks = move.AllPrevious
                         Console.WriteLine("All Previous tasks:");
                         foreach (TrackTask task in move.AllPrevious)
                         {
                             Console.WriteLine($"---{task}----");
-                            // if (task is ParkingTask parkingTask)
-                            //     Console.WriteLine("@It was a ParkingTask");
-                            // if (task is ServiceTask serviceTask)
-                            //     Console.WriteLine("@It was a ServiceTask");
-                            // if (task is ArrivalTask arrivalTask)
-                            //     Console.WriteLine("@It was a ArrivalTask");
-                            // if (task is DepartureTask departureTask)
-                            //     Console.WriteLine("@It was a DepartureTask");
                         }
 
                         Console.WriteLine("All Next tasks:");
                         foreach (TrackTask task in move.AllNext)
                         {
                             Console.WriteLine($"---{task}----");
-                            // if (task is ParkingTask parkingTask)
-                            //     Console.WriteLine("@It was a ParkingTask");
-                            // if (task is ServiceTask serviceTask)
-                            //     Console.WriteLine("@It was a ServiceTask");
-                            // if (task is ArrivalTask arrivalTask)
-                            //     Console.WriteLine("@It was a ArrivalTask");
-                            // if (task is DepartureTask departureTask)
-                            //     Console.WriteLine("@It was a DepartureTask");
                         }
 
 
@@ -1979,8 +1888,6 @@ namespace ServiceSiteScheduling.Solutions
 
                             Console.WriteLine($"Infrastructure used (tracks) number of routes {listOfRoutes.Count}:");
 
-
-                            // // TODO: display more infrastructure
                             foreach (Route route in listOfRoutes)
                             {
                                 var Tracks = route.Tracks;
@@ -2006,32 +1913,14 @@ namespace ServiceSiteScheduling.Solutions
 
                                 }
                                 Console.WriteLine("");
-
-
-
                             }
                             Console.WriteLine("");
-
-
-
                         }
-
-
-
-
                     }
-
-
                 }
                 i++;
                 move = move.NextMove;
             }
         }
-        public void EvaluatePOS()
-        {
-            // TODO
-        }
     }
-
-
 }

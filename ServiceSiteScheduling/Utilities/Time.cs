@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace ServiceSiteScheduling.Utilities
 {
     struct Time : IComparable

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿
 namespace ServiceSiteScheduling.LocalSearch
 {
     abstract class LocalSearchMove : IComparable
@@ -16,7 +13,6 @@ namespace ServiceSiteScheduling.LocalSearch
         public LocalSearchMove(Solutions.PlanGraph graph)
         {
             this.Graph = graph;
-            //this.AffectedTracks = ~(new Utilities.BitSet(ProblemInstance.Current.Tracks.Length));
 #if DEBUG
             if (this.Graph != null)
             {
@@ -29,10 +25,9 @@ namespace ServiceSiteScheduling.LocalSearch
         public virtual Solutions.SolutionCost Execute()
         {
 #if DEBUG
-            // Add POS here as well ?
             this.Graph.UpdateRoutingOrder();
 #endif
-            this.Cost = this.Graph.ComputeModel(/*this.AffectedTracks, */this.executestart ?? this.Graph.First, this.executeend ?? this.Graph.Last);
+            this.Cost = this.Graph.ComputeModel(this.executestart ?? this.Graph.First, this.executeend ?? this.Graph.Last);
 #if DEBUG
             this.newroutingordering = this.Graph.RoutingOrdering();
             this.Graph.CheckCorrectness();
@@ -40,10 +35,10 @@ namespace ServiceSiteScheduling.LocalSearch
             return this.Cost;
         }
 
-        public  virtual Solutions.SolutionCost Revert()
+        public virtual Solutions.SolutionCost Revert()
         {
             this.Graph.UpdateRoutingOrder();
-            var cost = this.Graph.ComputeModel(/*this.AffectedTracks, */this.revertstart ?? this.Graph.First, this.revertend ?? this.Graph.Last);
+            var cost = this.Graph.ComputeModel(this.revertstart ?? this.Graph.First, this.revertend ?? this.Graph.Last);
 #if DEBUG
             this.Graph.CheckCorrectness();
             if (this.routingordering != this.Graph.RoutingOrdering())

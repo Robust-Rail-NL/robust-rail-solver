@@ -1,10 +1,5 @@
 ﻿using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServiceSiteScheduling.Matching
 {
@@ -362,7 +357,7 @@ namespace ServiceSiteScheduling.Matching
 
             public override string ToString()
             {
-                return string.Join(",", this.Units.Select(unit => unit.Index));//string.Join(",", this.Units.Select(unit => $"{unit.Index}({unit.Type.Name})"));
+                return string.Join(",", this.Units.Select(unit => unit.Index));
             }
         }
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServiceSiteScheduling.Solutions;
+﻿using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Matching;
 using ServiceSiteScheduling.Utilities;
 
@@ -26,8 +21,6 @@ namespace ServiceSiteScheduling.LocalSearch
 
             this.firstprevious = this.First.Train.Routing.PreviousMove;
             this.secondprevious = this.Second.Train.Routing.PreviousMove;
-
-            //this.AffectedTracks = new BitSet(ProblemInstance.Current.Tracks.Length);
         }
 
         public override SolutionCost Execute()
@@ -40,7 +33,6 @@ namespace ServiceSiteScheduling.LocalSearch
             {
                 var park = firstservice.Next.GetSkippedParking(firstservice.Train);
                 firstservice.Next.UnskipParking(firstservice.Train);
-                //this.AffectedTracks[park.Track.Index] = true;
                 firsttask = park;
                 this.firstskipped = true;
             }
@@ -50,14 +42,13 @@ namespace ServiceSiteScheduling.LocalSearch
             {
                 var park = secondservice.Next.GetSkippedParking(secondservice.Train);
                 secondservice.Next.UnskipParking(secondservice.Train);
-                //this.AffectedTracks[park.Track.Index] = true;
                 secondtask = park;
                 this.secondskipped = true;
             }
 
             this.swap(firsttask, secondtask);
 
-            // make sure no resource conflicts occur
+            // Checking for resource conflicts
             if (firstservice != null && (firstservice.NextServiceTask?.Previous.MoveOrder ?? double.PositiveInfinity) > this.Second.Train.Routing.MoveOrder)
             {
                 var park = firsttask as Tasks.ParkingTask;
@@ -72,7 +63,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 secondtask = secondservice;
             }
 
-            // make sure that the departure happens after the task is finished
+            // Check that the departure happens after the task is finished
             if (this.First.Train.Routing.MoveOrder < secondtask.Previous.MoveOrder)
             {
                 foreach (var task in this.First.Train.Routing.Previous)
@@ -82,7 +73,6 @@ namespace ServiceSiteScheduling.LocalSearch
                     {
                         var park = this.First.Train.Routing.GetSkippedParking(task.Train);
                         this.parking.Add(park);
-                        //this.AffectedTracks[park.Track.Index] = true;
                         this.First.Train.Routing.UnskipParking(task.Train);
                     }
                 }
@@ -202,7 +192,6 @@ namespace ServiceSiteScheduling.LocalSearch
                         if (Math.Abs(part1.DepartureTrain.Time - part2.DepartureTrain.Time) > 4 * Time.Hour)
                             continue;
 
-                        // swap
                         MatchingSwapMove move = part1.Train.Routing.MoveOrder < part2.Train.Routing.MoveOrder ? new MatchingSwapMove(graph, part1, part2) : new MatchingSwapMove(graph, part2, part1);
                         moves.Add(move);
                     }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServiceSiteScheduling.Solutions;
-using ServiceSiteScheduling.Utilities;
+﻿using ServiceSiteScheduling.Solutions;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -36,11 +30,6 @@ namespace ServiceSiteScheduling.LocalSearch
                 this.secondtracks[i] = parkingsecond[i].Track;
                 this.secondsides[i] = parkingsecond[i].ArrivalSide;
             }
-
-            /*this.executestart = this.revertstart = parkingfirst.MinItem(t => t.Previous.MoveOrder).Previous;
-            var lastfirst = parkingfirst.MaxItem(t => t.Next?.MoveOrder ?? double.NegativeInfinity)?.Next ?? this.Graph.Last;
-            var lastsecond = parkingsecond.MaxItem(t => t.Next?.MoveOrder ?? double.NegativeInfinity)?.Next ?? this.Graph.Last;
-            this.executeend = this.revertend = lastfirst.MoveOrder > lastsecond.MoveOrder ? lastfirst : lastsecond;*/
         }
 
         public override SolutionCost Execute()
@@ -129,25 +118,6 @@ namespace ServiceSiteScheduling.LocalSearch
 
                             if (!nextmovetask.Train.ParkingLocations.Contains(routing.ToTrack) || !routing.Train.ParkingLocations.Contains(nextmovetask.ToTrack))
                                 continue;
-
-                            /*if (!graph.RoutingGraph.RoutePossible(routing.Train, routing.Previous.Track, Side.A, nextmovetask.ToTrack, nextmovetask.ToSide) &&
-                                !graph.RoutingGraph.RoutePossible(routing.Train, routing.Previous.Track, Side.B, nextmovetask.ToTrack, nextmovetask.ToSide))
-                                continue;
-
-                            if (!routing.AllNext.All(task =>
-                                   graph.RoutingGraph.RoutePossible(task.Train, task.Track, Side.A, task.Next.ToTrack, task.Next.ToSide) ||
-                                   graph.RoutingGraph.RoutePossible(task.Train, task.Track, Side.B, task.Next.ToTrack, task.Next.ToSide)))
-                                continue;
-
-                            if (!nextmovetask.AllPrevious.All( task =>
-                                    graph.RoutingGraph.RoutePossible(nextmovetask.Train, task.Track, Side.A, routing.ToTrack, routing.ToSide) ||
-                                    graph.RoutingGraph.RoutePossible(nextmovetask.Train, task.Track, Side.B, routing.ToTrack, routing.ToSide)))
-                                continue;
-
-                            if (!nextmovetask.AllNext.All(task =>
-                                   graph.RoutingGraph.RoutePossible(task.Train, task.Track, Side.A, task.Next.ToTrack, task.Next.ToSide) ||
-                                   graph.RoutingGraph.RoutePossible(task.Train, task.Track, Side.B, task.Next.ToTrack, task.Next.ToSide)))
-                                continue;*/
 
                             var move = new ParkingSwapMove(graph, routing.Next, nextmovetask.AllNext.ToList());
                             moves.Add(move);
