@@ -4,16 +4,9 @@ using ServiceSiteScheduling.Tasks;
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ServiceSiteScheduling.Initial
 {   
-    // TODO: Linked list structure for TrackTask
-    // class TrackTask 
-    // Add TrackTask Next
-    // Add TrackTask Previous 
     class SimpleHeuristic
     {
         public static PlanGraph Construct(Random random)
@@ -50,13 +43,6 @@ namespace ServiceSiteScheduling.Initial
                     splitparts[st].Add(st);
                     serviceshunttrains.Add(st);
                 }
-                /*splitparts[st] = new List<ShuntTrain>();
-                foreach (var stu in st.Units)
-                {
-                    ShuntTrain partial = new ShuntTrain(new ShuntTrainUnit[1] { stu });
-                    splitparts[st].Add(partial);
-                    serviceshunttrains.Add(partial);
-                }*/
             }
 
             // Add arrival and inital routing tasks
@@ -342,23 +328,6 @@ namespace ServiceSiteScheduling.Initial
             while (!moveheap.IsEmpty)
             {
                 MoveTask current = moveheap.ExtractFirst();
-
-                // loop train list and find the corresponding movments and link them
-                // its just the linking of MoveTasks
-                // How to assign the first movment of a train ???
-
-
-
-                // Dashed line by applying a logic on the information that we can have from
-                // MoveTask.FromTrack MoveTask.ToTrack; it is also the track -> other track information 
-
-
-                // For service resource should we use 
-                // List<ServiceTask> services = new List<ServiceTask>();
-                // List<ParkingTask> parkings = new List<ParkingTask>();
-
-                // Or ServiceResource resource
-                // Check var machineschedule = schedule[resource]; 
                 
                 current.MoveOrder = order++;
                 current.PreviousMove = prev;

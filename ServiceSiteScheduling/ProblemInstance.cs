@@ -2,11 +2,6 @@
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Runtime.ExceptionServices;
 
 namespace ServiceSiteScheduling
 {
@@ -68,7 +63,6 @@ namespace ServiceSiteScheduling
             }
         }
 
-        // Parses a json format file to string
         public static string ParseJsonToString(string path)
         {
             string jsonContent;
@@ -85,7 +79,6 @@ namespace ServiceSiteScheduling
 
         public static ProblemInstance ParseJson(string locationpath, string scenariopath)
         {
-            // Location
             AlgoIface.Location location;
             using (var input = File.OpenRead(locationpath))
             using (StreamReader reader = new StreamReader(input))
@@ -95,7 +88,6 @@ namespace ServiceSiteScheduling
 
             }
 
-            // Scenario
             AlgoIface.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
             using (StreamReader reader = new StreamReader(input))
@@ -110,12 +102,10 @@ namespace ServiceSiteScheduling
 
         public static ProblemInstance Parse(string locationpath, string scenariopath)
         {
-            // Location
             AlgoIface.Location location;
             using (var input = File.OpenRead(locationpath))
                 location = AlgoIface.Location.Parser.ParseFrom(input);
 
-            // Scenario
             AlgoIface.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
                 scenario = AlgoIface.Scenario.Parser.ParseFrom(input);
@@ -137,12 +127,12 @@ namespace ServiceSiteScheduling
             instance.InterfaceLocation = location;
             instance.InterfaceScenario = scenario;
 
-            // Trackparts
             List<Track> tracks = new List<Track>();
             List<GateWay> gateways = new List<GateWay>();
             Dictionary<ulong, Infrastructure> infrastructuremap = new Dictionary<ulong, Infrastructure>();
             int index = 0;
-            // Construct the parts
+
+            // Construct the track parts
             foreach (var part in location.TrackParts)
             {
                 switch (part.Type)
@@ -173,12 +163,6 @@ namespace ServiceSiteScheduling
                     default:
                         break;
                 }
-                // foreach (KeyValuePair<ulong, Infrastructure> infra in infrastructuremap)
-                // {
-                //     Console.WriteLine($"id: {infra.Key} : Inrastructure {infra.Value}");
-
-                // }
-
             }
             instance.Tracks = tracks.ToArray();
             // Connect the parts
@@ -196,7 +180,6 @@ namespace ServiceSiteScheduling
                             infrastructuremap.TryGetValue(part.BSide.First(), out B);
                         track.Connect(A, B);
 
-                        // Console.WriteLine($"Track: {track.ID} - A side {track.GetInfrastructureAtSide(Side.A).ID}, B side {track.GetInfrastructureAtSide(Side.B).ID}");
                         break;
                     case AlgoIface.TrackPartType.Switch:
                         Switch @switch = infrastructuremap[part.Id] as Switch;
@@ -264,13 +247,11 @@ namespace ServiceSiteScheduling
                 List<Infrastructure> path = new List<Infrastructure>();
                 path.Add(gateway);
 
-                //if(gateway.EndPoint.GetTracksConnectedTo(gateway, 0, path, false).Count() != 0)
                 gatewayconnections[gateway] = gateway.EndPoint.GetTracksConnectedTo(gateway, 0, path, false).First();
                 Console.WriteLine($"gatewayconnections[gateway]: {gateway}:{gatewayconnections[gateway]}");
 
             }
 
-            // Services
             Dictionary<AlgoIface.TaskType, ServiceType> taskmap = new Dictionary<AlgoIface.TaskType, ServiceType>();
             var tasktypes = scenario.In.Trains.Aggregate(
                 new List<AlgoIface.TaskType>(),
@@ -321,7 +302,7 @@ namespace ServiceSiteScheduling
 
                 if (facility.Type == "Unknown")
                 {
-                    for (int i = 0; i < /*facility.SimultaneousUsageCount*/ 30; i++)
+                    for (int i = 0; i < 30; i++)
                     {
                         var crew = new ServiceCrew("crew " + i, facility.TaskTypes.Select(type => taskmap[type]));
                         crews.Add(crew);
@@ -355,76 +336,6 @@ namespace ServiceSiteScheduling
 
             foreach (var track in servicetracks)
                 Console.WriteLine($"Service location: {instance.ServiceLocations[track.Index]}");
-            /*
-            // only for database/*.dat
-            servicetracks.Add(instance.Tracks[10]);
-            servicetracks.Add(instance.Tracks[11]);
-            servicetracks.Add(instance.Tracks[12]);
-            servicetracks.Add(instance.Tracks[13]);
-            instance.ServiceTypes[1].Tracks.Add(instance.Tracks[12]);
-            instance.ServiceTypes[2].Tracks.Add(instance.Tracks[10]);
-            instance.ServiceTypes[2].Tracks.Add(instance.Tracks[11]);
-            instance.ServiceTypes[0].LocationType = ServiceLocationType.Free;
-            instance.ServiceTypes[3].LocationType = ServiceLocationType.Free;
-
-
-            // Create the location resources
-            instance.ServiceLocations = new ServiceLocation[instance.Tracks.Length];
-            foreach (var track in servicetracks)
-                instance.ServiceLocations[track.Index] = new ServiceLocation(track.ID.ToString(), instance.ServiceTypes.Where(type => type.Tracks.Contains(track)), track);
-            // Connect the resources to the services
-            foreach (var service in instance.ServiceTypes)
-                foreach (var track in service.Tracks)
-                    service.Resources.Add(instance.ServiceLocations[track.Index]);
-            // Add tracks to free service types
-            var freetracks = instance.Tracks.Where(track => track.Length > 0).Except(servicetracks);
-            var freeservices = new List<ServiceType>();
-            foreach (var service in instance.ServiceTypes)
-            {
-                if (service.Tracks.Count == 0)
-                {
-                    freeservices.Add(service);
-                    foreach (var track in freetracks)
-                        service.Tracks.Add(track);
-                }
-            }
-            // Add crews to free service types
-            // only for database/*.dat
-            ServiceCrew[] crews = new ServiceCrew[30];
-            for (int i = 0; i < crews.Length; i++)
-                crews[i] = new ServiceCrew("crew" + i, freeservices);
-            foreach (var service in freeservices)
-                service.Resources.AddRange(crews);
-
-            // only for database/*.dat
-            AlgoIface.Facility fac = new AlgoIface.Facility();
-            fac.Id = 0;
-            fac.TaskTypes.Add(tasktypes[0]);
-            fac.TaskTypes.Add(tasktypes[3]);
-            fac.SimultaneousUsageCount = 30;
-            fac.Type = "crew";
-            foreach (var track in freetracks)
-                fac.RelatedTrackParts.Add(track.ID);
-            instance.FacilityConversion[instance.ServiceTypes[0]] = fac;
-            instance.FacilityConversion[instance.ServiceTypes[3]] = fac;
-            fac = new AlgoIface.Facility();
-            fac.Id = 1;
-            fac.TaskTypes.Add(tasktypes[1]);
-            fac.SimultaneousUsageCount = 1;
-            fac.RelatedTrackParts.Add(instance.Tracks[12].ID);
-            fac.Type = instance.ServiceTypes[1].Name;
-            instance.FacilityConversion[instance.ServiceTypes[1]] = fac;
-            fac = new AlgoIface.Facility();
-            fac.Id = 2;
-            fac.TaskTypes.Add(tasktypes[2]);
-            fac.SimultaneousUsageCount = 2;
-            fac.RelatedTrackParts.Add(instance.Tracks[10].ID);
-            fac.RelatedTrackParts.Add(instance.Tracks[11].ID);
-            fac.Type = instance.ServiceTypes[2].Name;
-            instance.FacilityConversion[instance.ServiceTypes[2]] = fac;
-
-            foreach (var t in instance.Tracks.Where(track => track.Length > 0))
-                t.IsActive = true;*/
 
             // Determine train types
             List<TrainType> traintypes = new List<TrainType>();
@@ -469,7 +380,6 @@ namespace ServiceSiteScheduling
                 }
 
                 Console.WriteLine($"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}");
-                // var gateway = (GateWay)infrastructuremap[arrivaltrain.EntryTrackPart];
 
                 GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
 
@@ -491,21 +401,13 @@ namespace ServiceSiteScheduling
 
                     arrivals.Add(train);
                 }
-                // else{
-                //     var track =  infrastructuremap[arrivaltrain.EntryTrackPart] as Track;
-
-
-                //     var train = new ArrivalTrain(currenttrainunits.ToArray(), track, Side.A, (int)arrivaltrain.Departure);
-                //     arrivals.Add(train);
-                // }
-
                 foreach (var arrival in arrivals)
                     Console.WriteLine($"Arrival train : {arrival}");
 
 
             }
 
-            // only for harder instance
+            // only for harder instances
             TrainUnit tu9413 = null, tu9414 = null;
             if (include94139414)
             {
@@ -586,12 +488,7 @@ namespace ServiceSiteScheduling
                 var units = departuretrain.TrainUnits.Select(
                     unit => unit.Id == string.Empty ? new DepartureTrainUnit(traintypemap[unit.Type]) : new DepartureTrainUnit(trainunitmap[unit.Id]));
 
-                // var gateway = (GateWay)infrastructuremap[departuretrain.LeaveTrackPart];
-                // TODO
-
                 GateWay gateway = infrastructuremap[departuretrain.LeaveTrackPart] as GateWay;
-
-                // GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
 
                 if (gateway != null)
                 {
@@ -605,30 +502,10 @@ namespace ServiceSiteScheduling
                         unit.Train = train;
 
                 }
-                // else{
-                //     var tmp = infrastructuremap[departuretrain.LeaveTrackPart] as Track;
-                //     var train = new DepartureTrain((int)departuretrain.Arrival, units.ToArray(), tmp, Side.A);
-                //     departures.Add(train);
-                //     foreach (var unit in units)
-                //         unit.Train = train;
-
-
-                // }
 
                 foreach (var departure in departures)
                     Console.WriteLine($"Departure train : {departure}");
 
-
-
-
-                // var connection = gatewayconnections[gateway];
-                // instance.GatewayConversion[connection.Track.ID] = connection;
-                // var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
-
-                // var train = new DepartureTrain((int)departuretrain.Arrival, units.ToArray(), connection.Track, side);
-                // departures.Add(train);
-                // foreach (var unit in units)
-                //     unit.Train = train;
             }
 
             // only for harder instance
@@ -658,9 +535,6 @@ namespace ServiceSiteScheduling
 
             foreach (var t in instance.Tracks.Where(track => arrivals.Any(train => train.Track == track) || departures.Any(train => train.Track == track)).ToArray())
                 t.IsActive = true;
-            //instance.Tracks[25].CanReverse = true;
-            //instance.Tracks[25].IsActive = true;
-            //instance.Tracks[25].Length = 300;
 
             int id = 0;
             foreach (var train in instance.DeparturesOrdered)

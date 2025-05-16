@@ -4,9 +4,6 @@ using ServiceSiteScheduling.Matching;
 using ServiceSiteScheduling.Tasks;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using ServiceSiteScheduling.TrackParts;
 using Google.Protobuf;
 
@@ -57,10 +54,7 @@ namespace ServiceSiteScheduling.Solutions
                     continue;
 
                 TrackOccupation occupation = new SimpleTrackOccupation(track);
-                /*if (track.Access == Side.Both)
-                    occupation = new FreeTrackOccupation(track);
-                else
-                    occupation = new LIFOTrackOccupation(track);*/
+
                 this.TrackOccupations[i] = occupation;
                 this.RoutingGraph.SuperVertices[track.Index].TrackOccupation = occupation;
 
@@ -121,7 +115,7 @@ namespace ServiceSiteScheduling.Solutions
                     var routing = (RoutingTask)move;
 
                     // Arrive previously if necessary
-                    if (routing.Previous.TaskType == TrackTaskType.Arrival/* && affectedTracks[routing.FromTrack.Index]*/)
+                    if (routing.Previous.TaskType == TrackTaskType.Arrival)
                         routing.Previous.Arrive(this.TrackOccupations[routing.Previous.Track.Index]);
 
                     // Departure crossings
@@ -130,7 +124,6 @@ namespace ServiceSiteScheduling.Solutions
 
                     // Depart from the previous track
                     if (routing.FromTrack != routing.ToTrack)
-                    //if (affectedTracks[routing.FromTrack.Index])
                     {
                         if (routing.FromTrack.Access.HasFlag(Side.A))
                             departurecrossingsA = routing.Previous.State.GetCrossings(Side.A);
@@ -148,14 +141,7 @@ namespace ServiceSiteScheduling.Solutions
                             to.Replace(routing.Previous);
                     else
                     {
-                        // Depart from the previous track
-                        //if (affectedTracks[routing.FromTrack.Index])
-                        //    routing.Previous.Depart(this.TrackOccupations[routing.FromTrack.Index]);
-
-                        // Arrive at the next track
-                        //if (affectedTracks[routing.ToTrack.Index])
                         {
-                            //routing.UpdateArrivalOrder();
                             if (routing.ToSide == Side.A)
                             {
                                 for (int i = routing.Next.Count - 1; i >= 0; i--)
@@ -176,13 +162,6 @@ namespace ServiceSiteScheduling.Solutions
                                         to.Depart(this.TrackOccupations[to.Track.Index]);
                                 }
                             }
-                            /*
-                            foreach (TrackTask to in routing.Next)
-                            {
-                                to.Arrive(this.TrackOccupations[to.Track.Index]);
-                                if (to is DepartureTask)
-                                    to.Depart(this.TrackOccupations[to.Track.Index]);
-                            }*/
                         }
                     }
                 }
@@ -190,8 +169,7 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     var departure = (DepartureRoutingTask)move;
 
-                    //if (departure.Previous.Any(task => affectedTracks[task.Track.Index]))
-                    if (move.MoveOrder >= recomputestart.MoveOrder)// && move.MoveOrder <= recomputeend.MoveOrder)
+                    if (move.MoveOrder >= recomputestart.MoveOrder)
                         computeDepartureRoutes(departure);
                     else
                         foreach (var task in departure.Previous)
@@ -212,7 +190,6 @@ namespace ServiceSiteScheduling.Solutions
             }
             else
             {
-                // TODO UpdatePOS() will be here
 
                 if (this.testIndex == 100)
                 {
@@ -1350,8 +1327,6 @@ namespace ServiceSiteScheduling.Solutions
                             Console.WriteLine("@It was a DepartureTask");
                     }
 
-                    // TODO: display more infrastructure
-
                     foreach (Track track in tracks)
                     {
                         if (track != lastTrack)
@@ -1379,7 +1354,6 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     if (move.TaskType is MoveTaskType.Departure)
                     {
-                        // var previousTasks = move.AllPrevious
                         Console.WriteLine("All Previous tasks:");
                         foreach (TrackTask task in move.AllPrevious)
                         {
@@ -1418,7 +1392,6 @@ namespace ServiceSiteScheduling.Solutions
                             Console.WriteLine($"Infrastrucre used (tracks) number of routes {listOfRoutes.Count}:");
 
 
-                            // // TODO: display more infrastructure
                             foreach (Route route in listOfRoutes)
                             {
                                 var Tracks = route.Tracks;
@@ -1444,22 +1417,10 @@ namespace ServiceSiteScheduling.Solutions
 
                                 }
                                 Console.WriteLine("");
-
-
-
                             }
                             Console.WriteLine("");
-
-
-
                         }
-
-
-
-
                     }
-
-
                 }
                 i++;
                 move = move.NextMove;
@@ -1591,100 +1552,3 @@ namespace ServiceSiteScheduling.Solutions
         }
     }
 }
-
-
-// // Identify all the conflicting moves related to the infrastructure used by the movements - and link moves
-//                 if (InfraConflict(InfraOccupiedByMovesID, IDListOfInfraUsed, moveIndex, ref conflictingMoveIds) == false)
-//                 {
-//                     // No conflict occured
-
-//                     foreach (ulong infraID in IDListOfInfraUsed)
-//                     {
-//                         // Assign move to the infrastructure occupied
-//                         InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
-//                         InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
-//                     }
-
-//                 }
-//                 else
-//                 {
-
-//                     // Contains all the movments that was assigned to the same movements as the train unit of the cuurent move (moveIndex)
-//                     // this also mean that these movements are conflicting becasue of the same train used assigned to the movement
-//                     // and not only because of the same infrastructure used
-//                     List<int> movesUsingSameTrainUnit = CheckIfSameTrainUintUsed(conflictingMoveIds, listOfMoves, moveIndex);
-
-//                     foreach (int MoveId in conflictingMoveIds)
-//                     {
-//                         // 1st: link movements -> conflictingMoveId is now linked with the moveIndex (current move id)
-//                         LinkMovmentsByID(MovementLinks, MoveId, moveIndex);
-
-
-//                         if (movesUsingSameTrainUnit.Count != 0)
-//                         {
-//                             // This statement is used to link the movements conflicted because of using the same infrastrucure\
-//                             // and not because of same train unit assigned per movement {aka dashed line dependency}
-//                             if (!movesUsingSameTrainUnit.Contains(MoveId))
-//                                 LinkMovmentsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
-
-//                             // This statement is used to link the movements conflicted because of using the same train unit\
-//                             // and not because of same infrastructure assigned per movement {aka solid line dependency}
-//                             // if (movesUsingSameTrainUnit.Contains(MoveId))
-//                             //     LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
-//                         }
-//                         else
-//                         {
-//                             LinkMovmentsByID(MovementLinksSameInfrastructure, MoveId, moveIndex);
-//                         }
-
-//                     }
-//                     // 2nd Assign current movement to the required infrastructure
-//                     foreach (ulong infraID in IDListOfInfraUsed)
-//                     {
-//                         InfraOccupiedByMoves[DictOfInfrastrucure[infraID]] = currentMove;
-//                         InfraOccupiedByMovesID[DictOfInfrastrucure[infraID]] = moveIndex;
-//                     }
-
-
-
-//                 }
-//     List<int> IDListOfTrainUnitUsed = GetIDListOfTrainUnitsUsed(currentMove); // Train units used by the movement
-
-//     if (TrainUnitConflict(TrainUnitsOccupiedByMovesID, IDListOfTrainUnitUsed, ref conflictingMoveIds) == false)
-//     {
-//         // No conflict occured. Here the moves are not linked
-//         foreach (int trainUnitID in IDListOfTrainUnitUsed)
-//         {
-//             // Assin the move to the Train Units used
-//             TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
-//         }
-//     }
-//     else
-//     {
-//         // The conflicting moves are linked
-//         foreach (int MoveId in conflictingMoveIds)
-//         {
-//             LinkMovmentsByID(MovementLinksSameTrainUnit, MoveId, moveIndex);
-
-//         }
-
-//         foreach (int trainUnitID in IDListOfTrainUnitUsed)
-//         {
-
-//             TrainUnitsOccupiedByMovesID[ListOfTrainUnits[trainUnitID]] = moveIndex;
-//         }
-//     }
-
-//     moveIndex++;
-//     if (moveIndex == listOfMoves.Count)
-//     {
-//         ok = 0;
-//         // The last movement is not linked, it contains an empty list
-//         MovementLinks.Add(moveIndex - 1, new List<int>());
-
-
-//         MovementLinksSameInfrastructure.Add(moveIndex - 1, new List<int>());
-//         MovementLinksSameTrainUnit.Add(moveIndex - 1, new List<int>());
-
-//     }
-// }

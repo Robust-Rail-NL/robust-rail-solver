@@ -2,9 +2,6 @@
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ServiceSiteScheduling.Routing
 {
@@ -88,31 +85,6 @@ namespace ServiceSiteScheduling.Routing
                     }
                 }
             }
-
-            /*List<Route>[,] routes = new List<Route>[this.Vertices.Length, this.Vertices.Length];
-            for (int i = 0; i < this.Vertices.Length; i++)
-            {
-                Vertex v = this.Vertices[i];
-                if (!v.SuperVertex.Track.IsActive)
-                    continue;
-
-                for (int j = 0; j < this.Vertices.Length; j++)
-                {
-                    var list = new List<Route>();
-                    Vertex w = this.Vertices[j];
-                    if (!w.SuperVertex.Track.IsActive)
-                        continue;
-
-                    foreach (Vertex u in this.Vertices)
-                        u.Discovered = false;
-                    ComputeRoutes(v, w, (new Vertex[1] { v }).ToList(), list, v.TrackSide);
-                    routes[i, j] = list;
-                }
-            }
-            int count = 0;
-            for (int i = 0; i < this.Vertices.Length; i++)
-                for (int j = 0; j < this.Vertices.Length; j++)
-                    count += routes[i, j]?.Count ?? 0;*/
         }
 
         public static RoutingGraph Construct()
@@ -159,6 +131,7 @@ namespace ServiceSiteScheduling.Routing
                     foreach (var connection in track.GetConnectionsAtSide(Side.A))
                     {
                         SuperVertex w = supervertices[connection.Track.Index];
+
                         // Determine which side of the connected track we are connected to.
                         if (connection.Side == Side.A)
                             v.AB.Arcs.Add(new Arc(v.AB, w.AA, ArcType.Switch, connection));
@@ -174,6 +147,7 @@ namespace ServiceSiteScheduling.Routing
                     foreach (var connection in track.GetConnectionsAtSide(Side.B))
                     {
                         SuperVertex w = supervertices[connection.Track.Index];
+
                         // Determine which side of the connected track we are connected to.
                         if (connection.Side == Side.A)
                             v.BA.Arcs.Add(new Arc(v.BA, w.AA, ArcType.Switch, connection));

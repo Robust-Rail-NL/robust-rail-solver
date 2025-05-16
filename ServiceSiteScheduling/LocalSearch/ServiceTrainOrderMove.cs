@@ -29,26 +29,6 @@ namespace ServiceSiteScheduling.LocalSearch
             this.previousfromfirst = first.Next.PreviousMove;
             this.previoustosecond = second.Previous.PreviousMove;
             this.previousfromsecond = second.Next.PreviousMove;
-            
-            /*this.AffectedTracks = new BitSet(ProblemInstance.Current.Tracks.Length);
-            this.AffectedTracks[this.First.Track.Index] = true;
-            this.AffectedTracks[this.Second.Track.Index] = true;
-            foreach (var task in this.First.Previous.AllPrevious)
-                this.AffectedTracks[task.Track.Index] = true;
-            foreach (var task in this.First.Next.AllNext)
-                this.AffectedTracks[task.Track.Index] = true;
-            foreach (var task in this.Second.Previous.AllPrevious)
-                this.AffectedTracks[task.Track.Index] = true;
-            foreach (var task in this.Second.Next.AllNext)
-                this.AffectedTracks[task.Track.Index] = true;
-            if (parkingtofirst != null)
-                this.AffectedTracks[parkingtofirst.Track.Index] = true;
-            if (firsttoparking != null)
-                this.AffectedTracks[firsttoparking.Track.Index] = true;
-            if (parkingtosecond != null)
-                this.AffectedTracks[parkingtosecond.Track.Index] = true;
-            if (secondtoparking != null)
-                this.AffectedTracks[secondtoparking.Track.Index] = true;*/
         }
 
         public override SolutionCost Execute()

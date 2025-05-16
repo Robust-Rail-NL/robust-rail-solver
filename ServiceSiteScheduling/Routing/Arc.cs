@@ -1,11 +1,6 @@
 ﻿using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServiceSiteScheduling.Routing
 {
@@ -38,7 +33,7 @@ namespace ServiceSiteScheduling.Routing
                 case ArcType.Track:
                     this.Cost = this.Duration = Settings.TrackCrossingTime;
                     if (trackOccupation != null)
-                        this.Cost += Settings.CrossingWeight * /*(this.Crossings = trackOccupation.StateDeque.Count);//*/(this.Crossings = trackOccupation.StateDeque.Count > 0 ? 1 : 0);
+                        this.Cost += Settings.CrossingWeight * (this.Crossings = trackOccupation.StateDeque.Count > 0 ? 1 : 0);
                     break;
                 case ArcType.Reverse:
                     this.Duration = Settings.TrackCrossingTime + train.ReversalDuration;

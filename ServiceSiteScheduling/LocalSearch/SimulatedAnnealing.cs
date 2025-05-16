@@ -18,8 +18,6 @@ namespace ServiceSiteScheduling.LocalSearch
         {
             var graph = Initial.SimpleHeuristic.Construct(random);
             graph.Cost = graph.ComputeModel();
-            //graph.OutputMovementSchedule();
-            //Console.WriteLine($"initial cost = {graph.Cost.Cost}");
 
             this.Graph = graph;
             this.random = random;
@@ -210,23 +208,12 @@ namespace ServiceSiteScheduling.LocalSearch
             SolutionCost bestcost = this.Graph.ComputeModel();
             SolutionCost current = bestcost;
 
-            // diplayGraphDetails("Last", "Previous");
-
-            // diplayGraphDetails("Last", "Next");
-
-            // diplayGraphDetails("First", "Previous");
-
-            // diplayGraphDetails("First", "Next");
-
-            // diplayGraphDetails("All", "");
-
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             int localsearchmovetypes = 9;
 
             while (true)
             {
-                // Console.WriteLine($" => =>  => => Log Iteration: {iteration} -- iterations {iterations}");
 
                 bool fullcost = this.Graph.Cost.IsFeasible;
 
@@ -435,9 +422,6 @@ namespace ServiceSiteScheduling.LocalSearch
                             move.Execute();
                             move.Revert();
                             neighbors++;
-
-                            //if (move.Cost.Cost(fullcost) + SolutionCost.DepartureDelayWeight < current.Cost(fullcost))
-                            //    break;
                         }
 
                         LocalSearchMove selected = currentmoves.Min();
@@ -466,10 +450,7 @@ namespace ServiceSiteScheduling.LocalSearch
                 noimprovement++;
                 if (noimprovement >= iterationsUntilReset || current.Cost(fullcost) > 5 * bestcost.Cost(fullcost))
                 {
-                    //Console.WriteLine($"reset from {current.Cost}");
                     this.Revert(moves, fullcost);
-                    //if (Math.Abs(this.Graph.Cost.Cost(fullcost) - bestcost.Cost(fullcost)) > 0.1)
-                    //    throw new ArgumentException($"{moves.Count} : {this.Graph.Cost.Cost(fullcost)} should be {bestcost.Cost(fullcost)}!");
                     current = bestcost;
                     noimprovement = 0;
                 }
@@ -495,17 +476,9 @@ namespace ServiceSiteScheduling.LocalSearch
             {
                 Console.WriteLine("-----------------------");
                 Console.WriteLine($"{this.Graph.ComputeModel()}");
-                /*this.Graph.OutputMovementSchedule();
-                Console.WriteLine("-----------------------");
-                this.Graph.OutputTrainUnitSchedule();
-                Console.WriteLine("-----------------------");
-                this.Graph.OutputConstraintViolations();*/
                 Console.WriteLine("-----------------------");
                 Console.WriteLine($"Finished after {(stopwatch.ElapsedMilliseconds / (double)1000).ToString("N2")} seconds");
                 Console.WriteLine($"Neighbors visited = {neighbors}");
-                //this.Graph.OutputForDemian();
-                //this.Graph.GenerateOutput("plan.dat");
-                // diplayGraphDetails("All", "");
             }
         }
 

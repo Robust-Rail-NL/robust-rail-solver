@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServiceSiteScheduling.Utilities;
-
+﻿
 namespace ServiceSiteScheduling.Matching
 {
     class BipartiteGraph
@@ -14,8 +8,6 @@ namespace ServiceSiteScheduling.Matching
 
         private bool[,] adjacencyMatrix;
         private List<Match> fixedMatches;
-
-        // MM variables
         private int[] distance;
         private ArrivalVertex[] matchableArrivals;
         private int infinity;
@@ -313,8 +305,6 @@ namespace ServiceSiteScheduling.Matching
                 partsmatching.Add(part);
                 index += part.Count - 1;
             }
-
-            //Console.WriteLine(partsmatching.Count);
 
             Dictionary<Train, List<Part>> trainparts = new Dictionary<Train, List<Part>>();
             foreach (var matchpart in partsmatching)

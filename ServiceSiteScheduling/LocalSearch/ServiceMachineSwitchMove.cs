@@ -38,21 +38,6 @@ namespace ServiceSiteScheduling.LocalSearch
             this.originalpreviousposition = selected.Previous.PreviousMove;
             this.originalnextposition = selected.Next.PreviousMove;
             this.originalpredecessor = selected.PreviousServiceTask;
-
-            /*this.AffectedTracks = new BitSet(ProblemInstance.Current.Tracks.Length);
-            this.AffectedTracks[this.Selected.Track.Index] = true;
-            foreach (var task in this.Selected.Previous.AllPrevious)
-                this.AffectedTracks[task.Track.Index] = true;
-            foreach (var task in this.Selected.Next.AllNext)
-                this.AffectedTracks[task.Track.Index] = true;
-            if (this.Predecessor != null)
-            {
-                this.AffectedTracks[this.Predecessor.Track.Index] = true;
-                foreach (var task in this.Predecessor.Previous.AllPrevious)
-                    this.AffectedTracks[task.Track.Index] = true;
-                foreach (var task in this.Predecessor.Next.AllNext)
-                    this.AffectedTracks[task.Track.Index] = true;
-            }*/
         }
 
         public override SolutionCost Execute()
@@ -64,8 +49,6 @@ namespace ServiceSiteScheduling.LocalSearch
                 previous = this.Selected.Previous;
                 lower = this.Selected.Previous.GetRouteToSkippedParking(this.Selected.Train);
                 this.previousparking = this.Selected.Previous.GetSkippedParking(this.Selected.Train);
-                //this.AffectedTracks[this.previousparking.Track.Index] = true;
-                
                 this.Selected.Previous.UnskipParking(this.Selected.Train);
             }
             else
@@ -79,7 +62,6 @@ namespace ServiceSiteScheduling.LocalSearch
                 next = this.Selected.Next.GetRouteToSkippedParking(this.Selected.Train);
                 upper = this.Selected.Next;
                 this.nextparking = this.Selected.Next.GetSkippedParking(this.Selected.Train);
-                //this.AffectedTracks[this.nextparking.Track.Index] = true;
                 this.Selected.Next.UnskipParking(this.Selected.Train);
             }
             else
@@ -111,7 +93,6 @@ namespace ServiceSiteScheduling.LocalSearch
             {
                 this.originalpredecessorparking = upper.GetSkippedParking(this.Predecessor.Train);
                 upper.UnskipParking(this.Predecessor.Train);
-                //this.AffectedTracks[this.originalpredecessorparking.Track.Index] = true;
             }
 
             if (lower.MoveOrder > (this.Predecessor?.Next.MoveOrder ?? double.NegativeInfinity))
@@ -228,20 +209,6 @@ namespace ServiceSiteScheduling.LocalSearch
                         {
                             foreach (var track in service.Type.Tracks)
                             {
-                                /*if (track == service.Track)
-                                {
-                                    if (track.Access == Side.Both)
-                                    {
-                                        ServiceMachineSwitchMove move = new ServiceMachineSwitchMove(
-                                            graph,
-                                            service,
-                                            ProblemInstance.Current.ServiceLocations[track.Index],
-                                            service.ArrivalSide.Flip,
-                                            service.PreviousServiceTask);
-                                        moves.Add(move);
-                                    }
-                                }
-                                else*/
                                 {
                                     Tasks.MoveTask lower = service.Previous, upper = service.Next;
                                     if (!lower.SkipsParking)

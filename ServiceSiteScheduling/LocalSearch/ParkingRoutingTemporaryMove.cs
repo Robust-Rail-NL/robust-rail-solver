@@ -1,9 +1,4 @@
 ﻿using ServiceSiteScheduling.Solutions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -107,7 +102,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
                         foreach (var track in task.Train.ParkingLocations)
                         {
-                            if (track == task.Track/* || !graph.HasSufficientSpace(task.Train, track, nextmovetask.MoveOrder, task.Next.MoveOrder)*/)
+                            if (track == task.Track)
                                 continue;
 
                             if (track.Access.HasFlag(Side.A))

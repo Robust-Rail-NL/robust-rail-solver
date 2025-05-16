@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ServiceSiteScheduling.Solutions;
+﻿using ServiceSiteScheduling.Solutions;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -24,12 +19,6 @@ namespace ServiceSiteScheduling.LocalSearch
             this.MoveFirst = moveFirst;
 
             this.originalposition = moveFirst ? this.To.PreviousMove : this.From.PreviousMove;
-
-            /*this.AffectedTracks = new Utilities.BitSet(ProblemInstance.Current.Tracks.Length);
-            this.AffectedTracks[this.Parking.Track.Index] = true;
-            this.AffectedTracks[this.From.ToTrack.Index] = true;
-            foreach (var task in this.To.AllPrevious)
-                this.AffectedTracks[task.Track.Index] = true;*/
         }
 
         public override SolutionCost Execute()
