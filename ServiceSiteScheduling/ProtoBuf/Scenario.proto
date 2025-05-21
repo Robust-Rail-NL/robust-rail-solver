@@ -9,6 +9,12 @@ import "Location.proto";
 message Scenario {
     ScenarioIn in = 1;
     ScenarioOut out = 2;
+
+    ScenarioInStanding inStanding = 3;
+    ScenarioOutStanding outStanding = 4;
+
+    uint64 startTime = 5;
+    uint64 endTime = 6;
 }
 
 // Defines all trains arriving at the shunting area.
@@ -18,6 +24,17 @@ message ScenarioIn {
 
 // Defines all requests for trains leaving the shunting area.
 message ScenarioOut {
+    repeated TrainRequest trainRequests = 1;
+}
+
+
+// Defines all trains that were alrady at the shunting area (before the scenario starts).
+message ScenarioInStanding {
+    repeated IncomingTrain trains = 1;
+}
+
+// Defines all trains that will stay at the shunting area (after the scenario ends).
+message ScenarioOutStanding {
     repeated TrainRequest trainRequests = 1;
 }
 
