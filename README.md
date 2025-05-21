@@ -29,7 +29,7 @@ The [main program](Program.cs) contains several functions with different feature
 ### Location Scenario Parsing
 
 It is advised to first call `Test_Location_Scenario_Parsing(string location_path, string scenario_path)` function:
-* It will test if the given location and scenario (json format) files can be parsed correctly into protobuf objects (`ProblemInstance`). As part of the test, the overall infrastructure of the location (e.g., track parts) will be displayed. If the parsing from `location.json` `->` `protobuf location object` is successful, the json format location will be displayed. When the parsing from `sceenario.json` `->` `protobuf scenario object` is successful, the json format scenario will be displayed and some details about the Incoming and Outgoing trains.
+* It will test if the given location and scenario (json format) files can be parsed correctly into protobuf objects (`ProblemInstance`). As part of the test, the overall infrastructure of the location (e.g., track parts) will be displayed. If the parsing from `location_solver.json` `->` `protobuf location object` is successful, the json format location will be displayed. When the parsing from `scenario_solver.json` `->` `protobuf scenario object` is successful, the json format scenario will be displayed and some details about the Incoming and Outgoing trains.
 
 Usage of the parsing test:
 ```bash
@@ -38,7 +38,7 @@ Test_Location_Scenario_Parsing(string location_path, string scenario_path)
 Example: 
 
 ```bash
-Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json", "./database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json");
+Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/setting_A/scenario_solver.json");
 ```
 
 ### Create Plan with Tabu and Local Search methods - from configuration file
@@ -48,7 +48,7 @@ Usage:
 cd ServiceSiteScheduling
 dotnet run -- --config=./config.yaml
 ```
-Where [config.yaml](./config.yaml) contains all the parameters needed to specify path to the `location file`, `scenario file` and to define path of the `plan file`. Moreover, the configuration parameters for the Tabu Search and Simulated Annealing are also included in this config file. 
+Where [config.yaml](./ServiceSiteScheduling/config.yaml) contains all the parameters needed to specify path to the `location file`, `scenario file` and to define path of the `plan file`. Moreover, the configuration parameters for the Tabu Search and Simulated Annealing are also included in this config file. 
 
 **Details about the parameters**: Explained below (Create Plan with Tabu and Local Search methods).
 
@@ -56,8 +56,8 @@ Where [config.yaml](./config.yaml) contains all the parameters needed to specify
 ### Create Plan with Tabu and Local Search methods
 
 * This function takes as input the path to location file `location_path` and the path to the scenario file `scenario_path`. 
-    * E.g., of the location is shunting yard - [location.json](database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json). 
-    * E.g., of the scenario is the time of arrivals & departures, train types/composition - [scenario.json](database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json).
+    * E.g., of the location is shunting yard - [location_solver.json](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json). 
+    * E.g., of the scenario is the time of arrivals & departures, train types/composition - [scenario_solver.json](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_A/scenario_solver.json).
 
 * The function returns a schedule plan as solution to the scenario. The function uses Tabu Search and Simulated Annealing methods to find a Totally Ordered Graph which is finally converted into a schedule plan.
     *  The plan is stored in json format and the path/name of the plan defined by `plan_path` input argument (e.g., database/plans/plan.json).  
@@ -101,14 +101,33 @@ dotnet run
 
 
 ## Validated scenarios
-Some of the scenarios were successfully solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver) and the plans were validated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator). *Note* that all these scenarios were run on a [**new version of Kleine Binckhorst location**](data/validated/location/KleineBinckhorst_v2/).
+Some of the scenarios were successfully solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver) and the plans were validated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator). All the validated scenarios and location files are collected under [scenario-planning-inputs](https://github.com/Robust-Rail-NL/scenario-planning-inputs) repository. Nevertheless some of those plans are available in the `robust-rail-solver` as well. 
 
 
-* [**Scenarios:**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/)
-    * [**Scenario 6t custom config2**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config2/scenario_kleineBinckhorst_6t_custom_config2_hip.json)
-    * [**Scenario 6t custom config3**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config3/scenario_kleineBinckhorst_6t_custom_config3_hip.json)
-    * [**Scenario 10t random 42s distribution1**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution1/scenario_kleineBinckhorst_10t_random_42s_distribution1_hip.json)
-    * [**Scenario 10t random 42s distribution2**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution2/scenario_kleineBinckhorst_10t_random_42s_distribution2_hip.json)
+* [**Scenarios:**](./ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/)
+
+### `Scenario_settings/`
+- **`setting_A/`** - scenario at Kleine Binckhorst 6 trains custom config v2
+    - **location_solver.json** - Kleine Binckhorst solver format
+    - **scenario_solver.json** - 6 trains custom config solver format
+    - **plan.json** - plan corresponding to the scenario
+
+- **`setting_B/`** - scenario at Kleine Binckhorst 6 trains custom config v3
+    - **location_solver.json** - Kleine Binckhorst solver format
+    - **scenario_solver.json** - 6 trains custom config solver format
+    - **plan.json** - plan corresponding to the scenario
+
+- **`setting_C/`** - scenario at Kleine Binckhorst 10 trains random 42 seed distribution 1
+    - **location_solver.json** - Kleine Binckhorst solver format
+    - **scenario_solver.json** - 10 trains custom config solver format
+    - **plan.json** - plan corresponding to the scenario
+    
+- **`setting_D/`** - scenario at Kleine Binckhorst 10 trains random 42 seed distribution 2
+    - **location_solver.json** - Kleine Binckhorst solver format
+    - **scenario_solver.json** - 10 trains custom config solver format
+    - **plan.json** - plan corresponding to the scenario
+
+
 
 ## Partial Order Schedule (POS) - Other helper functions 
 
@@ -162,28 +181,6 @@ Where `start` is the first MoveTask of the totally ordered solution in the `Plan
 ## Issue with input data
 
 Some input location and scenarios (scenario.data and location.data) cannot be read in the main program by parsing with the protobuffres. 
-
-* In [database/fix](ServiceSiteScheduling/database/fix) a selection of readable scenario and location data is available.
-
-* In [database/TUSS-Instance-Generator/featured](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured) a collection of scenarios can be found run on the [Kleine Binckhorst shunting yard](Kleine_Binckhorst.png). The standard location file of Kleine Binckhorst is described as [location.json](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/location_kleineBinckhorst_HIP_dump.json).
-
-    * [scenario_kleineBinckhorst_HIP_dump](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/scenario_kleineBinckhorst_HIP_dump.json) is a working scenario on Kleine Binckhorst location.
-
-## New Location file and scenario
-A new more realistic [**Kleine Binckhorst**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/location_kleineBinckhorst_HIP_dump.json) location is now available.
-
-Other new running scenarios under this location are now available.
-
-* [**Folder - scenario_kleineBinckhorst_6t_custom_config2**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config2/) 
-    - [scenario_kleineBinckhorst_6t_custom_config2_hip.json](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config2/scenario_kleineBinckhorst_6t_custom_config2_hip.json)
-* [**Folder - scenario_kleineBinckhorst_6t_custom_config3**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenrio_kleineBinckhorst_6t_custom_config3/)
-    - [scenario_kleineBinckhorst_6t_custom_config3_hip.json](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_6t_custom_config3/scenario_kleineBinckhorst_6t_custom_config3_hip.json)
-* [**Folder - scenario_kleineBinckhorst_10t_random_42s_distribution1**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution1/)
-    - [scenario_kleineBinckhorst_10t_random_42s_distribution1.json](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution1/scenario_kleineBinckhorst_10t_random_42s_distribution1_hip.json)
-* [**Folder - scenario_kleineBinckhorst_10t_random_42s_distribution2**](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution2/)
-    - [scenario_kleineBinckhorst_10t_random_42s_distribution1.json](ServiceSiteScheduling/database/TUSS-Instance-Generator/featured/fixed_location/scenario_kleineBinckhorst_10t_random_42s_distribution2/scenario_kleineBinckhorst_10t_random_42s_distribution2_hip.json)
-
-
 
 ## ProtoBuffers
 
