@@ -1,7 +1,7 @@
 
-LocationPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json"
-ScenarioPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_A/scenario_solver.json"
-PlanPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_A/plan.json"
+LocationPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_T/location_solver.json"
+ScenarioPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_T/scenario_solver.json"
+PlanPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_T/plan.json"
 
 TabuSearch:
   Iterations: 40
