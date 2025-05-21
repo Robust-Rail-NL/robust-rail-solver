@@ -14,6 +14,9 @@ namespace ServiceSiteScheduling.Trains
         public Track[] ParkingLocations { get; set; }
         public Track[] RoutingLocations { get; set; }
 
+        // True: the train is an In/OutStanding train, thus, it was/will stay in the shunting yard
+        public bool InStanding {get; set;}
+
         protected Time _serviceDuration = -1;
         public Time ServiceDuration
         {
@@ -56,7 +59,7 @@ namespace ServiceSiteScheduling.Trains
             }
         }
 
-        public ShuntTrain(IEnumerable<ShuntTrainUnit> units)
+        public ShuntTrain(IEnumerable<ShuntTrainUnit> units, bool inStanding = false)
         {
             this.Units = units.ToList();
             this.Length = units.Sum(unit => unit.Type.Length);
@@ -74,15 +77,26 @@ namespace ServiceSiteScheduling.Trains
             this.UnitBits = new BitSet(ProblemInstance.Current.TrainUnits.Length);
             foreach (var unit in units)
                 this.UnitBits[unit.Index] = true;
+
+             if(this.InStanding){
+                this.InStanding = true;
+            }else{
+                this.InStanding = inStanding;
+            }
         }
 
-        public ShuntTrain(ShuntTrain train)
+        public ShuntTrain(ShuntTrain train, bool inStanding = false)
         {
             this.Units = new List<ShuntTrainUnit>(train.Units);
             this.Length = train.Length;
             this.ParkingLocations = train.ParkingLocations;
             this.RoutingLocations = train.RoutingLocations;
             this.UnitBits = train.UnitBits;
+            if(train.InStanding){
+                this.InStanding = true;
+            }else{
+                this.InStanding = inStanding;
+            }
         }
 
         public IEnumerable<IEnumerable<ShuntTrainUnit>> OrderedOverlap(ShuntTrain other)
@@ -146,6 +160,13 @@ namespace ServiceSiteScheduling.Trains
                 if (this.Units[i] != other.Units[i])
                     return false;
             return true;
+        }
+
+         // Returns if the train is an outstanding one which stays in the shunting yard after the scenario ends
+         // or if the train is an outstanding one which stays in the shunting yard after the scenario ends
+        public bool IsItInStanding()
+        {
+            return this.InStanding;
         }
     }
 }
