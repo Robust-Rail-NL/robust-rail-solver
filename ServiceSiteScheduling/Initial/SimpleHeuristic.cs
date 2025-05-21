@@ -12,7 +12,13 @@ namespace ServiceSiteScheduling.Initial
         public static PlanGraph Construct(Random random)
         {
             ShuntTrainUnit[] shunttrainunits = ProblemInstance.Current.TrainUnits.Select(tu => new ShuntTrainUnit(tu)).ToArray();
-            ShuntTrain[] arrivalshunttrains = ProblemInstance.Current.ArrivalsOrdered.Select(t => new ShuntTrain(t.Units.Select(tu => shunttrainunits[tu.Index]))).ToArray();
+            ShuntTrain[] arrivalshunttrains = ProblemInstance.Current.ArrivalsOrdered.Select(t => new ShuntTrain(t.Units.Select(tu => shunttrainunits[tu.Index]), t.IsItInStanding())).ToArray();
+
+            foreach(ShuntTrain train in arrivalshunttrains)
+            {
+                Console.WriteLine($"Arrival Type instanding: {train.InStanding}");
+            }
+
 
             Matching.BipartiteGraph g = new Matching.BipartiteGraph();
             var initialmatching = g.MaximumMatching();

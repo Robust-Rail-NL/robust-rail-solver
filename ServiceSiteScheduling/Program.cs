@@ -144,7 +144,8 @@ namespace ServiceSiteScheduling
                 Plan plan_pb = sa.Graph.GenerateOutputPB();
 
                 string jsonPlan = JsonFormatter.Default.Format(plan_pb);
-                Console.WriteLine(jsonPlan);
+    
+                // Console.WriteLine(jsonPlan);
 
                 string directoryPath = Path.GetDirectoryName(plan_path);
 
@@ -186,7 +187,7 @@ namespace ServiceSiteScheduling
 
                 string json = JsonFormatter.Default.Format(location);
 
-                Console.WriteLine("JSON: \n " + json);
+                // Console.WriteLine("JSON: \n " + json);
 
 
                 byte[] locationBytes = location.ToByteArray();
@@ -242,7 +243,7 @@ namespace ServiceSiteScheduling
                 if (token_parsed.ToString() == token_parsed.ToString())
                 {
                     Console.WriteLine("The Location file parsing was successful !");
-                    Console.WriteLine("JSON: \n " + json_parsed);
+                    // Console.WriteLine("JSON: \n " + json_parsed);
                 }
                 else
                 {
@@ -281,7 +282,7 @@ namespace ServiceSiteScheduling
                 if (token_parsed.ToString() == token_parsed.ToString())
                 {
                     Console.WriteLine("The Scenario file parsing was successful !");
-                    Console.WriteLine("JSON: \n " + json_parsed);
+                    // Console.WriteLine("JSON: \n " + json_parsed);
                 }
                 else
                 {

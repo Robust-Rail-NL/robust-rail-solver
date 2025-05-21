@@ -33,6 +33,9 @@ namespace ServiceSiteScheduling
 
         public Service[][] FreeServices;
 
+        public ulong ScenarioStartTime;
+        public ulong ScenarioEndTime;
+
         public void FillTrains()
         {
             this.TrainUnitsByType = new Dictionary<TrainType, TrainUnit[]>();
@@ -123,6 +126,14 @@ namespace ServiceSiteScheduling
             bool include2610 = false;
             bool include2611 = false;
             bool noservices = false;
+
+            // Get start and end time of the scenario
+            // this is needed sice the start time will be associated with the arrival time
+            // of the instanding trains (which were already on the shunting yard "before"
+            // the scenarion), the end time is associated with the departure time of the
+            // outstanding trains which "exits" the scenario but in real they stays on the yard 
+            instance.ScenarioStartTime = scenario.StartTime;
+            instance.ScenarioEndTime = scenario.EndTime;
 
             instance.InterfaceLocation = location;
             instance.InterfaceScenario = scenario;
@@ -251,6 +262,9 @@ namespace ServiceSiteScheduling
                 Console.WriteLine($"gatewayconnections[gateway]: {gateway}:{gatewayconnections[gateway]}");
 
             }
+
+
+
 
             Dictionary<AlgoIface.TaskType, ServiceType> taskmap = new Dictionary<AlgoIface.TaskType, ServiceType>();
             var tasktypes = scenario.In.Trains.Aggregate(
@@ -401,12 +415,75 @@ namespace ServiceSiteScheduling
 
                     arrivals.Add(train);
                 }
+                // foreach (var arrival in arrivals)
+                //     Console.WriteLine($"Arrival train : {arrival}");
+
+
+            }
+
+            // Consider the instanding trains as arrival (incoming) trains
+            // the time of arrival of these trains is set to the start time of the scenario
+            // TODO: check scenario of two instanding trains maybe conflict will happen 
+            // because of the same arrival times ?
+            foreach (var arrivaltrain in scenario.InStanding.Trains)
+            {
+                var currenttrainunits = new List<TrainUnit>();
+                foreach (var unit in arrivaltrain.Members)
+                {
+                    if (!traintypemap.ContainsKey(unit.TrainUnit.Type))
+                    {
+                        var name = $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
+                        TrainType type = new TrainType(
+                            traintypes.Count,
+                            name,
+                            (int)unit.TrainUnit.Type.Length,
+                            instance.Tracks.Where(t => t.CanPark).ToArray(),
+                            (int)unit.TrainUnit.Type.BackNormTime,
+                            (int)unit.TrainUnit.Type.BackAdditionTime * (int)unit.TrainUnit.Type.Carriages,
+                            (int)unit.TrainUnit.Type.CombineDuration,
+                            (int)unit.TrainUnit.Type.SplitDuration);
+                        traintypes.Add(type);
+                        traintypemap[unit.TrainUnit.Type] = type;
+                    }
+                    TrainUnit trainunit = new TrainUnit(
+                        unit.TrainUnit.Id,
+                        trainunits.Count,
+                        traintypemap[unit.TrainUnit.Type],
+                        unit.Tasks.Where(task => taskmap[task.Type].LocationType == ServiceLocationType.Fixed).Select(task => new Service(taskmap[task.Type], (int)task.Duration)).ToArray(),
+                        instance.ServiceTypes);
+                    trainunits.Add(trainunit);
+                    currenttrainunits.Add(trainunit);
+                    trainunitmap[unit.TrainUnit.Id] = trainunit;
+                    instance.TrainUnitConversion[trainunit] = unit.TrainUnit;
+                    freeservicelists.Add(unit.Tasks.Where(task => taskmap[task.Type].LocationType == ServiceLocationType.Free).Select(task => new Service(taskmap[task.Type], (int)task.Duration)).ToArray());
+                }
+
+                Console.WriteLine($"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}");
+
+                GateWay gateway = infrastructuremap[arrivaltrain.EntryTrackPart] as GateWay;
+
+                if (gateway != null)
+                {
+                    var connection = gatewayconnections[gateway];
+                    instance.GatewayConversion[connection.Track.ID] = connection;
+                    var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
+
+                    Console.WriteLine($"connection :{connection}");
+
+                    Console.WriteLine($"gateway :{gateway}");
+                    Console.WriteLine($"side :{side}");
+
+
+                    var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, side, (int)scenario.StartTime, true);
+                    Console.WriteLine($"connection.Track :{connection.Track}");
+
+                    arrivals.Add(train);
+                }
                 foreach (var arrival in arrivals)
                     Console.WriteLine($"Arrival train : {arrival}");
 
 
             }
-
             // only for harder instances
             TrainUnit tu9413 = null, tu9414 = null;
             if (include94139414)
@@ -478,6 +555,7 @@ namespace ServiceSiteScheduling
             instance.FillTrains();
 
             instance.ArrivalsOrdered = arrivals.OrderBy(arrival => arrival.Time).ToArray();
+
             instance.FillArrivals();
 
             instance.FreeServices = freeservicelists.ToArray();
@@ -496,6 +574,35 @@ namespace ServiceSiteScheduling
                     instance.GatewayConversion[connection.Track.ID] = connection;
                     var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
                     var train = new DepartureTrain((int)departuretrain.Arrival, units.ToArray(), connection.Track, side);
+                    departures.Add(train);
+
+                    foreach (var unit in units)
+                        unit.Train = train;
+
+                }
+
+                // foreach (var departure in departures)
+                //     Console.WriteLine($"Departure train : {departure}");
+
+            }
+
+            // Consider the outstanding trains as departure (outgoing) trains
+            // the time of departure of these trains is set to the end time of the scenario
+            // TODO: check scenario of two outstanding trains maybe conflict will happen 
+            // because of the same departure times ?
+            foreach (var departuretrain in scenario.OutStanding.TrainRequests)
+            {
+                var units = departuretrain.TrainUnits.Select(
+                    unit => unit.Id == string.Empty ? new DepartureTrainUnit(traintypemap[unit.Type]) : new DepartureTrainUnit(trainunitmap[unit.Id]));
+
+                GateWay gateway = infrastructuremap[departuretrain.LeaveTrackPart] as GateWay;
+
+                if (gateway != null)
+                {
+                    var connection = gatewayconnections[gateway];
+                    instance.GatewayConversion[connection.Track.ID] = connection;
+                    var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
+                    var train = new DepartureTrain((int)scenario.EndTime, units.ToArray(), connection.Track, side, true);
                     departures.Add(train);
 
                     foreach (var unit in units)

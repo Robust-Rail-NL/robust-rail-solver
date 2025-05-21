@@ -179,25 +179,25 @@ namespace ServiceSiteScheduling.Solutions
                 move = move.NextMove;
             }
 
-            if (this.POS == null)
-            {
-                POS = new PartialOrderSchedule(start);
-                POS.InitializePOS();
-                POS.CreatePOS();
-                POS.DisplayInfrastructure();
-                POS.DisplayMovements();
-                POS.DisplayMoveLinksOfPOSMove(24, "trainUint");
-            }
-            else
-            {
+            // if (this.POS == null)
+            // {
+            //     POS = new PartialOrderSchedule(start);
+            //     POS.InitializePOS();
+            //     POS.CreatePOS();
+            //     POS.DisplayInfrastructure();
+            //     POS.DisplayMovements();
+            //     POS.DisplayMoveLinksOfPOSMove(24, "trainUint");
+            // }
+            // else
+            // {
 
-                if (this.testIndex == 100)
-                {
-                    Console.WriteLine($"Iteration: {this.testIndex}");
-                }
-                this.testIndex++;
+            //     if (this.testIndex == 100)
+            //     {
+            //         Console.WriteLine($"Iteration: {this.testIndex}");
+            //     }
+            //     this.testIndex++;
 
-            }
+            // }
 
 
         }
@@ -1065,7 +1065,7 @@ namespace ServiceSiteScheduling.Solutions
                             }
                         }
                         // remove first
-                        if(moveaction.Resources.Count > 0)
+                        if (moveaction.Resources.Count > 0)
                             moveaction.Resources.RemoveAt(0);
                         // add to plan
                         plan.Actions.Add(moveaction);
@@ -1122,7 +1122,7 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     var routing = (RoutingTask)move;
                     var endtime = (ulong)routing.End;
-                
+
                     // Add split
                     if (routing.IsSplit)
                     {
@@ -1281,7 +1281,7 @@ namespace ServiceSiteScheduling.Solutions
             return plan;
         }
 
-         public void DisplayMovements()
+        public void DisplayMovements()
         {
             MoveTask move = this.First;
             int i = 0;
@@ -1443,7 +1443,15 @@ namespace ServiceSiteScheduling.Solutions
             {
                 case TrackTaskType.Arrival:
                     var arrival = (ArrivalTask)task;
-                    trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Arrive;
+                    
+                    if (task.Train.IsItInStanding())
+                    {
+                        trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.StandIn;
+                    }
+                    else{
+                        trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Arrive;
+
+                    }
                     trackaction.StartTime = trackaction.EndTime = (ulong)arrival.ScheduledTime;
 
                     var gatewayconnection = ProblemInstance.Current.GatewayConversion[task.Track.ID];
@@ -1515,7 +1523,16 @@ namespace ServiceSiteScheduling.Solutions
                     trackaction.Resources.Add(facilityresource);
                     break;
                 case TrackTaskType.Departure:
-                    trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Exit;
+                    if (task.Train.IsItInStanding())
+                    {
+                        Console.WriteLine("********************* Outstanding train detected ****************");
+                        trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.StandOut;
+                    }
+                    else
+                    {
+                        trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Exit;
+
+                    }
                     trackaction.StartTime = trackaction.EndTime = (ulong)task.End;
 
                     gatewayconnection = ProblemInstance.Current.GatewayConversion[task.Track.ID];
