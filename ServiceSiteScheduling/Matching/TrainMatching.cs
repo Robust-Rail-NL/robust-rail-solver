@@ -41,7 +41,7 @@ namespace ServiceSiteScheduling.Matching
 
         public ShuntTrain GetShuntTrain(Train departure)
         {
-            return new ShuntTrain(departure.Units.Select(departureunit => this.shuntUnits[departureunit.Index]));
+            return new ShuntTrain(departure.Units.Select(departureunit => this.shuntUnits[departureunit.Index]), departure.Departure.IsItInStanding());
         }
     }
 }
