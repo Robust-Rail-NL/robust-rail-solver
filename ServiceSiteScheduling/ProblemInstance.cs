@@ -474,16 +474,15 @@ namespace ServiceSiteScheduling
                     Console.WriteLine($"side :{side}");
 
 
-                    var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, side, (int)scenario.StartTime, true);
+                    var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, side, (int)instance.ScenarioStartTime, true);
                     Console.WriteLine($"connection.Track :{connection.Track}");
 
                     arrivals.Add(train);
                 }
-                foreach (var arrival in arrivals)
-                    Console.WriteLine($"Arrival train : {arrival}");
-
 
             }
+            foreach (var arrival in arrivals)
+                Console.WriteLine($"Arrival train : {arrival}");
             // only for harder instances
             TrainUnit tu9413 = null, tu9414 = null;
             if (include94139414)
@@ -602,19 +601,37 @@ namespace ServiceSiteScheduling
                     var connection = gatewayconnections[gateway];
                     instance.GatewayConversion[connection.Track.ID] = connection;
                     var side = connection.Track.GetSide(connection.Path[connection.Path.Length - 2]);
-                    var train = new DepartureTrain((int)scenario.EndTime, units.ToArray(), connection.Track, side, true);
+                    var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), connection.Track, side, true);
                     departures.Add(train);
 
                     foreach (var unit in units)
                         unit.Train = train;
 
                 }
+                else
+                {
+                    var infra = infrastructuremap[departuretrain.LastParkingTrackPart] as Track;
 
-                foreach (var departure in departures)
-                    Console.WriteLine($"Departure train : {departure}");
+                    Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
+                    // TODO
+                    Console.WriteLine("Here -> -> -> ->");
+                    if (@switch != null)
+                    {
+
+
+                        var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, infra.GetSide(@switch), true);
+                        departures.Add(train);
+
+                    }
+                    Console.WriteLine("Here -> -> -> ->");
+
+                }
+
+
 
             }
-
+            foreach (var departure in departures)
+                Console.WriteLine($"Departure train : {departure}");
             // only for harder instance
             if (include94139414)
             {

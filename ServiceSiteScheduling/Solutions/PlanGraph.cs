@@ -1432,23 +1432,24 @@ namespace ServiceSiteScheduling.Solutions
         {
             this.AddTrackAction(task, task.End, trainconversion, plan);
         }
-
         private void AddTrackAction(TrackTask task, Time endtime, Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion, AlgoIface.Plan plan)
         {
             var trackaction = new AlgoIface.Action();
             trackaction.Location = task.Track.ID;
             trackaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
+
             trackaction.TaskType = new AlgoIface.TaskType();
             switch (task.TaskType)
             {
                 case TrackTaskType.Arrival:
                     var arrival = (ArrivalTask)task;
-                    
+
                     if (task.Train.IsItInStanding())
                     {
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.StandIn;
                     }
-                    else{
+                    else
+                    {
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Arrive;
 
                     }
@@ -1525,9 +1526,10 @@ namespace ServiceSiteScheduling.Solutions
                 case TrackTaskType.Departure:
                     if (task.Train.IsItInStanding())
                     {
-                        Console.WriteLine("********************* Outstanding train detected ****************");
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.StandOut;
+                        trackaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion, "OutStanding");
                     }
+
                     else
                     {
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Exit;
@@ -1535,27 +1537,48 @@ namespace ServiceSiteScheduling.Solutions
                     }
                     trackaction.StartTime = trackaction.EndTime = (ulong)task.End;
 
-                    gatewayconnection = ProblemInstance.Current.GatewayConversion[task.Track.ID];
-                    previous = null;
-                    for (int i = gatewayconnection.Path.Length - 1; i >= 0; i--)
+                    if (!task.Train.IsItInStanding())
                     {
-                        var infra = gatewayconnection.Path[i];
-                        if (infra != previous)
+                        gatewayconnection = ProblemInstance.Current.GatewayConversion[task.Track.ID];
+                        previous = null;
+                        for (int i = gatewayconnection.Path.Length - 1; i >= 0; i--)
+                        {
+                            var infra = gatewayconnection.Path[i];
+                            if (infra != previous)
+                            {
+                                var resource = new AlgoIface.Resource();
+                                resource.TrackPartId = infra.ID;
+                                resource.Name = infra.ID.ToString();
+                                trackaction.Resources.Add(resource);
+                            }
+                        }
+                        trackaction.Resources.RemoveAt(0);
+                    }
+                    else
+                    {
+                        // trackaction.ShuntingUnit.StandingType = "OutStanding";
+
+                        // TODO: discuss if this should be different, it might be the case that the evaluator needs a more explicit leaving track part A or B
+                        // proabably in the evaluator we need a relaxation on the verification of the track part -> normally it should be a bumper
+                        var infra = task.Track.ASide;
+                        if (infra != null)
                         {
                             var resource = new AlgoIface.Resource();
                             resource.TrackPartId = infra.ID;
                             resource.Name = infra.ID.ToString();
                             trackaction.Resources.Add(resource);
                         }
+
                     }
-                    trackaction.Resources.RemoveAt(0);
                     break;
             }
             plan.Actions.Add(trackaction);
+
         }
 
-        private AlgoIface.ShuntingUnit GetShuntUnit(ShuntTrain train, Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion)
+        private AlgoIface.ShuntingUnit GetShuntUnit(ShuntTrain train, Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion, string _standingType = "")
         {
+
             AlgoIface.ShuntingUnit shuntingunit = null;
             if (!trainconversion.TryGetValue(train, out shuntingunit))
             {
@@ -1563,8 +1586,46 @@ namespace ServiceSiteScheduling.Solutions
                 foreach (var unit in train.Units)
                     shuntingunit.Members.Add(ProblemInstance.Current.TrainUnitConversion[unit.Base]);
                 shuntingunit.Id = ((trainconversion.Count > 0 ? trainconversion.Max(kvp => int.Parse(kvp.Value.Id)) : -1) + 1).ToString();
+
+
+
+                if (string.IsNullOrEmpty(_standingType))
+                {
+                    shuntingunit.StandingType = "";
+                }
+                else
+                {
+                    shuntingunit.StandingType = _standingType;
+                }
                 trainconversion[train] = shuntingunit;
+
             }
+            else
+            {
+                 var _shuntingunit = new AlgoIface.ShuntingUnit();
+
+                _shuntingunit.MergeFrom(shuntingunit);
+
+                if (string.IsNullOrEmpty(_standingType))
+                {
+                    _shuntingunit.StandingType = "";
+
+                    trainconversion[train] = _shuntingunit;
+
+                }
+                else
+                {
+                    _shuntingunit.StandingType = _standingType;
+
+                    trainconversion[train] = _shuntingunit;
+
+                }
+                return _shuntingunit;
+            }
+
+
+
+
             return shuntingunit;
         }
     }
