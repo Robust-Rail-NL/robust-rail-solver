@@ -1,4 +1,5 @@
-﻿using ServiceSiteScheduling.Servicing;
+﻿using ServiceSiteScheduling.Matching;
+using ServiceSiteScheduling.Servicing;
 using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Tasks;
 using ServiceSiteScheduling.TrackParts;
@@ -13,12 +14,6 @@ namespace ServiceSiteScheduling.Initial
         {
             ShuntTrainUnit[] shunttrainunits = ProblemInstance.Current.TrainUnits.Select(tu => new ShuntTrainUnit(tu)).ToArray();
             ShuntTrain[] arrivalshunttrains = ProblemInstance.Current.ArrivalsOrdered.Select(t => new ShuntTrain(t.Units.Select(tu => shunttrainunits[tu.Index]), t.IsItInStanding())).ToArray();
-
-            foreach(ShuntTrain train in arrivalshunttrains)
-            {
-                Console.WriteLine($"Arrival Type instanding: {train.InStanding}");
-            }
-
 
             Matching.BipartiteGraph g = new Matching.BipartiteGraph();
             var initialmatching = g.MaximumMatching();
@@ -113,15 +108,17 @@ namespace ServiceSiteScheduling.Initial
             // Add departure tasks
             List<DepartureTask> departures = new List<DepartureTask>();
             Dictionary<ShuntTrainUnit, DepartureRoutingTask> departuremapping = new Dictionary<ShuntTrainUnit, DepartureRoutingTask>();
+
             foreach (Matching.Train dt in matching.DepartureTrains)
             {
+
                 var shunttrain = matching.GetShuntTrain(dt);
                 DepartureTask departure = new DepartureTask(shunttrain, dt.Departure.Track, dt.Departure.Side, dt.Departure.Time);
                 dt.Task = departure;
                 departures.Add(departure);
 
                 // add route to departure
-                var todeparture = new DepartureRoutingTask(new ShuntTrain(shunttrain));
+                var todeparture = new DepartureRoutingTask(new ShuntTrain(shunttrain, shunttrain.InStanding));
                 todeparture.Start = todeparture.End = departure.Start;
                 todeparture.Next = departure;
                 departure.Previous = todeparture;
