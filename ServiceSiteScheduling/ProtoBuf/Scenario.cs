@@ -51,11 +51,12 @@ namespace AlgoIface {
             "Y2FycmlhZ2VzGAIgASgNEg4KBmxlbmd0aBgEIAEoARIYChByZXZlcnNhbER1",
             "cmF0aW9uGAMgASgEEhcKD2NvbWJpbmVEdXJhdGlvbhgFIAEoBBIVCg1zcGxp",
             "dER1cmF0aW9uGAYgASgEEhQKDGJhY2tOb3JtVGltZRgHIAEoBBIYChBiYWNr",
-            "QWRkaXRpb25UaW1lGAggASgEImcKDFNodW50aW5nVW5pdBIKCgJpZBgBIAEo",
+            "QWRkaXRpb25UaW1lGAggASgEIn0KDFNodW50aW5nVW5pdBIKCgJpZBgBIAEo",
             "CRImCgdtZW1iZXJzGAIgAygLMhUuYWxnb19pZmFjZS5UcmFpblVuaXQSEQoJ",
-            "cGFyZW50SURzGAMgAygJEhAKCGNoaWxkSURzGAQgAygJIlYKCFRhc2tTcGVj",
-            "EiIKBHR5cGUYASABKAsyFC5hbGdvX2lmYWNlLlRhc2tUeXBlEhQKCHByaW9y",
-            "aXR5GAIgASgNQgIYARIQCghkdXJhdGlvbhgDIAEoBGIGcHJvdG8z"));
+            "cGFyZW50SURzGAMgAygJEhAKCGNoaWxkSURzGAQgAygJEhQKDHN0YW5kaW5n",
+            "VHlwZRgFIAEoCSJWCghUYXNrU3BlYxIiCgR0eXBlGAEgASgLMhQuYWxnb19p",
+            "ZmFjZS5UYXNrVHlwZRIUCghwcmlvcml0eRgCIAEoDUICGAESEAoIZHVyYXRp",
+            "b24YAyABKARiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::AlgoIface.LocationReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -69,7 +70,7 @@ namespace AlgoIface {
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.TrainRequest), global::AlgoIface.TrainRequest.Parser, new[]{ "LeaveTrackPart", "LastParkingTrackPart", "Arrival", "Departure", "DisplayName", "TrainUnits" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.TrainUnit), global::AlgoIface.TrainUnit.Parser, new[]{ "Id", "Type" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.TrainUnitType), global::AlgoIface.TrainUnitType.Parser, new[]{ "DisplayName", "Carriages", "Length", "ReversalDuration", "CombineDuration", "SplitDuration", "BackNormTime", "BackAdditionTime" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.ShuntingUnit), global::AlgoIface.ShuntingUnit.Parser, new[]{ "Id", "Members", "ParentIDs", "ChildIDs" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.ShuntingUnit), global::AlgoIface.ShuntingUnit.Parser, new[]{ "Id", "Members", "ParentIDs", "ChildIDs", "StandingType" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.TaskSpec), global::AlgoIface.TaskSpec.Parser, new[]{ "Type", "Priority", "Duration" }, null, null, null, null)
           }));
     }
@@ -2957,6 +2958,7 @@ namespace AlgoIface {
       members_ = other.members_.Clone();
       parentIDs_ = other.parentIDs_.Clone();
       childIDs_ = other.childIDs_.Clone();
+      standingType_ = other.standingType_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -3027,6 +3029,22 @@ namespace AlgoIface {
       get { return childIDs_; }
     }
 
+    /// <summary>Field number for the "standingType" field.</summary>
+    public const int StandingTypeFieldNumber = 5;
+    private string standingType_ = "";
+    /// <summary>
+    /// If field is defined it states InStanding when the train unit was alredy on the yard even if the action says it is an arrival
+    /// or it states OutStanding when the train unit will stay in the shunting yards after the scenario ends even if the action is an exite one
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string StandingType {
+      get { return standingType_; }
+      set {
+        standingType_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -3046,6 +3064,7 @@ namespace AlgoIface {
       if(!members_.Equals(other.members_)) return false;
       if(!parentIDs_.Equals(other.parentIDs_)) return false;
       if(!childIDs_.Equals(other.childIDs_)) return false;
+      if (StandingType != other.StandingType) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -3057,6 +3076,7 @@ namespace AlgoIface {
       hash ^= members_.GetHashCode();
       hash ^= parentIDs_.GetHashCode();
       hash ^= childIDs_.GetHashCode();
+      if (StandingType.Length != 0) hash ^= StandingType.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3082,6 +3102,10 @@ namespace AlgoIface {
       members_.WriteTo(output, _repeated_members_codec);
       parentIDs_.WriteTo(output, _repeated_parentIDs_codec);
       childIDs_.WriteTo(output, _repeated_childIDs_codec);
+      if (StandingType.Length != 0) {
+        output.WriteRawTag(42);
+        output.WriteString(StandingType);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -3099,6 +3123,10 @@ namespace AlgoIface {
       members_.WriteTo(ref output, _repeated_members_codec);
       parentIDs_.WriteTo(ref output, _repeated_parentIDs_codec);
       childIDs_.WriteTo(ref output, _repeated_childIDs_codec);
+      if (StandingType.Length != 0) {
+        output.WriteRawTag(42);
+        output.WriteString(StandingType);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -3115,6 +3143,9 @@ namespace AlgoIface {
       size += members_.CalculateSize(_repeated_members_codec);
       size += parentIDs_.CalculateSize(_repeated_parentIDs_codec);
       size += childIDs_.CalculateSize(_repeated_childIDs_codec);
+      if (StandingType.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(StandingType);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -3133,6 +3164,9 @@ namespace AlgoIface {
       members_.Add(other.members_);
       parentIDs_.Add(other.parentIDs_);
       childIDs_.Add(other.childIDs_);
+      if (other.StandingType.Length != 0) {
+        StandingType = other.StandingType;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -3164,6 +3198,10 @@ namespace AlgoIface {
             childIDs_.AddEntriesFrom(input, _repeated_childIDs_codec);
             break;
           }
+          case 42: {
+            StandingType = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -3193,6 +3231,10 @@ namespace AlgoIface {
           }
           case 34: {
             childIDs_.AddEntriesFrom(ref input, _repeated_childIDs_codec);
+            break;
+          }
+          case 42: {
+            StandingType = input.ReadString();
             break;
           }
         }

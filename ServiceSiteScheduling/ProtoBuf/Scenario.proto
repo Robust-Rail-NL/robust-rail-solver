@@ -81,6 +81,7 @@ message TrainRequest {
 
     // Outgoing train units; if in a TrainUnit the id field is not specified, then any train unit will do, provided that the other fields (train type, number of carriages) are still adhered to.
     repeated TrainUnit trainUnits = 5;
+
 }
 
 // TrainUnit represents a combination of carriages which can move independently.
@@ -136,6 +137,10 @@ message ShuntingUnit {
     // that is, the shuntingunits which contain parts of this shuntingunit.
     // Alternatively, ShuntingUnit S has parent P iff P has child S.
     repeated string childIDs = 4;
+
+    // If field is defined it states InStanding when the train unit was alredy on the yard even if the action says it is an arrival
+    // or it states OutStanding when the train unit will stay in the shunting yards after the scenario ends even if the action is an exite one
+    string standingType = 5;
 }
 
 // A task specification specifies a certain task.
