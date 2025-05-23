@@ -196,7 +196,7 @@ namespace ServiceSiteScheduling.LocalSearch
         // @bias: Restricted probability (e.g., 0.4)
         // @suppressConsoleOutput: enables extra logs
         // @intensifyOnImprovement: enables further improvments
-        public void Run(Time maxduration, bool stopWhenFeasible, int iterations, double t, double a, int q, int reset, double bias = 0.4, bool suppressConsoleOutput = false, bool intensifyOnImprovement = false)
+        public void Run(Time maxduration, bool stopWhenFeasible, int iterations, double t, double a, int q, int reset, double bias = 0.4, bool suppressConsoleOutput = false, bool intensifyOnImprovement = false, bool allowDelayedPlans = false)
         {
             double T = t, alpha = a;
             int Q = q, iterationsUntilReset = reset;
@@ -455,7 +455,7 @@ namespace ServiceSiteScheduling.LocalSearch
                     noimprovement = 0;
                 }
 
-                if (iteration >= iterations || stopwatch.ElapsedMilliseconds > 1000 * maxduration || (stopWhenFeasible && this.Graph.Cost.IsFeasible))
+                if (iteration >= iterations || stopwatch.ElapsedMilliseconds > 1000 * maxduration || (stopWhenFeasible && (this.Graph.Cost.IsFeasible || this.Graph.Cost.IsDelayFeasible && allowDelayedPlans))
                 {
                     Console.WriteLine("++++++++++++++++++++++++++++ BREAK 2 ++++++++++++++++++++++");
                     Console.WriteLine($" iteration {iteration}, graph cost is feasible {this.Graph.Cost.IsFeasible}");

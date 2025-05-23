@@ -92,7 +92,7 @@ namespace ServiceSiteScheduling
                 LocalSearch.SimulatedAnnealing sa = new LocalSearch.SimulatedAnnealing(random, ts.Graph);
                 if (config != null)
                 {
-                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, config.SimulatedAnnealing.SuppressConsoleOutput, config.SimulatedAnnealing.IintensifyOnImprovement);
+                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, config.SimulatedAnnealing.SuppressConsoleOutput, config.SimulatedAnnealing.IintensifyOnImprovement, config.SimulatedAnnealing.AllowDelayedPlans);
                 }
                 else
                 {
@@ -342,6 +342,7 @@ namespace ServiceSiteScheduling
         {
             public int MaxDuration { get; set; }
             public bool StopWhenFeasible { get; set; }
+            public bool AllowDelayedPlans { get; set; }
             public int IterationsUntilReset { get; set; }
             public int T { get; set; }
             public float A { get; set; }

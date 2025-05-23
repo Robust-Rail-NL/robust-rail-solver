@@ -33,6 +33,8 @@ namespace ServiceSiteScheduling.Solutions
 
         public bool IsFeasible { get { return this.Crossings + this.ArrivalDelays + this.DepartureDelays + this.TrackLengthViolations + this.CombineOnDepartureTrack == 0; } }
 
+        public bool IsDelayFeasible { get { return this.Crossings + this.TrackLengthViolations + this.CombineOnDepartureTrack == 0; } }
+
         public SolutionCost()
         {
             this.ProblemTracks = new BitSet(ProblemInstance.Current.Tracks.Length);

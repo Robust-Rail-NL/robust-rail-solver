@@ -5,7 +5,7 @@ namespace ServiceSiteScheduling.Matching
 {
     static class Greedy
     {
-        public static TrainMatching Construct(ShuntTrain[] shunttrains, IList<ShuntTrainUnit> shunttrainunits, Random random)
+        public static TrainMatching Construct(ShuntTrain[] shunttrains, IList<ShuntTrainUnit> shunttrainunits, Random random, bool allowDelayedPlans = false)
         {
             // Construct the departure trains
             Train[] departuretrains = new Train[ProblemInstance.Current.DeparturesOrdered.Length];
@@ -36,7 +36,7 @@ namespace ServiceSiteScheduling.Matching
                 departures.AddRange(GetDepartureSubsets(ProblemInstance.Current.DeparturesOrdered[i], departuretrains[i]));
 
             // Create bipartite graph
-            Match[] possibleMatches = ConstructBipartiteGraph(arrivals, departures, ProblemInstance.Current.ArrivalsOrdered, ProblemInstance.Current.DeparturesOrdered);
+            Match[] possibleMatches = ConstructBipartiteGraph(arrivals, departures, ProblemInstance.Current.ArrivalsOrdered, ProblemInstance.Current.DeparturesOrdered, allowDelayedPlans);
 
             // Greedily select largest available subset
             List<Match> selectedMatches = new List<Match>();
@@ -106,9 +106,9 @@ namespace ServiceSiteScheduling.Matching
             return result;
         }
 
-        private static Match[] ConstructBipartiteGraph(IEnumerable<ArrivalTrainPart> arrivals, IEnumerable<DepartureTrainPart> departures, IList<ArrivalTrain> arrivaltrains, IList<DepartureTrain> departuretrains)
+        private static Match[] ConstructBipartiteGraph(IEnumerable<ArrivalTrainPart> arrivals, IEnumerable<DepartureTrainPart> departures, IList<ArrivalTrain> arrivaltrains, IList<DepartureTrain> departuretrains, bool allowDelayedPlans = false)
         {
-            var unitmatching = ConstructUnitMatching(arrivaltrains, departuretrains);
+            var unitmatching = ConstructUnitMatching(arrivaltrains, departuretrains, allowDelayedPlans);
 
             List <Match> result = new List<Match>();
             foreach (ArrivalTrainPart arriving in arrivals)
@@ -156,7 +156,7 @@ namespace ServiceSiteScheduling.Matching
             return result.ToArray();
         }
 
-        private static Dictionary<DepartureTrainUnit, List<TrainUnit>> ConstructUnitMatching(IList<ArrivalTrain> arrivals, IList<DepartureTrain> departures)
+        private static Dictionary<DepartureTrainUnit, List<TrainUnit>> ConstructUnitMatching(IList<ArrivalTrain> arrivals, IList<DepartureTrain> departures, bool allowDelayedPlans = false)
         {
             Dictionary<TrainType, List<UnitMatch>> matching = new Dictionary<TrainType, List<UnitMatch>>();
             foreach (DepartureTrain departuretrain in departures)
@@ -166,16 +166,18 @@ namespace ServiceSiteScheduling.Matching
                     List<TrainUnit> possiblematches = new List<TrainUnit>();
                     foreach (ArrivalTrain arrivaltrain in arrivals)
                     {
-                        if (arrivaltrain.Time > departuretrain.Time)
+                        if (arrivaltrain.Time > departuretrain.Time && !allowDelayedPlans) {
+                            Console.WriteLine("Arrival time bigger than departure")
                             continue;
+                        }
 
                         foreach (TrainUnit arrivalunit in arrivaltrain.Units)
-                        {
-                            if (departureunit.IsFixed && departureunit.Unit == arrivalunit)
-                                possiblematches.Add(arrivalunit);
-                            if (!departureunit.IsFixed && departureunit.Type == arrivalunit.Type)
-                                possiblematches.Add(arrivalunit);
-                        }
+                            {
+                                if (departureunit.IsFixed && departureunit.Unit == arrivalunit)
+                                    possiblematches.Add(arrivalunit);
+                                if (!departureunit.IsFixed && departureunit.Type == arrivalunit.Type)
+                                    possiblematches.Add(arrivalunit);
+                            }
                     }
 
                     if (!matching.ContainsKey(departureunit.Unit?.Type ?? departureunit.Type))
