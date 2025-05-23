@@ -167,7 +167,7 @@ namespace ServiceSiteScheduling.Matching
                     foreach (ArrivalTrain arrivaltrain in arrivals)
                     {
                         if (arrivaltrain.Time > departuretrain.Time && !allowDelayedPlans) {
-                            Console.WriteLine("Arrival time bigger than departure")
+                            Console.WriteLine("Arrival time bigger than departure");
                             continue;
                         }
 

@@ -80,10 +80,11 @@ namespace ServiceSiteScheduling
             for (int i = 0; i < 1; i++)
             {
                 Console.WriteLine(i);
+                Console.WriteLine("Starting TABU");
                 LocalSearch.TabuSearch ts = new LocalSearch.TabuSearch(random);
                 if (config != null)
                 {
-                    ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, config.TabuSearch.SuppressConsoleOutput);
+                    ts.Run(config.TabuSearch.Iterations, config.TabuSearch.IterationsUntilReset, config.TabuSearch.TabuListLength, config.TabuSearch.Bias, config.TabuSearch.SuppressConsoleOutput, config.PlanPath);
                 }
                 else
                 {
@@ -92,7 +93,7 @@ namespace ServiceSiteScheduling
                 LocalSearch.SimulatedAnnealing sa = new LocalSearch.SimulatedAnnealing(random, ts.Graph);
                 if (config != null)
                 {
-                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, config.SimulatedAnnealing.SuppressConsoleOutput, config.SimulatedAnnealing.IintensifyOnImprovement, config.SimulatedAnnealing.AllowDelayedPlans);
+                    sa.Run(new Time(config.SimulatedAnnealing.MaxDuration), config.SimulatedAnnealing.StopWhenFeasible, config.SimulatedAnnealing.IterationsUntilReset, config.SimulatedAnnealing.T, config.SimulatedAnnealing.A, config.SimulatedAnnealing.Q, config.SimulatedAnnealing.Reset, config.SimulatedAnnealing.Bias, config.SimulatedAnnealing.SuppressConsoleOutput, config.SimulatedAnnealing.IintensifyOnImprovement, config.SimulatedAnnealing.AllowDelayedPlans, config.PlanPath);
                 }
                 else
                 {

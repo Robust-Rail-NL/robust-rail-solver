@@ -1,6 +1,9 @@
 ﻿using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Utilities;
 using System.Diagnostics;
+using System.Text.Json;
+using Google.Protobuf;
+using AlgoIface;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -31,7 +34,7 @@ namespace ServiceSiteScheduling.LocalSearch
         //@tabuListLength: lenght of tabu list conaining LocalSerachMoves -> solution graphs (e.g., 16) 
         //@bias: restricted probability (e.g., 0.75)
         //@suppressConsoleOutput: enables extra logs
-        public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, bool suppressConsoleOutput = false)
+        public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, bool suppressConsoleOutput = false, string plan_path = "default_temp_path.json")
         {
 
             List<LocalSearchMove> moves = new List<LocalSearchMove>();
@@ -203,6 +206,20 @@ namespace ServiceSiteScheduling.LocalSearch
                 this.Graph.Cost = next.Execute();
                 next.Finish();
                 current = next.Cost;
+
+                Plan plan_pb = this.Graph.GenerateOutputPB();
+
+                string jsonPlan = JsonFormatter.Default.Format(plan_pb);
+
+                string directoryPath = Path.GetDirectoryName(plan_path) + "_temp_TS";
+
+                if (!Directory.Exists(directoryPath) && directoryPath != null)
+                {
+                    Directory.CreateDirectory(directoryPath);
+                    Console.WriteLine($"Directory created: {directoryPath}");
+                }
+
+                File.WriteAllText(Path.Join(directoryPath, $"temp_plan_{iteration}.json"), jsonPlan);
 
                 if (iteration >= iterations)
                     break;

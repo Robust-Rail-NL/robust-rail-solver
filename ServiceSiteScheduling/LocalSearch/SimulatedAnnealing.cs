@@ -6,6 +6,9 @@ using System.Linq;
 using ServiceSiteScheduling.Utilities;
 using ServiceSiteScheduling.Tasks;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using Google.Protobuf;
+using AlgoIface;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
@@ -196,7 +199,7 @@ namespace ServiceSiteScheduling.LocalSearch
         // @bias: Restricted probability (e.g., 0.4)
         // @suppressConsoleOutput: enables extra logs
         // @intensifyOnImprovement: enables further improvments
-        public void Run(Time maxduration, bool stopWhenFeasible, int iterations, double t, double a, int q, int reset, double bias = 0.4, bool suppressConsoleOutput = false, bool intensifyOnImprovement = false, bool allowDelayedPlans = false)
+        public void Run(Time maxduration, bool stopWhenFeasible, int iterations, double t, double a, int q, int reset, double bias = 0.4, bool suppressConsoleOutput = false, bool intensifyOnImprovement = false, bool allowDelayedPlans = false, string plan_path = "default_temp_path.json")
         {
             double T = t, alpha = a;
             int Q = q, iterationsUntilReset = reset;
@@ -454,8 +457,22 @@ namespace ServiceSiteScheduling.LocalSearch
                     current = bestcost;
                     noimprovement = 0;
                 }
+                Plan plan_pb = this.Graph.GenerateOutputPB();
 
-                if (iteration >= iterations || stopwatch.ElapsedMilliseconds > 1000 * maxduration || (stopWhenFeasible && (this.Graph.Cost.IsFeasible || this.Graph.Cost.IsDelayFeasible && allowDelayedPlans))
+                string jsonPlan = JsonFormatter.Default.Format(plan_pb);
+
+                string directoryPath = Path.GetDirectoryName(plan_path) + "_temp_SA";
+
+                if (!Directory.Exists(directoryPath) && directoryPath != null)
+                {
+                    Directory.CreateDirectory(directoryPath);
+                    Console.WriteLine($"Directory created: {directoryPath}");
+                }
+
+                File.WriteAllText(Path.Join(directoryPath, $"temp_plan_{iteration}.json"), jsonPlan);
+
+
+                if (iteration >= iterations || stopwatch.ElapsedMilliseconds > 1000 * maxduration || (stopWhenFeasible && (this.Graph.Cost.IsFeasible || this.Graph.Cost.IsDelayFeasible && allowDelayedPlans)))
                 {
                     Console.WriteLine("++++++++++++++++++++++++++++ BREAK 2 ++++++++++++++++++++++");
                     Console.WriteLine($" iteration {iteration}, graph cost is feasible {this.Graph.Cost.IsFeasible}");

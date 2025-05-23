@@ -178,15 +178,14 @@ namespace ServiceSiteScheduling.Solutions
 
                 move = move.NextMove;
             }
-
             if (this.POS == null)
             {
-                POS = new PartialOrderSchedule(start);
-                POS.InitializePOS();
-                POS.CreatePOS();
-                POS.DisplayInfrastructure();
-                POS.DisplayMovements();
-                POS.DisplayMoveLinksOfPOSMove(24, "trainUint");
+                // POS = new PartialOrderSchedule(start);
+                // POS.InitializePOS();
+                // POS.CreatePOS();
+                // POS.DisplayInfrastructure();
+                // POS.DisplayMovements();
+                // POS.DisplayMoveLinksOfPOSMove(24, "trainUint");
             }
             else
             {
