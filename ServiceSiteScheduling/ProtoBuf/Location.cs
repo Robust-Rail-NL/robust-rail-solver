@@ -41,10 +41,9 @@ namespace AlgoIface {
             "cGVIABIPCgVvdGhlchgCIAEoCUgAQgoKCHRhc2tUeXBlKnEKDVRyYWNrUGFy",
             "dFR5cGUSDAoIUmFpbFJvYWQQABIKCgZTd2l0Y2gQARIRCg1FbmdsaXNoU3dp",
             "dGNoEAISFQoRSGFsZkVuZ2xpc2hTd2l0Y2gQAxIQCgxJbnRlcnNlY3Rpb24Q",
-            "BBIKCgZCdW1wZXIQBSpxChJQcmVkZWZpbmVkVGFza1R5cGUSCAoETW92ZRAA",
+            "BBIKCgZCdW1wZXIQBSpWChJQcmVkZWZpbmVkVGFza1R5cGUSCAoETW92ZRAA",
             "EgkKBVNwbGl0EAESCwoHQ29tYmluZRACEggKBFdhaXQQAxIKCgZBcnJpdmUQ",
-            "BBIICgRFeGl0EAUSDAoIU3RhbmRPdXQQBhILCgdTdGFuZEluEAdiBnByb3Rv",
-            "Mw=="));
+            "BBIICgRFeGl0EAViBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::AlgoIface.TrackPartType), typeof(global::AlgoIface.PredefinedTaskType), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -87,8 +86,6 @@ namespace AlgoIface {
     [pbr::OriginalName("Wait")] Wait = 3,
     [pbr::OriginalName("Arrive")] Arrive = 4,
     [pbr::OriginalName("Exit")] Exit = 5,
-    [pbr::OriginalName("StandOut")] StandOut = 6,
-    [pbr::OriginalName("StandIn")] StandIn = 7,
   }
 
   #endregion

@@ -109,6 +109,6 @@ enum PredefinedTaskType {
 	Arrive = 4;
 	Exit = 5;
 
-	StandOut = 6;
-	StandIn = 7;
+	// StandOut = 6;
+	// StandIn = 7;
 }
