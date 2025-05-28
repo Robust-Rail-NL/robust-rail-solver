@@ -474,10 +474,33 @@ namespace ServiceSiteScheduling
                     Console.WriteLine($"side :{side}");
 
 
-                    var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, side, (int)instance.ScenarioStartTime, true);
+                    var train = new ArrivalTrain(currenttrainunits.ToArray(), connection.Track, Side.None, (int)instance.ScenarioStartTime, true);
                     Console.WriteLine($"connection.Track :{connection.Track}");
+                
 
                     arrivals.Add(train);
+                }
+                else
+                {
+                    
+                    var infra = infrastructuremap[arrivaltrain.FirstParkingTrackPart] as Track;
+
+                    // Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
+                    // TODO : add switch statement for more infratype
+                    var train = new ArrivalTrain(currenttrainunits.ToArray(), infra, infra.Access, (int)instance.ScenarioStartTime, true);
+
+
+                    arrivals.Add(train);
+
+                    // if (@switch != null)
+                    // {
+
+
+                    //     var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, infra.GetSide(@switch), true);
+                    //     departures.Add(train);
+
+                    // }
+
                 }
 
             }
@@ -610,20 +633,22 @@ namespace ServiceSiteScheduling
                 }
                 else
                 {
+
                     var infra = infrastructuremap[departuretrain.LastParkingTrackPart] as Track;
+                    
+                    var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, Side.None, true);
+                    departures.Add(train);
 
-                    Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
-                    // TODO
-                    Console.WriteLine("Here -> -> -> ->");
-                    if (@switch != null)
-                    {
+                    // Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
+                    // TODO : add switch statement for more infratype
+                    // if (@switch != null)
+                    // {
 
 
-                        var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, infra.GetSide(@switch), true);
-                        departures.Add(train);
+                        // var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, infra.GetSide(@switch), true);
+                        // departures.Add(train);
 
-                    }
-                    Console.WriteLine("Here -> -> -> ->");
+                    // }
 
                 }
 
