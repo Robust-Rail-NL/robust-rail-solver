@@ -1363,9 +1363,9 @@ namespace ServiceSiteScheduling.Solutions
                             if (task is ServiceTask serviceTask)
                                 Console.WriteLine("@It was a ServiceTask");
                             if (task is ArrivalTask arrivalTask)
-                                Console.WriteLine("@It was a ArrivalTask");
+                                Console.WriteLine(task.Train.InStanding ? "@It was a ArrivalTask - ** InStanding train ** " : "@It was a ArrivalTask");
                             if (task is DepartureTask departureTask)
-                                Console.WriteLine("@It was a DepartureTask");
+                                Console.WriteLine(task.Train.InStanding ? "@It was a DepartureTask - ** OutStanding train **" : "@It was a DepartureTask");
                         }
 
                         Console.WriteLine("All Next tasks:");
@@ -1377,9 +1377,9 @@ namespace ServiceSiteScheduling.Solutions
                             if (task is ServiceTask serviceTask)
                                 Console.WriteLine("@It was a ServiceTask");
                             if (task is ArrivalTask arrivalTask)
-                                Console.WriteLine("@It was a ArrivalTask");
+                                Console.WriteLine(task.Train.InStanding ? "@It was a ArrivalTask - ** InStanding train **" : "@It was a ArrivalTask" );
                             if (task is DepartureTask departureTask)
-                                Console.WriteLine("@It was a DepartureTask");
+                                Console.WriteLine(task.Train.InStanding ? "@It was a DepartureTask - ** OutStanding train **" : "@It was a DepartureTask");
                         }
 
 
@@ -1446,29 +1446,42 @@ namespace ServiceSiteScheduling.Solutions
 
                     if (task.Train.IsItInStanding())
                     {
-                        trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.StandIn;
-                    }
-                    else
-                    {
-                        trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Arrive;
+                        // trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.StandIn;
+                        trackaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion, "InStanding");
 
-                    }
-                    trackaction.StartTime = trackaction.EndTime = (ulong)arrival.ScheduledTime;
+                        trackaction.StartTime = trackaction.EndTime = (ulong)arrival.ScheduledTime;
 
-                    var gatewayconnection = ProblemInstance.Current.GatewayConversion[task.Track.ID];
-                    trackaction.Location = gatewayconnection.Path[0].ID;
-                    Infrastructure previous = null;
-                    foreach (var infra in gatewayconnection.Path)
-                        if (infra != previous)
+                        var infra = task.Track.ASide;
+                        if (infra != null)
                         {
                             var resource = new AlgoIface.Resource();
                             resource.TrackPartId = infra.ID;
                             resource.Name = infra.ID.ToString();
                             trackaction.Resources.Add(resource);
-
-                            previous = infra;
                         }
-                    trackaction.Resources.RemoveAt(0);
+                    }
+                    else
+                    {
+                        trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Arrive;
+
+
+                        trackaction.StartTime = trackaction.EndTime = (ulong)arrival.ScheduledTime;
+
+                        var gatewayconnection = ProblemInstance.Current.GatewayConversion[task.Track.ID];
+                        trackaction.Location = gatewayconnection.Path[0].ID;
+                        Infrastructure previous = null;
+                        foreach (var infra in gatewayconnection.Path)
+                            if (infra != previous)
+                            {
+                                var resource = new AlgoIface.Resource();
+                                resource.TrackPartId = infra.ID;
+                                resource.Name = infra.ID.ToString();
+                                trackaction.Resources.Add(resource);
+
+                                previous = infra;
+                            }
+                        trackaction.Resources.RemoveAt(0);
+                    }
 
                     if (endtime > arrival.ScheduledTime)
                     {
@@ -1526,7 +1539,7 @@ namespace ServiceSiteScheduling.Solutions
                 case TrackTaskType.Departure:
                     if (task.Train.IsItInStanding())
                     {
-                        trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.StandOut;
+                        // trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.StandOut;
                         trackaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion, "OutStanding");
                     }
 
@@ -1539,8 +1552,8 @@ namespace ServiceSiteScheduling.Solutions
 
                     if (!task.Train.IsItInStanding())
                     {
-                        gatewayconnection = ProblemInstance.Current.GatewayConversion[task.Track.ID];
-                        previous = null;
+                        var gatewayconnection = ProblemInstance.Current.GatewayConversion[task.Track.ID];
+                        Infrastructure previous = null;
                         for (int i = gatewayconnection.Path.Length - 1; i >= 0; i--)
                         {
                             var infra = gatewayconnection.Path[i];
@@ -1602,7 +1615,7 @@ namespace ServiceSiteScheduling.Solutions
             }
             else
             {
-                 var _shuntingunit = new AlgoIface.ShuntingUnit();
+                var _shuntingunit = new AlgoIface.ShuntingUnit();
 
                 _shuntingunit.MergeFrom(shuntingunit);
 
