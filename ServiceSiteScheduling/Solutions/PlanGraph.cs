@@ -1446,7 +1446,7 @@ namespace ServiceSiteScheduling.Solutions
 
                     if (task.Train.IsItInStanding())
                     {
-                        // trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.StandIn;
+                        trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Arrive;
                         trackaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion, "InStanding");
 
                         trackaction.StartTime = trackaction.EndTime = (ulong)arrival.ScheduledTime;
@@ -1539,7 +1539,7 @@ namespace ServiceSiteScheduling.Solutions
                 case TrackTaskType.Departure:
                     if (task.Train.IsItInStanding())
                     {
-                        // trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.StandOut;
+                        trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Exit;
                         trackaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion, "OutStanding");
                     }
 
