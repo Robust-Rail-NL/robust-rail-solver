@@ -52,9 +52,9 @@ namespace ServiceSiteScheduling
 
             else
             {
-                Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "../database/TUSS-Instance-Generator/setting_A/scenario_solver.json");
+                Test_Location_Scenario_Parsing("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/setting_A/scenario_solver.json");
                 Console.WriteLine("***************** CreatePlan() *****************");
-                CreatePlan("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "./database/TUSS-Instance-Generator/setting_A/scenario_solver.json", "./database/TUSS-Instance-Generator/scenario_settings/setting_A/plan.json");
+                CreatePlan("./database/TUSS-Instance-Generator/scenario_settings/setting_A/location_solver.json", "/database/TUSS-Instance-Generator/setting_A/scenario_solver.json", "./database/TUSS-Instance-Generator/plan.json");
             }
 
 
