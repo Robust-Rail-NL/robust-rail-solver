@@ -314,8 +314,11 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public void OutputTrainUnitSchedule()
+        public string OutputTrainUnitSchedule()
         {
+            // 
+            string return_value = "";
+            // 
             foreach (ShuntTrainUnit unit in this.ShuntUnits)
             {
                 string line = $"{unit.Name} : {unit.Arrival.Track.PrettyName} (Arrival {unit.Arrival.Start.ToMinuteString()} - {unit.Arrival.End.ToMinuteString()})";
@@ -326,8 +329,10 @@ namespace ServiceSiteScheduling.Solutions
                     line += $", {task.Track.PrettyName} ({(task as ServiceTask)?.Type.Name ?? (task is DepartureTask ? "departure" : "parking")} {task.Start.ToMinuteString()} - {task.End.ToMinuteString()})";
                     move = task.Next;
                 }
+                return_value += line + "\n";
                 Console.WriteLine(line);
             }
+            return return_value;
         }
 
         public void OutputConstraintViolations()

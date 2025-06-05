@@ -157,6 +157,8 @@ namespace ServiceSiteScheduling
                 }
 
                 File.WriteAllText(plan_path, jsonPlan);
+                File.WriteAllText(Path.ChangeExtension(plan_path, ".txt"), sa.Graph.OutputTrainUnitSchedule());
+
 
                 Console.WriteLine("----------------------------------------------------------------------");
 
@@ -170,7 +172,7 @@ namespace ServiceSiteScheduling
             Console.WriteLine("------------ OVERALL BEST --------------");
             Console.WriteLine(best);
 
-            Console.ReadLine();
+            // Console.ReadLine();
         }
 
         static void Test()

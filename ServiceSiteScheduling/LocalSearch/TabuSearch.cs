@@ -36,7 +36,6 @@ namespace ServiceSiteScheduling.LocalSearch
         //@suppressConsoleOutput: enables extra logs
         public void Run(int iterations, int iterationsUntilReset, int tabuListLength, double bias = 0.75, bool suppressConsoleOutput = false, string plan_path = "default_temp_path.json")
         {
-
             List<LocalSearchMove> moves = new List<LocalSearchMove>();
             moves.Add(new IdentityMove(this.Graph));
             int noimprovement = 0, iteration = 0, neighborsvisited = 0;
@@ -220,6 +219,8 @@ namespace ServiceSiteScheduling.LocalSearch
                 }
 
                 File.WriteAllText(Path.Join(directoryPath, $"temp_plan_{iteration}.json"), jsonPlan);
+                File.WriteAllText(Path.Join(directoryPath, $"temp_plan_{iteration}.txt"), this.Graph.OutputTrainUnitSchedule());
+
 
                 if (iteration >= iterations)
                     break;

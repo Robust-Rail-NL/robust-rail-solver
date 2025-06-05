@@ -470,6 +470,8 @@ namespace ServiceSiteScheduling.LocalSearch
                 }
 
                 File.WriteAllText(Path.Join(directoryPath, $"temp_plan_{iteration}.json"), jsonPlan);
+                File.WriteAllText(Path.Join(directoryPath, $"temp_plan_{iteration}.txt"), this.Graph.OutputTrainUnitSchedule());
+
 
 
                 if (iteration >= iterations || stopwatch.ElapsedMilliseconds > 1000 * maxduration || (stopWhenFeasible && (this.Graph.Cost.IsFeasible || this.Graph.Cost.IsDelayFeasible && allowDelayedPlans)))
