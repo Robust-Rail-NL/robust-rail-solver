@@ -639,17 +639,6 @@ namespace ServiceSiteScheduling
                     var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, Side.None, true);
                     departures.Add(train);
 
-                    // Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
-                    // TODO : add switch statement for more infratype
-                    // if (@switch != null)
-                    // {
-
-
-                        // var train = new DepartureTrain((int)instance.ScenarioEndTime, units.ToArray(), infra, infra.GetSide(@switch), true);
-                        // departures.Add(train);
-
-                    // }
-
                 }
 
 
