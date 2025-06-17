@@ -1,7 +1,8 @@
+LocationPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_issue/location_solver.json"
+ScenarioPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_issue/scenario_solver.json"
+PlanPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_issue/plan.json"
+Mode: "DeepLook" #Standard or DeepLook
 
-LocationPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_T/location_solver.json"
-ScenarioPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_T/scenario_solver.json"
-PlanPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_T/plan.json"
 
 TabuSearch:
   Iterations: 40
@@ -21,3 +22,11 @@ SimulatedAnnealing:
   Bias: 0.2
   SuppressConsoleOutput: false
   IintensifyOnImprovement: false
+
+DeepLook:
+  Path: "../../C++/hello"
+  Mode: "EVAL" #EVAL_AND_STORE
+  PathLocation: "./PathLocation"
+  PathScenario: "./PathScenario"
+  PathPlan: "./PathPlan"
+  PlanType: "Solver"

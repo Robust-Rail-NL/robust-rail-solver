@@ -3,6 +3,10 @@ using YamlDotNet.Serialization;
 using Google.Protobuf;
 using AlgoIface;
 using System.Text.Json;
+using System;
+using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
+
 
 namespace ServiceSiteScheduling
 {
@@ -33,13 +37,32 @@ namespace ServiceSiteScheduling
 
                         var deserializer = new Deserializer();
                         Config config = deserializer.Deserialize<Config>(new StringReader(yaml));
+                        if (config.Mode == "Standard")
+                        {
+                            Console.WriteLine("***************** Test_Location_Scenario_Parsing() *****************");
 
-                        Console.WriteLine("***************** Test_Location_Scenario_Parsing() *****************");
+                            Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath);
 
-                        Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath);
+                            Console.WriteLine("***************** CreatePlan() *****************");
+                            CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
 
-                        Console.WriteLine("***************** CreatePlan() *****************");
-                        CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
+                        }
+                        else if (config.Mode == "DeepLook")
+                        {
+                            Console.WriteLine("***************** Test_Location_Scenario_Parsing() *****************");
+
+                            Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath);
+
+                            Console.WriteLine("***************** CreatePlan() *****************");
+                            CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
+
+                            // TODO: add call for robust-rail-evaluator
+                            Call_Evaluator(config);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unknown parameter for Mode");
+                        }
 
                     }
                     else
@@ -144,7 +167,7 @@ namespace ServiceSiteScheduling
                 Plan plan_pb = sa.Graph.GenerateOutputPB();
 
                 string jsonPlan = JsonFormatter.Default.Format(plan_pb);
-    
+
                 // Console.WriteLine(jsonPlan);
 
                 string directoryPath = Path.GetDirectoryName(plan_path);
@@ -170,7 +193,7 @@ namespace ServiceSiteScheduling
             Console.WriteLine("------------ OVERALL BEST --------------");
             Console.WriteLine(best);
 
-            Console.ReadLine();
+            // Console.ReadLine();
         }
 
         static void Test()
@@ -215,6 +238,25 @@ namespace ServiceSiteScheduling
 
         }
 
+        static void Call_Evaluator(Config config)
+        {
+            Process process = new Process();
+            process.StartInfo.FileName = config.DeepLook.Path;
+            process.StartInfo.Arguments = "--mode " + config.DeepLook.Mode + " --path_location " + config.DeepLook.PathLocation + " --path_scenario " +config.DeepLook.PathScenario + " --path_plan " + config.DeepLook.PathPlan + " --plan_type " + config.DeepLook.PlanType;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+
+            process.Start();
+
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            Console.WriteLine("Output from C++:");
+            Console.WriteLine(output);
+
+        }
+
         // Tests if the given location and scenario (json format) files can be parsed correctly int protobuf objects (ProblemInstance)
         // As partial results, the function displays the details about the infrstructure of the location, and the incoming and outgoing trains of the scenario
         // Input:   @location_path: path to the location (.json) file
@@ -236,6 +278,7 @@ namespace ServiceSiteScheduling
                 string json_parsed = JsonFormatter.Default.Format(ProblemInstance.Current.InterfaceLocation);
 
                 string json_original = ProblemInstance.ParseJsonToString(location_path);
+
 
                 var token_parsed = JsonDocument.Parse(json_parsed);
                 var token_original = JsonDocument.Parse(json_original);
@@ -326,10 +369,13 @@ namespace ServiceSiteScheduling
 
     }
 
+
     class Config
     {
         public ConfigTabuSearch TabuSearch { get; set; }
         public ConfigSimulatedAnnealing SimulatedAnnealing { get; set; }
+
+        public ConfigDeepLook DeepLook { get; set; }
         public class ConfigTabuSearch
         {
             public int Iterations { get; set; }
@@ -353,6 +399,17 @@ namespace ServiceSiteScheduling
             public bool IintensifyOnImprovement { get; set; }
 
         }
+
+        public class ConfigDeepLook
+        {
+            public string Path { get; set; }
+            public string Mode { get; set; }
+            public string PathLocation { get; set; }
+            public string PathScenario { get; set; }
+            public string PathPlan { get; set; }
+            public string PlanType { get; set; }
+
+        }
         public int Seed { get; set; }
         public int MaxDuration { get; set; }
         public bool StopWhenFeasible { get; set; }
@@ -360,5 +417,7 @@ namespace ServiceSiteScheduling
         public string ScenarioPath { get; set; }
         public string PlanPath { get; set; }
         public string OutputPath { get; set; }
+        public string Mode { get; set; }
+
     }
 }
