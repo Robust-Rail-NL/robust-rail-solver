@@ -219,7 +219,7 @@ namespace ServiceSiteScheduling
                 AlgoIfaceEvaluator.Train train = new AlgoIfaceEvaluator.Train();
 
 
-                train.Id = "****";
+                train.Id = departureTrain.DisplayName;
                 train.Time = departureTrain.Arrival;
                 train.SideTrackPart = departureTrain.LeaveTrackPart;
                 train.ParkingTrackPart = departureTrain.LastParkingTrackPart;
@@ -231,7 +231,7 @@ namespace ServiceSiteScheduling
                     foreach (var member in departureTrain.TrainUnits)
                     {
                         AlgoIfaceEvaluator.TrainUnit trainUnit = new AlgoIfaceEvaluator.TrainUnit();
-                        trainUnit.Id = departureTrain.DisplayName;
+                        trainUnit.Id = "****";
                         trainUnit.TypeDisplayName = member.Type.DisplayName + "-" + member.Type.Carriages;
                         train.Members.Add(trainUnit);
 
@@ -253,7 +253,7 @@ namespace ServiceSiteScheduling
                     AlgoIfaceEvaluator.Train train = new AlgoIfaceEvaluator.Train();
 
 
-                    train.Id = "****";
+                    train.Id = outStandingTrain.DisplayName;
                     train.Time = outStandingTrain.Arrival;
                     train.SideTrackPart = outStandingTrain.LeaveTrackPart;
                     train.ParkingTrackPart = outStandingTrain.LastParkingTrackPart;
@@ -265,7 +265,7 @@ namespace ServiceSiteScheduling
                         foreach (var member in outStandingTrain.TrainUnits)
                         {
                             AlgoIfaceEvaluator.TrainUnit trainUnit = new AlgoIfaceEvaluator.TrainUnit();
-                            trainUnit.Id = outStandingTrain.DisplayName;
+                            trainUnit.Id = "****";
                             trainUnit.TypeDisplayName = member.Type.DisplayName + "-" + member.Type.Carriages;
                             train.Members.Add(trainUnit);
 
@@ -291,7 +291,7 @@ namespace ServiceSiteScheduling
             // SLT-4
             trainUnitType.DisplayName = "SLT-4";
             trainUnitType.Carriages = 4;
-            trainUnitType.Length = 6936;
+            trainUnitType.Length = 69.36;
             trainUnitType.CombineDuration = 180;
             trainUnitType.SplitDuration = 120;
             trainUnitType.NeedsElectricity = true;
@@ -308,7 +308,7 @@ namespace ServiceSiteScheduling
             // SLT-6
             trainUnitType.DisplayName = "SLT-6";
             trainUnitType.Carriages = 6;
-            trainUnitType.Length = 10054;
+            trainUnitType.Length = 100.54;
             trainUnitType.CombineDuration = 180;
             trainUnitType.SplitDuration = 120;
             trainUnitType.NeedsElectricity = true;
@@ -325,7 +325,7 @@ namespace ServiceSiteScheduling
             // SNG-3
             trainUnitType.DisplayName = "SNG-3";
             trainUnitType.Carriages = 3;
-            trainUnitType.Length = 5950;
+            trainUnitType.Length = 59.50;
             trainUnitType.CombineDuration = 180;
             trainUnitType.SplitDuration = 120;
             trainUnitType.NeedsElectricity = true;
@@ -341,7 +341,7 @@ namespace ServiceSiteScheduling
             // SNG-4
             trainUnitType.DisplayName = "SNG-4";
             trainUnitType.Carriages = 4;
-            trainUnitType.Length = 7570;
+            trainUnitType.Length = 75.70;
             trainUnitType.CombineDuration = 180;
             trainUnitType.SplitDuration = 120;
             trainUnitType.NeedsElectricity = true;
