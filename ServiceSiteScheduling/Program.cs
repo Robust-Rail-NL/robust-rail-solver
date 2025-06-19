@@ -53,11 +53,23 @@ namespace ServiceSiteScheduling
 
                             Test_Location_Scenario_Parsing(config.LocationPath, config.ScenarioPath);
 
-                            Console.WriteLine("***************** CreatePlan() *****************");
-                            CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
+                            Converter converter = new Converter(ProblemInstance.Current, config.DeepLook.PathScenarioEval);
+
+                            if (converter.ConvertScenario())
+                            {
+                                Console.WriteLine("Conversion done with success");
+                                converter.PrintScenarioEvaluator();
+
+                                converter.StoreScenarioEvaluator("scenario_evaluator");
+
+                            }
+
+                            // Console.WriteLine("***************** CreatePlan() *****************");
+                            // CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
+
 
                             // TODO: add call for robust-rail-evaluator
-                            Call_Evaluator(config);
+                            // Call_Evaluator(config);
                         }
                         else
                         {
@@ -242,7 +254,7 @@ namespace ServiceSiteScheduling
         {
             Process process = new Process();
             process.StartInfo.FileName = config.DeepLook.Path;
-            process.StartInfo.Arguments = "--mode " + config.DeepLook.Mode + " --path_location " + config.DeepLook.PathLocation + " --path_scenario " +config.DeepLook.PathScenario + " --path_plan " + config.DeepLook.PathPlan + " --plan_type " + config.DeepLook.PlanType;
+            process.StartInfo.Arguments = "--mode " + config.DeepLook.Mode + " --path_location " + config.DeepLook.PathLocation + " --path_scenario " + config.DeepLook.PathScenario + " --path_plan " + config.DeepLook.PathPlan + " --plan_type " + config.DeepLook.PlanType;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
@@ -408,6 +420,9 @@ namespace ServiceSiteScheduling
             public string PathScenario { get; set; }
             public string PathPlan { get; set; }
             public string PlanType { get; set; }
+            // Path where the converted scenario for 
+            // the evaluator has to be stored
+            public string PathScenarioEval { get; set; }
 
         }
         public int Seed { get; set; }

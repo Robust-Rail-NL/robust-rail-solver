@@ -1,6 +1,7 @@
-LocationPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_issue/location_solver.json"
-ScenarioPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_issue/scenario_solver.json"
-PlanPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_issue/plan.json"
+
+LocationPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/location_solver.json"
+ScenarioPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/scenario_solver.json"
+PlanPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/plan.json"
 Mode: "DeepLook" #Standard or DeepLook
 
 
@@ -30,3 +31,4 @@ DeepLook:
   PathScenario: "./PathScenario"
   PathPlan: "./PathPlan"
   PlanType: "Solver"
+  PathScenarioEval: "./database/TUSS-Instance-Generator/scenario_settings/setting_deep_look"
