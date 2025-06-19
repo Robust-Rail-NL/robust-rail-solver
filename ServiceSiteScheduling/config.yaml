@@ -23,12 +23,12 @@ SimulatedAnnealing:
   Bias: 0.2
   SuppressConsoleOutput: false
   IintensifyOnImprovement: false
-
 DeepLook:
-  Path: "../../C++/hello"
-  Mode: "EVAL" #EVAL_AND_STORE
-  PathLocation: "./PathLocation"
-  PathScenario: "./PathScenario"
-  PathPlan: "./PathPlan"
+  Path: "/workspace/robust-rail-evaluator/build/TORS" #../../C++/hello"
+  Mode: "EVAL_AND_STORE" #EVAL_AND_STORE or EVAL
+  PathLocation: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look"
+  PathScenario: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/scenario_evaluator.json"
+  PathPlan: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/plan.json"
   PlanType: "Solver"
-  PathScenarioEval: "./database/TUSS-Instance-Generator/scenario_settings/setting_deep_look"
+  PathEvalResult: /workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/Evaluation_Results.txt"
+  PathScenarioEval: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look"

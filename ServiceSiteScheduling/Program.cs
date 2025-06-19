@@ -57,8 +57,10 @@ namespace ServiceSiteScheduling
 
                             if (converter.ConvertScenario())
                             {
+                                Console.WriteLine("----------------------------------------------------------------------");
                                 Console.WriteLine("Conversion done with success");
-                                converter.PrintScenarioEvaluator();
+                                Console.WriteLine("----------------------------------------------------------------------");
+                               
 
                                 converter.StoreScenarioEvaluator("scenario_evaluator");
 
@@ -67,9 +69,7 @@ namespace ServiceSiteScheduling
                             // Console.WriteLine("***************** CreatePlan() *****************");
                             // CreatePlan(config.LocationPath, config.ScenarioPath, config.PlanPath, config);
 
-
-                            // TODO: add call for robust-rail-evaluator
-                            // Call_Evaluator(config);
+                            Call_Evaluator(config);
                         }
                         else
                         {
@@ -254,7 +254,20 @@ namespace ServiceSiteScheduling
         {
             Process process = new Process();
             process.StartInfo.FileName = config.DeepLook.Path;
-            process.StartInfo.Arguments = "--mode " + config.DeepLook.Mode + " --path_location " + config.DeepLook.PathLocation + " --path_scenario " + config.DeepLook.PathScenario + " --path_plan " + config.DeepLook.PathPlan + " --plan_type " + config.DeepLook.PlanType;
+
+            if (config.DeepLook.Mode == "EVAL")
+            {
+                process.StartInfo.Arguments = "--mode " + config.DeepLook.Mode + " --path_location " + config.DeepLook.PathLocation + " --path_scenario " + config.DeepLook.PathScenario + " --path_plan " + config.DeepLook.PathPlan + " --plan_type " + config.DeepLook.PlanType;
+            }
+            else if (config.DeepLook.Mode == "EVAL_AND_STORE")
+            {
+                process.StartInfo.Arguments = "--mode " + config.DeepLook.Mode + " --path_location " + config.DeepLook.PathLocation + " --path_scenario " + config.DeepLook.PathScenario + " --path_plan " + config.DeepLook.PathPlan + " --plan_type " + config.DeepLook.PlanType + " --path_eval_result " + config.DeepLook.PathEvalResult;
+
+            }
+            else
+            {
+                Console.WriteLine("Warning ! Mode is unknown");
+            }
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
@@ -423,6 +436,8 @@ namespace ServiceSiteScheduling
             // Path where the converted scenario for 
             // the evaluator has to be stored
             public string PathScenarioEval { get; set; }
+            // Path to store the Evaluator's results
+            public string PathEvalResult { get; set; }
 
         }
         public int Seed { get; set; }
