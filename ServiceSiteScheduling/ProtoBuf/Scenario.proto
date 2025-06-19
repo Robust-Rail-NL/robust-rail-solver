@@ -54,6 +54,10 @@ message IncomingTrain {
     string id = 4;
 
     repeated IncomingTrainUnit members = 5;
+    
+    // The index of the train unit when in- or outstanding, with lower indices 
+    // at the A-side of the track
+    double standingIndex = 7;
 }
 
 message IncomingTrainUnit {
@@ -81,6 +85,10 @@ message TrainRequest {
 
     // Outgoing train units; if in a TrainUnit the id field is not specified, then any train unit will do, provided that the other fields (train type, number of carriages) are still adhered to.
     repeated TrainUnit trainUnits = 5;
+
+    // The index of the train unit when in- or outstanding, with lower indices 
+    // at the A-side of the track
+    double standingIndex = 7;
 
 }
 
