@@ -35,28 +35,29 @@ namespace AlgoIface {
             "dHMYASADKAsyGC5hbGdvX2lmYWNlLlRyYWluUmVxdWVzdCI/ChJTY2VuYXJp",
             "b0luU3RhbmRpbmcSKQoGdHJhaW5zGAEgAygLMhkuYWxnb19pZmFjZS5JbmNv",
             "bWluZ1RyYWluIkYKE1NjZW5hcmlvT3V0U3RhbmRpbmcSLwoNdHJhaW5SZXF1",
-            "ZXN0cxgBIAMoCzIYLmFsZ29faWZhY2UuVHJhaW5SZXF1ZXN0IqYBCg1JbmNv",
+            "ZXN0cxgBIAMoCzIYLmFsZ29faWZhY2UuVHJhaW5SZXF1ZXN0Ir0BCg1JbmNv",
             "bWluZ1RyYWluEhYKDmVudHJ5VHJhY2tQYXJ0GAEgASgEEh0KFWZpcnN0UGFy",
             "a2luZ1RyYWNrUGFydBgGIAEoBBIPCgdhcnJpdmFsGAIgASgEEhEKCWRlcGFy",
             "dHVyZRgDIAEoBBIKCgJpZBgEIAEoCRIuCgdtZW1iZXJzGAUgAygLMh0uYWxn",
-            "b19pZmFjZS5JbmNvbWluZ1RyYWluVW5pdCJiChFJbmNvbWluZ1RyYWluVW5p",
-            "dBIoCgl0cmFpblVuaXQYASABKAsyFS5hbGdvX2lmYWNlLlRyYWluVW5pdBIj",
-            "CgV0YXNrcxgCIAMoCzIULmFsZ29faWZhY2UuVGFza1NwZWMiqAEKDFRyYWlu",
-            "UmVxdWVzdBIWCg5sZWF2ZVRyYWNrUGFydBgBIAEoBBIcChRsYXN0UGFya2lu",
-            "Z1RyYWNrUGFydBgGIAEoBBIPCgdhcnJpdmFsGAIgASgEEhEKCWRlcGFydHVy",
-            "ZRgDIAEoBBITCgtkaXNwbGF5TmFtZRgEIAEoCRIpCgp0cmFpblVuaXRzGAUg",
-            "AygLMhUuYWxnb19pZmFjZS5UcmFpblVuaXQiQAoJVHJhaW5Vbml0EgoKAmlk",
-            "GAEgASgJEicKBHR5cGUYAiABKAsyGS5hbGdvX2lmYWNlLlRyYWluVW5pdFR5",
-            "cGUiwQEKDVRyYWluVW5pdFR5cGUSEwoLZGlzcGxheU5hbWUYASABKAkSEQoJ",
-            "Y2FycmlhZ2VzGAIgASgNEg4KBmxlbmd0aBgEIAEoARIYChByZXZlcnNhbER1",
-            "cmF0aW9uGAMgASgEEhcKD2NvbWJpbmVEdXJhdGlvbhgFIAEoBBIVCg1zcGxp",
-            "dER1cmF0aW9uGAYgASgEEhQKDGJhY2tOb3JtVGltZRgHIAEoBBIYChBiYWNr",
-            "QWRkaXRpb25UaW1lGAggASgEIn0KDFNodW50aW5nVW5pdBIKCgJpZBgBIAEo",
-            "CRImCgdtZW1iZXJzGAIgAygLMhUuYWxnb19pZmFjZS5UcmFpblVuaXQSEQoJ",
-            "cGFyZW50SURzGAMgAygJEhAKCGNoaWxkSURzGAQgAygJEhQKDHN0YW5kaW5n",
-            "VHlwZRgFIAEoCSJWCghUYXNrU3BlYxIiCgR0eXBlGAEgASgLMhQuYWxnb19p",
-            "ZmFjZS5UYXNrVHlwZRIUCghwcmlvcml0eRgCIAEoDUICGAESEAoIZHVyYXRp",
-            "b24YAyABKARiBnByb3RvMw=="));
+            "b19pZmFjZS5JbmNvbWluZ1RyYWluVW5pdBIVCg1zdGFuZGluZ0luZGV4GAcg",
+            "ASgBImIKEUluY29taW5nVHJhaW5Vbml0EigKCXRyYWluVW5pdBgBIAEoCzIV",
+            "LmFsZ29faWZhY2UuVHJhaW5Vbml0EiMKBXRhc2tzGAIgAygLMhQuYWxnb19p",
+            "ZmFjZS5UYXNrU3BlYyK/AQoMVHJhaW5SZXF1ZXN0EhYKDmxlYXZlVHJhY2tQ",
+            "YXJ0GAEgASgEEhwKFGxhc3RQYXJraW5nVHJhY2tQYXJ0GAYgASgEEg8KB2Fy",
+            "cml2YWwYAiABKAQSEQoJZGVwYXJ0dXJlGAMgASgEEhMKC2Rpc3BsYXlOYW1l",
+            "GAQgASgJEikKCnRyYWluVW5pdHMYBSADKAsyFS5hbGdvX2lmYWNlLlRyYWlu",
+            "VW5pdBIVCg1zdGFuZGluZ0luZGV4GAcgASgBIkAKCVRyYWluVW5pdBIKCgJp",
+            "ZBgBIAEoCRInCgR0eXBlGAIgASgLMhkuYWxnb19pZmFjZS5UcmFpblVuaXRU",
+            "eXBlIsEBCg1UcmFpblVuaXRUeXBlEhMKC2Rpc3BsYXlOYW1lGAEgASgJEhEK",
+            "CWNhcnJpYWdlcxgCIAEoDRIOCgZsZW5ndGgYBCABKAESGAoQcmV2ZXJzYWxE",
+            "dXJhdGlvbhgDIAEoBBIXCg9jb21iaW5lRHVyYXRpb24YBSABKAQSFQoNc3Bs",
+            "aXREdXJhdGlvbhgGIAEoBBIUCgxiYWNrTm9ybVRpbWUYByABKAQSGAoQYmFj",
+            "a0FkZGl0aW9uVGltZRgIIAEoBCJ9CgxTaHVudGluZ1VuaXQSCgoCaWQYASAB",
+            "KAkSJgoHbWVtYmVycxgCIAMoCzIVLmFsZ29faWZhY2UuVHJhaW5Vbml0EhEK",
+            "CXBhcmVudElEcxgDIAMoCRIQCghjaGlsZElEcxgEIAMoCRIUCgxzdGFuZGlu",
+            "Z1R5cGUYBSABKAkiVgoIVGFza1NwZWMSIgoEdHlwZRgBIAEoCzIULmFsZ29f",
+            "aWZhY2UuVGFza1R5cGUSFAoIcHJpb3JpdHkYAiABKA1CAhgBEhAKCGR1cmF0",
+            "aW9uGAMgASgEYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::AlgoIface.LocationReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -65,9 +66,9 @@ namespace AlgoIface {
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.ScenarioOut), global::AlgoIface.ScenarioOut.Parser, new[]{ "TrainRequests" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.ScenarioInStanding), global::AlgoIface.ScenarioInStanding.Parser, new[]{ "Trains" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.ScenarioOutStanding), global::AlgoIface.ScenarioOutStanding.Parser, new[]{ "TrainRequests" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.IncomingTrain), global::AlgoIface.IncomingTrain.Parser, new[]{ "EntryTrackPart", "FirstParkingTrackPart", "Arrival", "Departure", "Id", "Members" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.IncomingTrain), global::AlgoIface.IncomingTrain.Parser, new[]{ "EntryTrackPart", "FirstParkingTrackPart", "Arrival", "Departure", "Id", "Members", "StandingIndex" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.IncomingTrainUnit), global::AlgoIface.IncomingTrainUnit.Parser, new[]{ "TrainUnit", "Tasks" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.TrainRequest), global::AlgoIface.TrainRequest.Parser, new[]{ "LeaveTrackPart", "LastParkingTrackPart", "Arrival", "Departure", "DisplayName", "TrainUnits" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.TrainRequest), global::AlgoIface.TrainRequest.Parser, new[]{ "LeaveTrackPart", "LastParkingTrackPart", "Arrival", "Departure", "DisplayName", "TrainUnits", "StandingIndex" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.TrainUnit), global::AlgoIface.TrainUnit.Parser, new[]{ "Id", "Type" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.TrainUnitType), global::AlgoIface.TrainUnitType.Parser, new[]{ "DisplayName", "Carriages", "Length", "ReversalDuration", "CombineDuration", "SplitDuration", "BackNormTime", "BackAdditionTime" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::AlgoIface.ShuntingUnit), global::AlgoIface.ShuntingUnit.Parser, new[]{ "Id", "Members", "ParentIDs", "ChildIDs", "StandingType" }, null, null, null, null),
@@ -1259,6 +1260,7 @@ namespace AlgoIface {
       departure_ = other.departure_;
       id_ = other.id_;
       members_ = other.members_.Clone();
+      standingIndex_ = other.standingIndex_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1349,6 +1351,22 @@ namespace AlgoIface {
       get { return members_; }
     }
 
+    /// <summary>Field number for the "standingIndex" field.</summary>
+    public const int StandingIndexFieldNumber = 7;
+    private double standingIndex_;
+    /// <summary>
+    /// The index of the train unit when in- or outstanding, with lower indices 
+    /// at the A-side of the track
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public double StandingIndex {
+      get { return standingIndex_; }
+      set {
+        standingIndex_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -1370,6 +1388,7 @@ namespace AlgoIface {
       if (Departure != other.Departure) return false;
       if (Id != other.Id) return false;
       if(!members_.Equals(other.members_)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(StandingIndex, other.StandingIndex)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1383,6 +1402,7 @@ namespace AlgoIface {
       if (Departure != 0UL) hash ^= Departure.GetHashCode();
       if (Id.Length != 0) hash ^= Id.GetHashCode();
       hash ^= members_.GetHashCode();
+      if (StandingIndex != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(StandingIndex);
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1422,6 +1442,10 @@ namespace AlgoIface {
         output.WriteRawTag(48);
         output.WriteUInt64(FirstParkingTrackPart);
       }
+      if (StandingIndex != 0D) {
+        output.WriteRawTag(57);
+        output.WriteDouble(StandingIndex);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1453,6 +1477,10 @@ namespace AlgoIface {
         output.WriteRawTag(48);
         output.WriteUInt64(FirstParkingTrackPart);
       }
+      if (StandingIndex != 0D) {
+        output.WriteRawTag(57);
+        output.WriteDouble(StandingIndex);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1479,6 +1507,9 @@ namespace AlgoIface {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Id);
       }
       size += members_.CalculateSize(_repeated_members_codec);
+      if (StandingIndex != 0D) {
+        size += 1 + 8;
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -1507,6 +1538,9 @@ namespace AlgoIface {
         Id = other.Id;
       }
       members_.Add(other.members_);
+      if (other.StandingIndex != 0D) {
+        StandingIndex = other.StandingIndex;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -1546,6 +1580,10 @@ namespace AlgoIface {
             FirstParkingTrackPart = input.ReadUInt64();
             break;
           }
+          case 57: {
+            StandingIndex = input.ReadDouble();
+            break;
+          }
         }
       }
     #endif
@@ -1583,6 +1621,10 @@ namespace AlgoIface {
           }
           case 48: {
             FirstParkingTrackPart = input.ReadUInt64();
+            break;
+          }
+          case 57: {
+            StandingIndex = input.ReadDouble();
             break;
           }
         }
@@ -1862,6 +1904,7 @@ namespace AlgoIface {
       departure_ = other.departure_;
       displayName_ = other.displayName_;
       trainUnits_ = other.trainUnits_.Clone();
+      standingIndex_ = other.standingIndex_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1958,6 +2001,22 @@ namespace AlgoIface {
       get { return trainUnits_; }
     }
 
+    /// <summary>Field number for the "standingIndex" field.</summary>
+    public const int StandingIndexFieldNumber = 7;
+    private double standingIndex_;
+    /// <summary>
+    /// The index of the train unit when in- or outstanding, with lower indices 
+    /// at the A-side of the track
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public double StandingIndex {
+      get { return standingIndex_; }
+      set {
+        standingIndex_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -1979,6 +2038,7 @@ namespace AlgoIface {
       if (Departure != other.Departure) return false;
       if (DisplayName != other.DisplayName) return false;
       if(!trainUnits_.Equals(other.trainUnits_)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(StandingIndex, other.StandingIndex)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1992,6 +2052,7 @@ namespace AlgoIface {
       if (Departure != 0UL) hash ^= Departure.GetHashCode();
       if (DisplayName.Length != 0) hash ^= DisplayName.GetHashCode();
       hash ^= trainUnits_.GetHashCode();
+      if (StandingIndex != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(StandingIndex);
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2031,6 +2092,10 @@ namespace AlgoIface {
         output.WriteRawTag(48);
         output.WriteUInt64(LastParkingTrackPart);
       }
+      if (StandingIndex != 0D) {
+        output.WriteRawTag(57);
+        output.WriteDouble(StandingIndex);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -2062,6 +2127,10 @@ namespace AlgoIface {
         output.WriteRawTag(48);
         output.WriteUInt64(LastParkingTrackPart);
       }
+      if (StandingIndex != 0D) {
+        output.WriteRawTag(57);
+        output.WriteDouble(StandingIndex);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -2088,6 +2157,9 @@ namespace AlgoIface {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(DisplayName);
       }
       size += trainUnits_.CalculateSize(_repeated_trainUnits_codec);
+      if (StandingIndex != 0D) {
+        size += 1 + 8;
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -2116,6 +2188,9 @@ namespace AlgoIface {
         DisplayName = other.DisplayName;
       }
       trainUnits_.Add(other.trainUnits_);
+      if (other.StandingIndex != 0D) {
+        StandingIndex = other.StandingIndex;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -2155,6 +2230,10 @@ namespace AlgoIface {
             LastParkingTrackPart = input.ReadUInt64();
             break;
           }
+          case 57: {
+            StandingIndex = input.ReadDouble();
+            break;
+          }
         }
       }
     #endif
@@ -2192,6 +2271,10 @@ namespace AlgoIface {
           }
           case 48: {
             LastParkingTrackPart = input.ReadUInt64();
+            break;
+          }
+          case 57: {
+            StandingIndex = input.ReadDouble();
             break;
           }
         }
