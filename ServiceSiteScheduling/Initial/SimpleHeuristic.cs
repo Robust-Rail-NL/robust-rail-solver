@@ -23,19 +23,9 @@ namespace ServiceSiteScheduling.Initial
                 ))
                 .ToArray();
 
-            Matching.BipartiteGraph g = new();
-            var initialmatching = g.MaximumMatching();
-
-            // Matching
-            Matching.TrainMatching matching = g.LocalSearch(
-                initialmatching,
-                random,
-                shunttrainunits
-            );
-            Dictionary<ShuntTrainUnit, Matching.Unit> reversematching = [];
-            foreach (Matching.Train dt in matching.DepartureTrains)
-            foreach (Matching.Unit du in dt)
-                reversematching[shunttrainunits[du.Index]] = du;
+            TrainMatching matching;
+            Dictionary<ShuntTrainUnit, Unit> reversematching;
+            GenerateMatching(random, shunttrainunits, out matching, out reversematching);
 
             // Determine how to split
             Dictionary<ShuntTrain, List<ShuntTrain>> splitparts = [];
@@ -606,6 +596,24 @@ namespace ServiceSiteScheduling.Initial
                     );
             }
             return graph;
+
+            static void GenerateMatching(
+                Random random,
+                ShuntTrainUnit[] shunttrainunits,
+                out TrainMatching matching,
+                out Dictionary<ShuntTrainUnit, Unit> reversematching
+            )
+            {
+                Matching.BipartiteGraph g = new();
+                var initialmatching = g.MaximumMatching();
+
+                // Matching
+                matching = g.LocalSearch(initialmatching, random, shunttrainunits);
+                reversematching = [];
+                foreach (Matching.Train dt in matching.DepartureTrains)
+                foreach (Matching.Unit du in dt)
+                    reversematching[shunttrainunits[du.Index]] = du;
+            }
         }
 
         private static void Shuffle<T>(IList<T> list, Random random)

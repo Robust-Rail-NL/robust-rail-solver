@@ -117,8 +117,7 @@ namespace ServiceSiteScheduling.Solutions
         public SolutionCost ComputeModel(MoveTask recomputestart, MoveTask recomputeend)
         {
             for (int i = 0; i < this.TrackOccupations.Length; i++)
-                if (this.TrackOccupations[i] != null)
-                    this.TrackOccupations[i].Reset();
+                this.TrackOccupations[i]?.Reset();
 
             this.ComputeLocation(this.First, recomputestart, recomputeend);
             ComputeTime(recomputestart, recomputestart.PreviousMove?.End ?? 0);

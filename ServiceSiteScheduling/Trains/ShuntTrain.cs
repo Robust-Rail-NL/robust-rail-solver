@@ -14,7 +14,7 @@ namespace ServiceSiteScheduling.Trains
         }
         public ShuntTrainUnit B
         {
-            get { return this.Units[this.Units.Count - 1]; }
+            get { return this.Units[^1]; }
         }
         public BitSet UnitBits { get; set; }
         public Track[] ParkingLocations { get; set; }
@@ -171,6 +171,7 @@ namespace ServiceSiteScheduling.Trains
 
         public bool Equals(ShuntTrain other)
         {
+            // LP TODO why not compare UnitBits?
             if (
                 other == null
                 || other.Units == null
