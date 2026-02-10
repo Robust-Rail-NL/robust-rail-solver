@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Microsoft.Extensions.Logging;
 using ServiceSiteScheduling.Matching;
 using ServiceSiteScheduling.Parking;
 using ServiceSiteScheduling.Routing;
@@ -11,6 +12,8 @@ namespace ServiceSiteScheduling.Solutions
 {
     class PlanGraph
     {
+        static readonly ILogger logger = Logging.GetLogger();
+
         public ShuntTrainUnit[] ShuntUnits { get; private set; }
 
         TrackOccupation[] TrackOccupations;
@@ -226,10 +229,20 @@ namespace ServiceSiteScheduling.Solutions
                         if (arrival.ArrivalSide == routing.FromSide)
                             routing.Start += routing.Train.ReversalDuration;
                         if (routing.Start < time && !arrival.Track.CanPark)
-                            // throw new InvalidOperationException
-                            Console.WriteLine(
-                                $"Forced shuntingunit {routing.Train} to wait after arriving at {routing.Start} because previous routing task {routing.Previous} ends at time {time}, but arrival track {arrival.Track} cannot be used for parking."
+                        {
+                            logger.LogDebug(
+                                ""
+                                    + "Forced shuntingunit {routing.Train} to wait after arriving at {routing.Start}, "
+                                    + "because previous routing task {routing.Previous} ends at time {time}, but arrival "
+                                    + "track {arrival.Track} cannot be used for parking.",
+                                routing.Train,
+                                routing.Start,
+                                routing.Previous,
+                                time,
+                                arrival.Track
                             );
+                            //throw new InvalidOperationException(txt);
+                        }
                     }
                     else if (routing.Previous.TaskType == TrackTaskType.Service)
                         routing.Start =
@@ -571,6 +584,12 @@ namespace ServiceSiteScheduling.Solutions
                         )
                 )
                 {
+                    logger.LogInformation(
+                        "Arrival delay: {end} > {schedule} for train {train}",
+                        arrival.End,
+                        arrival.ScheduledTime,
+                        arrival.Train
+                    );
                     cost.ArrivalDelays++;
                     cost.ArrivalDelaySum += arrival.End - arrival.ScheduledTime;
                     cost.ProblemTrains |= arrival.Train.UnitBits;

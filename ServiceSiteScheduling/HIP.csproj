@@ -40,6 +40,8 @@
       <Private>True</Private>
     </Reference> -->
     <PackageReference Include="Google.Protobuf" Version="3.28.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
 
     <Reference Include="Priority Queue, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>../packages/OptimizedPriorityQueue.2.0.0/lib/net45/Priority Queue.dll</HintPath>
