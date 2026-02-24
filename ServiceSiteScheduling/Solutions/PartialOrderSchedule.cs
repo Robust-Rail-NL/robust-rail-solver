@@ -13,8 +13,6 @@ namespace ServiceSiteScheduling.Solutions
         public ArrivalTask[] ArrivalTasks { get; private set; }
 
         public List<Trains.TrainUnit> ListOfTrainUnits { get; set; }
-        DepartureTask[] DepartureTasks; // FIXME This became an unreferenced field in commit 4917b23e, 2024-11-22
-
         public ArrivalTask FirstArrival
         {
             get { return this.ArrivalTasks.First(arrival => arrival.Next.PreviousMove == null); }

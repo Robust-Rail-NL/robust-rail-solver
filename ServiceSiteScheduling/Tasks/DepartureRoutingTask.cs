@@ -80,6 +80,7 @@ namespace ServiceSiteScheduling.Tasks
             this.Previous = [];
             this.crossingtracks = new BitSet(ProblemInstance.Current.Tracks.Length);
             this.departurecrossingtracks = new BitSet(ProblemInstance.Current.Tracks.Length);
+            this.Next = null!;
         }
 
         public void UpdatePreviousTaskOrder()
@@ -150,8 +151,7 @@ namespace ServiceSiteScheduling.Tasks
 
         public override void SkipParking(ParkingTask parking)
         {
-            RoutingTask previous = parking.Previous as RoutingTask;
-
+            RoutingTask previous = (RoutingTask)parking.Previous;
             previous.Remove();
 
             // update track-route linking

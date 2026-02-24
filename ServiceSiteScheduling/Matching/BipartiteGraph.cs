@@ -46,15 +46,19 @@
             int arrivalindex = 0;
             List<ArrivalVertex> arrivals = [];
             foreach (var arrival in ProblemInstance.Current.ArrivalsOrdered)
-            foreach (var unit in arrival.Units)
-                arrivals.Add(new ArrivalVertex(arrivalindex++, unit, arrival));
+            {
+                foreach (var unit in arrival.Units)
+                    arrivals.Add(new ArrivalVertex(arrivalindex++, unit, arrival));
+            }
             this.Arrivals = arrivals.ToArray();
 
             int departureindex = 0;
             List<DepartureVertex> departures = [];
             foreach (var departure in this.departuretrains)
-            foreach (var unit in departure.Units)
-                departures.Add(new DepartureVertex(departureindex++, unit, departure));
+            {
+                foreach (var unit in departure.Units)
+                    departures.Add(new DepartureVertex(departureindex++, unit, departure));
+            }
             this.Departures = departures.ToArray();
 
             arrivalindex = 0;
@@ -363,8 +367,9 @@
             Dictionary<Train, List<Part>> trainparts = [];
             foreach (var matchpart in partsmatching)
             {
-                List<Part> parts = null;
-                if (!trainparts.TryGetValue(matchpart.First().Departure.Train, out parts))
+                if (
+                    !trainparts.TryGetValue(matchpart.First().Departure.Train, out List<Part> parts)
+                )
                     trainparts[matchpart.First().Departure.Train] = parts = [];
                 var part = new Part(matchpart.Select(m => m.Departure.Unit).ToArray());
                 parts.Add(part);

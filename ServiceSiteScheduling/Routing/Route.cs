@@ -18,12 +18,12 @@ namespace ServiceSiteScheduling.Routing
         public Side DepartureSide { get; private set; }
         public RoutingGraph Graph { get; private set; }
         public BitSet CrossingTracks { get; private set; }
-        public BitSet TrackState { get; set; }
+        public BitSet? TrackState { get; set; }
 
-        public static Route Invalid = new(
-            null,
-            Array.Empty<Track>(),
-            Array.Empty<Arc>(),
+        public static readonly Route Invalid = new(
+            null!,
+            [],
+            [],
             Settings.CrossingsIfInvalidRoute,
             Side.None,
             Settings.SwitchesIfInvalidRoute,
@@ -33,7 +33,7 @@ namespace ServiceSiteScheduling.Routing
         public int TotalSwitches { get; }
         public int TotalReversals { get; }
 
-        public Route(
+        private Route(
             RoutingGraph graph,
             Track[] tracks,
             Arc[] arcs,
@@ -43,6 +43,7 @@ namespace ServiceSiteScheduling.Routing
             int reversals
         )
         {
+            this.Train = null!;
             this.Graph = graph;
             this.Tracks = tracks;
             this.Arcs = arcs;
@@ -59,7 +60,7 @@ namespace ServiceSiteScheduling.Routing
             this.Duration = Time.Hour;
         }
 
-        public Route(
+        private Route(
             ShuntTrain train,
             RoutingGraph graph,
             Track[] tracks,
@@ -72,7 +73,7 @@ namespace ServiceSiteScheduling.Routing
             : this(graph, tracks, arcs, crossings, side, switches, reversals)
         {
             this.Train = train;
-            this.computeDuration();
+            this.ComputeDuration();
         }
 
         public Route(
@@ -113,7 +114,7 @@ namespace ServiceSiteScheduling.Routing
                 + $"{string.Join("->", this.Tracks?.Select(track => track.PrettyName) ?? ["?"])}";
         }
 
-        public Time computeDuration()
+        public Time ComputeDuration()
         {
             this.Duration =
                 (this.Tracks.Length + this.TotalReversals) * Settings.TrackCrossingTime
@@ -124,18 +125,7 @@ namespace ServiceSiteScheduling.Routing
 
         public static Route EmptyRoute(ShuntTrain train, RoutingGraph graph, Track track, Side side)
         {
-            var route = new Route(
-                train,
-                graph,
-                new Track[1] { track },
-                Array.Empty<Arc>(),
-                0,
-                side,
-                0,
-                0
-            );
-            route.Duration = 0;
-            return route;
+            return new Route(train, graph, [track], [], 0, side, 0, 0) { Duration = 0 };
         }
 
         public bool Equals(Route? other)
