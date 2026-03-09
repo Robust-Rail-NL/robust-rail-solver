@@ -477,13 +477,6 @@ namespace ServiceSiteScheduling.LocalSearch
                                 }
                             }
                             // Write JSON plan to file
-                            Plan plan_pb = this.Graph.GenerateOutputJSONformat();
-                            var formatter = new JsonFormatter(
-                                JsonFormatter
-                                    .Settings.Default.WithIndentation("\t")
-                                    .WithFormatDefaultValues(true)
-                            );
-                            string jsonPlan = formatter.Format(plan_pb);
                             string current_plan =
                                 tmp_plan_path
                                 + "sa_plan_iteration"
@@ -493,7 +486,7 @@ namespace ServiceSiteScheduling.LocalSearch
                                 Console.WriteLine(
                                     $"New best solution found at iteration {iteration}, writing plan to {current_plan}"
                                 );
-                            File.WriteAllText(current_plan, jsonPlan);
+                            this.Graph.WriteJSONFile(current_plan);
                         }
                         else
                         {

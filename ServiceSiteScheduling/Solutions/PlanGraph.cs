@@ -997,7 +997,17 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public AlgoIface.Plan GenerateOutputJSONformat()
+        public void WriteJSONFile(string filePath)
+        {
+            AlgoIface.Plan plan = this.ToProtobuf();
+            var formatter = new JsonFormatter(
+                JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)
+            );
+            string jsonPlan = formatter.Format(plan);
+            File.WriteAllText(filePath, jsonPlan);
+        }
+
+        public AlgoIface.Plan ToProtobuf()
         {
             if (
                 ProblemInstance.Current.InterfaceLocation == null
