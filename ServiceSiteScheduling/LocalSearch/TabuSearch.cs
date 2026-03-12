@@ -45,7 +45,7 @@ namespace ServiceSiteScheduling.LocalSearch
         )
         {
             // Write initial JSON plan to file
-            string current_plan = tmp_plan_path + "tabu_plan_initial.json";
+            string current_plan = Path.Combine(tmp_plan_path, "tabu_plan_initial.json");
             this.Graph.WriteJSONFile(current_plan);
 
             List<LocalSearchMove> moves = [new IdentityMove(this.Graph)];
@@ -132,8 +132,10 @@ namespace ServiceSiteScheduling.LocalSearch
                     noimprovement = 0;
 
                     // Write JSON plan to file
-                    current_plan =
-                        tmp_plan_path + "tabu_plan_iteration" + iteration.ToString() + ".json";
+                    current_plan = Path.Combine(
+                        tmp_plan_path,
+                        "tabu_plan_iteration" + iteration.ToString() + ".json"
+                    );
                     if (debugLevel > 1)
                         Console.WriteLine(
                             $"New best solution found at iteration {iteration}, writing plan to {current_plan}"

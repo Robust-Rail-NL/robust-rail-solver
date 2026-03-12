@@ -173,7 +173,7 @@ namespace ServiceSiteScheduling
                 }
                 else
                 {
-                    ts.Run(40, 100, 16, 0.5);
+                    ts.Run(40, 100, 16, 0.5, debugLevel, tmp_plan_path);
                 }
                 LocalSearch.SimulatedAnnealing sa = new(random, ts.Graph);
                 if (config != null)
