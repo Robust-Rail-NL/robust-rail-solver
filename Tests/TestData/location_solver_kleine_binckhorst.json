@@ -1,0 +1,868 @@
+{
+    "trackParts": [
+        {
+            "aSide": [
+                "51"
+            ],
+            "bSide": [
+                "50"
+            ],
+            "name": "51b"
+        },
+        {
+            "id": "1",
+            "aSide": [
+                "58"
+            ],
+            "bSide": [
+                "71"
+            ],
+            "length": 480.0,
+            "name": "52",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "2",
+            "aSide": [
+                "57"
+            ],
+            "bSide": [
+                "54"
+            ],
+            "length": 431.0,
+            "name": "53",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "3",
+            "aSide": [
+                "56"
+            ],
+            "bSide": [
+                "54"
+            ],
+            "length": 387.0,
+            "name": "54",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "4",
+            "aSide": [
+                "55"
+            ],
+            "bSide": [
+                "53"
+            ],
+            "length": 357.0,
+            "name": "55",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "5",
+            "aSide": [
+                "65"
+            ],
+            "bSide": [
+                "70"
+            ],
+            "length": 222.0,
+            "name": "56",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "6",
+            "aSide": [
+                "64"
+            ],
+            "bSide": [
+                "70"
+            ],
+            "length": 202.0,
+            "name": "57",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "7",
+            "aSide": [
+                "64"
+            ],
+            "bSide": [
+                "69"
+            ],
+            "length": 203.0,
+            "name": "58",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "8",
+            "aSide": [
+                "66"
+            ],
+            "bSide": [
+                "67"
+            ],
+            "length": 271.0,
+            "name": "59",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "9",
+            "aSide": [
+                "52"
+            ],
+            "bSide": [
+                "60"
+            ],
+            "length": 248.0,
+            "name": "60",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "10",
+            "aSide": [
+                "68"
+            ],
+            "bSide": [
+                "61"
+            ],
+            "length": 247.0,
+            "name": "61",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "11",
+            "aSide": [
+                "68"
+            ],
+            "bSide": [
+                "61"
+            ],
+            "length": 247.0,
+            "name": "62",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "12",
+            "aSide": [
+                "60"
+            ],
+            "bSide": [
+                "44"
+            ],
+            "length": 272.0,
+            "name": "63",
+            "sawMovementAllowed": true
+        },
+        {
+            "id": "13",
+            "aSide": [
+                "67"
+            ],
+            "bSide": [
+                "45"
+            ],
+            "length": 210.0,
+            "name": "64"
+        },
+        {
+            "id": "14",
+            "aSide": [
+                "50"
+            ],
+            "bSide": [
+                "46"
+            ],
+            "length": 475.0,
+            "name": "104a",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "15",
+            "aSide": [
+				"59"
+            ],
+            "bSide": [
+                "42"
+            ],
+            "length": 480.0,
+            "name": "906b",
+            "sawMovementAllowed": false,
+            "parkingAllowed": true
+        },
+        {
+            "id": "16",
+            "aSide": [
+                "71"
+            ],
+            "bSide": [
+                "51"
+            ],
+            "name": "952_974"
+        },
+        {
+            "id": "17",
+            "aSide": [
+                "63"
+            ],
+            "bSide": [
+                "52"
+            ],
+            "name": "953_973"
+        },
+        {
+            "id": "18",
+            "aSide": [
+                "54"
+            ],
+            "bSide": [
+                "53"
+            ],
+            "name": "954_957"
+        },
+        {
+            "id": "19",
+            "aSide": [
+                "53"
+            ],
+            "bSide": [
+                "71"
+            ],
+            "name": "954_975"
+        },
+        {
+            "id": "20",
+            "aSide": [
+                "56"
+            ],
+            "bSide": [
+                "55"
+            ],
+            "name": "958_959"
+        },
+        {
+            "id": "21",
+            "aSide": [
+                "55"
+            ],
+            "bSide": [
+                "66"
+            ],
+            "name": "958_978"
+		},
+        {
+            "id": "22",
+            "aSide": [
+                "57"
+            ],
+            "bSide": [
+                "56"
+            ],
+            "name": "959_960"
+        },
+        {
+            "id": "23",
+            "aSide": [
+                "58"
+            ],
+            "bSide": [
+                "57"
+            ],
+            "name": "960_961"
+        },
+        {
+            "id": "24",
+            "aSide": [
+                "59"
+            ],
+            "bSide": [
+                "58"
+            ],
+            "name": "961_963"
+        },
+        {
+            "id": "25",
+            "aSide": [
+                "61"
+            ],
+            "bSide": [
+                "60"
+            ],
+            "name": "964_965"
+        },
+        {
+            "id": "26",
+            "aSide": [
+                "69"
+            ],
+            "bSide": [
+                "68"
+            ],
+            "name": "967_968"
+        },
+        {
+            "id": "27",
+            "aSide": [
+                "67"
+            ],
+            "bSide": [
+                "69"
+            ],
+            "name": "969_979"
+        },
+        {
+            "id": "28",
+            "aSide": [
+                "70"
+            ],
+            "bSide": [
+                "62"
+            ],
+            "name": "971_972"
+        },
+        {
+            "id": "29",
+            "aSide": [
+                "62"
+            ],
+            "bSide": [
+                "63"
+            ],
+            "name": "972_973"
+        },
+        {
+            "id": "30",
+            "aSide": [
+                "65"
+            ],
+            "bSide": [
+                "64"
+            ],
+            "name": "976_977"
+        },
+        {
+            "id": "31",
+            "aSide": [
+                "66"
+            ],
+            "bSide": [
+                "65"
+            ],
+            "name": "977_978"
+        },
+        {
+            "id": "32",
+            "aSide": [
+                "49"
+            ],
+            "bSide": [
+                "68"
+            ],
+            "name": "967_kruis1"
+        },
+        {
+            "id": "33",
+            "aSide": [
+                "69"
+            ],
+            "bSide": [
+                "49"
+            ],
+            "name": "968_kruis1"
+        },
+        {
+            "id": "34",
+            "aSide": [
+                "70"
+            ],
+            "bSide": [
+                "49"
+            ],
+            "name": "971_kruis1"
+        },
+        {
+            "id": "35",
+            "aSide": [
+                "49"
+            ],
+            "bSide": [
+                "62"
+            ],
+            "name": "972_kruis1"
+        },
+        {
+            "id": "36",
+            "aSide": [
+                "48"
+            ],
+            "bSide": [
+                "51"
+            ],
+            "name": "952_kruis2"
+        },
+        {
+            "id": "37",
+            "aSide": [
+                "48"
+            ],
+            "bSide": [
+                "52"
+            ],
+            "name": "953_kruis2"
+        },
+        {
+            "id": "38",
+            "aSide": [
+                "63"
+            ],
+            "bSide": [
+                "48"
+            ],
+            "name": "973_kruis2"
+        },
+        {
+            "id": "39",
+            "aSide": [
+                "71"
+            ],
+            "bSide": [
+                "48"
+            ],
+            "name": "974_kruis2"
+        },
+        {
+            "id": "40",
+            "aSide": [
+                "43"
+            ],
+            "bSide": [
+                "50"
+            ],
+            "name": "425_sein436"
+        },
+        {
+            "id": "41",
+            "aSide": [
+				"47"
+            ],
+            "bSide": [
+				"59"
+            ],
+            "length": 480.0,
+            "name": "906a",
+            "parkingAllowed": true
+        },
+        {
+            "id": "42",
+            "type": "Bumper",
+            "bSide": [
+                "15"
+            ],
+            "name": "Sein70"
+        },
+        {
+            "id": "43",
+            "type": "Bumper",
+            "bSide": [
+                "40"
+            ],
+            "name": "Sein436"
+        },
+        {
+            "id": "44",
+            "type": "Bumper",
+            "aSide": [
+                "12"
+            ],
+            "name": "Stootblok63"
+        },
+        {
+            "id": "45",
+            "type": "Bumper",
+            "aSide": [
+                "13"
+            ],
+            "name": "Stootblok64"
+        },
+        {
+            "id": "46",
+            "type": "Bumper",
+            "aSide": [
+                "14"
+            ],
+            "name": "Stootblok104a"
+        },
+        {
+            "id": "47",
+            "type": "Bumper",
+            "aSide": [
+                "41"
+            ],
+            "name": "Stootblok906a"
+        },
+        {
+            "id": "48",
+            "type": "Intersection",
+            "aSide": [
+                "39",
+                "38"
+            ],
+            "bSide": [
+                "37",
+                "36"
+            ],
+            "name": "Kruis2"
+        },
+        {
+            "id": "49",
+            "type": "Intersection",
+            "aSide": [
+                "34",
+                "33"
+            ],
+            "bSide": [
+                "32",
+                "35"
+            ],
+            "name": "Kruis1"
+        },
+        {
+            "id": "50",
+            "type": "Switch",
+            "aSide": [
+                "0",
+                "40"
+            ],
+            "bSide": [
+                "14"
+            ],
+            "name": "Wissel425"
+        },
+        {
+            "id": "51",
+            "type": "Switch",
+            "aSide": [
+                "36",
+                "16"
+            ],
+            "bSide": [
+                "0"
+            ],
+            "name": "Wissel952"
+        },
+        {
+            "id": "52",
+            "type": "Switch",
+            "aSide": [
+                "17",
+                "37"
+            ],
+            "bSide": [
+                "9"
+            ],
+            "name": "Wissel953"
+        },
+        {
+            "id": "53",
+            "type": "Switch",
+            "aSide": [
+                "4",
+                "18"
+            ],
+            "bSide": [
+                "19"
+            ],
+            "name": "Wissel954"
+        },
+        {
+            "id": "54",
+            "type": "Switch",
+            "aSide": [
+                "3",
+                "2"
+            ],
+            "bSide": [
+                "18"
+            ],
+            "name": "Wissel957"
+        },
+        {
+            "id": "55",
+            "type": "Switch",
+            "aSide": [
+                "21",
+                "4"
+            ],
+            "bSide": [
+                "20"
+            ],
+            "name": "Wissel958"
+        },
+        {
+            "id": "56",
+            "type": "Switch",
+            "aSide": [
+                "20",
+                "3"
+            ],
+            "bSide": [
+                "22"
+            ],
+            "name": "Wissel959"
+        },
+        {
+            "id": "57",
+            "type": "Switch",
+            "aSide": [
+                "22",
+                "2"
+            ],
+            "bSide": [
+                "23"
+            ],
+            "name": "Wissel960"
+        },
+        {
+            "id": "58",
+            "type": "Switch",
+            "aSide": [
+                "23",
+                "1"
+            ],
+            "bSide": [
+                "24"
+            ],
+            "name": "Wissel961"
+        },
+        {
+            "id": "59",
+            "type": "Switch",
+            "aSide": [
+				"24",
+				"15"
+            ],
+            "bSide": [
+                "41"
+            ],
+            "name": "Wissel963"
+        },
+        {
+            "id": "60",
+            "type": "Switch",
+            "aSide": [
+                "25",
+                "9"
+            ],
+            "bSide": [
+                "12"
+            ],
+            "name": "Wissel964"
+        },
+        {
+            "id": "61",
+            "type": "Switch",
+            "aSide": [
+                "11",
+                "10"
+            ],
+            "bSide": [
+                "25"
+            ],
+            "name": "Wissel965"
+        },
+        {
+            "id": "62",
+            "type": "Switch",
+            "aSide": [
+                "35",
+                "28"
+            ],
+            "bSide": [
+                "29"
+            ],
+            "name": "Wissel972"
+        },
+        {
+            "id": "63",
+            "type": "Switch",
+            "aSide": [
+                "17",
+                "38"
+            ],
+            "bSide": [
+                "29"
+            ],
+            "name": "Wissel973"
+        },
+        {
+            "id": "64",
+            "type": "Switch",
+            "aSide": [
+                "7",
+                "6"
+            ],
+            "bSide": [
+                "30"
+            ],
+            "name": "Wissel976"
+        },
+        {
+            "id": "65",
+            "type": "Switch",
+            "aSide": [
+                "30",
+                "5"
+            ],
+            "bSide": [
+                "31"
+            ],
+            "name": "Wissel977"
+        },
+        {
+            "id": "66",
+            "type": "Switch",
+            "aSide": [
+                "8",
+                "31"
+            ],
+            "bSide": [
+                "21"
+            ],
+            "name": "Wissel978"
+        },
+        {
+            "id": "67",
+            "type": "Switch",
+            "aSide": [
+                "13",
+                "27"
+            ],
+            "bSide": [
+                "8"
+            ],
+            "name": "Wissel979"
+        },
+        {
+            "id": "68",
+            "type": "EnglishSwitch",
+            "aSide": [
+                "32",
+                "26"
+            ],
+            "bSide": [
+                "11",
+                "10"
+            ],
+            "name": "Engels966_967"
+        },
+        {
+            "id": "69",
+            "type": "EnglishSwitch",
+            "aSide": [
+                "7",
+                "27"
+            ],
+            "bSide": [
+                "26",
+                "33"
+            ],
+            "name": "Engels968_969"
+        },
+        {
+            "id": "70",
+            "type": "EnglishSwitch",
+            "aSide": [
+                "5",
+                "6"
+            ],
+            "bSide": [
+                "34",
+                "28"
+            ],
+            "name": "Engels970_971"
+        },
+        {
+            "id": "71",
+            "type": "EnglishSwitch",
+            "aSide": [
+                "1",
+                "19"
+            ],
+            "bSide": [
+                "39",
+                "16"
+            ],
+            "name": "Engels974_975"
+        }
+    ],
+    "facilities": [
+        {
+            "id": "72",
+            "type": "Reinigingsperron",
+            "relatedTrackParts": [
+                "10",
+                "11"
+            ],
+            "taskTypes": [
+                {
+                    "other": "Reinigingsperron"
+                }
+            ],
+            "simultaneousUsageCount": 2
+        },
+        {
+            "id": "73",
+            "type": "Wasmachine",
+            "relatedTrackParts": [
+                "12"
+            ],
+            "taskTypes": [
+                {
+                    "other": "Wasmachine"
+                }
+            ]
+        },
+        {
+            "id": "74",
+            "type": "Inspectieput",
+            "relatedTrackParts": [
+                "13"
+            ],
+            "taskTypes": [
+                {
+                    "other": "Inspectieput"
+                }
+            ]
+        },
+        {
+            "id": "75",
+            "type": "Monteur",
+            "relatedTrackParts": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8"
+            ],
+            "taskTypes": [
+                {
+                    "other": "Monteur"
+                }
+            ]
+        }
+    ]
+}

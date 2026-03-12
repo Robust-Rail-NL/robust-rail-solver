@@ -107,7 +107,7 @@ namespace ServiceSiteScheduling
         // Output:  @plan_path: path to where the plan (.json) file will be written
         // Method: First it calls a Tabu Search method to find an initial plan (Graph) that is used by
         //         a Simulated Annealing method to find the final schedle plan (Totally Ordered Graph)
-        static void CreatePlan(
+        internal static void CreatePlan(
             string location_path,
             string scenario_path,
             string plan_path,
@@ -1152,7 +1152,7 @@ namespace ServiceSiteScheduling
         }
     }
 
-    class Config
+    internal class Config
     {
         public ConfigTabuSearch TabuSearch { get; set; }
 
@@ -1244,7 +1244,7 @@ namespace ServiceSiteScheduling
         public string TemporaryPlanPath { get; set; }
         public string Mode { get; set; }
 
-        static Config ReadFrom(string config_file)
+        internal static Config ReadFrom(string config_file)
         {
             if (!File.Exists(config_file))
             {
