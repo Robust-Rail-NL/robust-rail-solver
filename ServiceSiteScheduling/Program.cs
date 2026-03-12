@@ -12,93 +12,20 @@ namespace ServiceSiteScheduling
         // Method: Run the program from a config file. This is the entry point of the application
         static void Main(string[] args)
         {
-            if (args.Length != 0)
-            {
-                string config_file = "";
-                foreach (string arg in args)
-                {
-                    if (arg.StartsWith("--config="))
-                    {
-                        config_file = arg.Substring("--config=".Length);
-                        Console.WriteLine("Using config file: " + config_file);
-                        Config config = Config.ReadFrom(config_file);
-
-                        string directoryPath = Path.GetDirectoryName(config.PlanPath);
-                        if (!Directory.Exists(directoryPath) && directoryPath != null)
-                        {
-                            Directory.CreateDirectory(directoryPath);
-                        }
-
-                        string tmpPathPlan = "";
-                        if (config.TemporaryPlanPath is null or "")
-                        {
-                            string currentDirectory = Directory.GetCurrentDirectory();
-                            tmpPathPlan = Path.Combine(currentDirectory, "tmp_plans") + "/";
-                        }
-                        else
-                        {
-                            tmpPathPlan = config.TemporaryPlanPath + "/";
-                        }
-
-                        if (config.Mode == "Standard")
-                        {
-                            if (config.DebugLevel > 1)
-                            {
-                                Console.WriteLine(
-                                    "***************** Reading Location and Scenario *****************"
-                                );
-                            }
-                            Test_Location_Scenario_Parsing(
-                                config.LocationPath,
-                                config.ScenarioPath,
-                                config.DebugLevel
-                            );
-                            if (config.DebugLevel > 1)
-                                Console.WriteLine(
-                                    "***************** Creating a Plan *****************"
-                                );
-                            CreatePlan(
-                                config.LocationPath,
-                                config.ScenarioPath,
-                                config.PlanPath,
-                                config,
-                                config.DebugLevel,
-                                tmpPathPlan
-                            );
-                        }
-                        else if (config.Mode == "DeepLook")
-                        {
-                            TestCasesDeepLook(config);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Unknown parameter for Mode");
-                        }
-                    }
-                    else
-                    {
-                        Console.Error.WriteLine("Unknown --parameter name: " + arg);
-                        Environment.Exit(1);
-                    }
-                }
-            }
-            else
-            {
-                string directory = "setting_A";
-                Console.WriteLine(
-                    $"No config file provided, running with default test files: {directory}"
-                );
-                Test_Location_Scenario_Parsing(
-                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
-                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json"
-                );
-                Console.WriteLine("***************** CreatePlan() *****************");
-                CreatePlan(
-                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
-                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json",
-                    $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/plan.json"
-                );
-            }
+            string directory = "setting_A";
+            Console.WriteLine(
+                $"Ignoring config (if any was provided), running with default test files: {directory}"
+            );
+            Test_Location_Scenario_Parsing(
+                $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
+                $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json"
+            );
+            Console.WriteLine("***************** CreatePlan() *****************");
+            CreatePlan(
+                $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
+                $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json",
+                $"./database/TUSS-Instance-Generator/scenario_settings/{directory}/plan.json"
+            );
         }
 
         // Input:   @location_path: path to the location (.json) file
@@ -124,28 +51,10 @@ namespace ServiceSiteScheduling
             {
                 File.Delete(file);
             }
-            // If a seed was specified in the config file and its value is not 0, then we can use the seed for deterministic plan creation
             Random random;
-            if (
-                config != null
-                && config.Mode == "DeepLook"
-                && config.DeepLook.DeterministicPlanning != null
-                && config.DeepLook.DeterministicPlanning.Seed != 0
-            )
-            {
-                random = new Random(config.DeepLook.DeterministicPlanning.Seed);
-            }
-            else if (config != null && config.Seed > 0)
-            {
-                Console.WriteLine($"Using random seed <{config.Seed}> from config.");
-                random = new Random(config.Seed);
-            }
-            else
-            {
-                int seed = Guid.NewGuid().GetHashCode();
-                random = new Random(seed);
-                Console.WriteLine($"Using randomly generated seed <{seed}>.");
-            }
+            int seed = 40023420;
+            random = new Random(seed);
+            Console.WriteLine($"Ignoring config; using fixed seed <{seed}>.");
 
             Solutions.SolutionCost best = null;
             Solutions.PlanGraph graph = null;
