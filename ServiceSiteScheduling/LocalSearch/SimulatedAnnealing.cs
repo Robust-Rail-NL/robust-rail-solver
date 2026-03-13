@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using AlgoIface;
-using Google.Protobuf;
 using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Tasks;
 using ServiceSiteScheduling.Utilities;

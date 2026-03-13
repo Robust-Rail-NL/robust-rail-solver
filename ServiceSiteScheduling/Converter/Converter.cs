@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Text.Json;
 using Google.Protobuf;
 using ServiceSiteScheduling.Servicing;
 using ServiceSiteScheduling.TrackParts;
@@ -8,24 +10,25 @@ namespace ServiceSiteScheduling
 {
     class Converter
     {
-        AlgoIfaceEvaluator.Scenario InterfaceScenarioEvaluator;
+        NoProto.EvaluatorScenario InterfaceScenarioEvaluator;
         ProblemInstance ProblemInstanceSolver;
 
         public string PathToStoreEvalScenario;
 
         public Converter(ProblemInstance problemInstanceSolver, string pathScenarioEval)
         {
-            this.InterfaceScenarioEvaluator = new AlgoIfaceEvaluator.Scenario();
             this.ProblemInstanceSolver = problemInstanceSolver;
             this.PathToStoreEvalScenario = pathScenarioEval;
+            this.InterfaceScenarioEvaluator = new NoProto.EvaluatorScenario()
+            {
+                StartTime = problemInstanceSolver.ScenarioStartTime,
+                EndTime = problemInstanceSolver.ScenarioEndTime,
+            };
         }
 
         public bool StoreScenarioEvaluator(string FileName)
         {
-            var formatter = new JsonFormatter(
-                JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)
-            );
-            string json_scenario_evaluator = formatter.Format(InterfaceScenarioEvaluator);
+            string json_scenario_evaluator = JsonSerializer.Serialize(InterfaceScenarioEvaluator);
 
             // string json_scenario_evaluator = JsonFormatter.Default.Format(InterfaceScenarioEvaluator);
 
@@ -96,7 +99,9 @@ namespace ServiceSiteScheduling
             var formatter = new JsonFormatter(
                 JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)
             );
-            string json_scenario_solver = formatter.Format(ProblemInstanceSolver.InterfaceScenario);
+            string json_scenario_solver = JsonSerializer.Serialize(
+                ProblemInstanceSolver.InterfaceScenario
+            );
 
             String PathToStoreSolverScenario = PathToStoreEvalScenario;
 
@@ -130,10 +135,7 @@ namespace ServiceSiteScheduling
 
         public void PrintScenarioEvaluator()
         {
-            var formatter = new JsonFormatter(
-                JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)
-            );
-            string json_parsed = formatter.Format(InterfaceScenarioEvaluator);
+            string json_parsed = JsonSerializer.Serialize(InterfaceScenarioEvaluator);
             // string json_parsed = JsonFormatter.Default.Format(InterfaceScenarioEvaluator);
 
             Console.WriteLine("******* The Evaluator's scenario *******");
@@ -143,22 +145,14 @@ namespace ServiceSiteScheduling
         public bool ConvertScenario()
         {
             Console.WriteLine("******* From ConvertScenario *******");
-
-            InterfaceScenarioEvaluator.StartTime = ProblemInstanceSolver.ScenarioStartTime;
-            InterfaceScenarioEvaluator.EndTime = ProblemInstanceSolver.ScenarioEndTime;
-
-            AlgoIfaceEvaluator.TrainUnitTypes TrainTypes = CreateTrainUnitTypes();
-            foreach (var trainTypes in TrainTypes.Types_)
-            {
-                InterfaceScenarioEvaluator.TrainUnitTypes.Add(trainTypes);
-            }
+            CreateTrainUnitTypes(InterfaceScenarioEvaluator.TrainUnitTypes);
 
             // Convert all the Solver format arrivals to Evaluator format
             var inComingTrains = InterfaceScenarioEvaluator.In;
 
             foreach (var arrivalTrain in ProblemInstanceSolver.InterfaceScenario.In.Trains)
             {
-                AlgoIfaceEvaluator.Train train = new();
+                NoProto.Train train = new();
 
                 train.Id = arrivalTrain.Id;
                 train.Time = arrivalTrain.Departure;
@@ -171,7 +165,7 @@ namespace ServiceSiteScheduling
                 {
                     foreach (var member in arrivalTrain.Members)
                     {
-                        AlgoIfaceEvaluator.TrainUnit trainUnit = new();
+                        NoProto.TrainUnit trainUnit = new();
                         trainUnit.Id = member.TrainUnit.Id;
                         trainUnit.TypeDisplayName =
                             member.TrainUnit.Type.DisplayName
@@ -180,16 +174,14 @@ namespace ServiceSiteScheduling
 
                         if (member.Tasks.Count > 0)
                         {
-                            AlgoIfaceEvaluator.TaskSpec tasksEvaluator = new();
+                            NoProto.TaskSpec tasksEvaluator = new();
                             foreach (var taskSolver in member.Tasks)
                             {
                                 string requiredskill = "";
-                                if (
-                                    taskSolver.Type.TaskTypeCase
-                                    == AlgoIface.TaskType.TaskTypeOneofCase.Other
-                                )
+                                if (taskSolver.Type.Other != null)
                                 {
-                                    AlgoIfaceEvaluator.TaskType taskTypeEvaluator = new();
+                                    Debug.Assert(taskSolver.Type.Predefined == null);
+                                    NoProto.TaskType taskTypeEvaluator = new();
                                     taskTypeEvaluator.Other = taskSolver.Type.Other;
                                     tasksEvaluator.Type = taskTypeEvaluator;
 
@@ -226,7 +218,7 @@ namespace ServiceSiteScheduling
                     var arrivalTrain in ProblemInstanceSolver.InterfaceScenario.InStanding.Trains
                 )
                 {
-                    AlgoIfaceEvaluator.Train train = new();
+                    NoProto.Train train = new();
 
                     train.Id = arrivalTrain.Id;
                     // train.Time = arrivalTrain.Departure;
@@ -240,7 +232,7 @@ namespace ServiceSiteScheduling
                     {
                         foreach (var member in arrivalTrain.Members)
                         {
-                            AlgoIfaceEvaluator.TrainUnit trainUnit = new();
+                            NoProto.TrainUnit trainUnit = new();
                             trainUnit.Id = member.TrainUnit.Id;
                             trainUnit.TypeDisplayName =
                                 member.TrainUnit.Type.DisplayName
@@ -249,16 +241,14 @@ namespace ServiceSiteScheduling
 
                             if (member.Tasks.Count > 0)
                             {
-                                AlgoIfaceEvaluator.TaskSpec tasksEvaluator = new();
+                                NoProto.TaskSpec tasksEvaluator = new();
                                 foreach (var taskSolver in member.Tasks)
                                 {
                                     string requiredskill = "";
-                                    if (
-                                        taskSolver.Type.TaskTypeCase
-                                        == AlgoIface.TaskType.TaskTypeOneofCase.Other
-                                    )
+                                    if (taskSolver.Type.Other != null)
                                     {
-                                        AlgoIfaceEvaluator.TaskType taskTypeEvaluator = new();
+                                        Debug.Assert(taskSolver.Type.Predefined == null);
+                                        NoProto.TaskType taskTypeEvaluator = new();
                                         taskTypeEvaluator.Other = taskSolver.Type.Other;
                                         tasksEvaluator.Type = taskTypeEvaluator;
 
@@ -292,7 +282,7 @@ namespace ServiceSiteScheduling
                 var departureTrain in ProblemInstanceSolver.InterfaceScenario.Out.TrainRequests
             )
             {
-                AlgoIfaceEvaluator.Train train = new();
+                NoProto.Train train = new();
 
                 train.Id = departureTrain.DisplayName;
                 train.Time = departureTrain.Arrival;
@@ -305,7 +295,7 @@ namespace ServiceSiteScheduling
                 {
                     foreach (var member in departureTrain.TrainUnits)
                     {
-                        AlgoIfaceEvaluator.TrainUnit trainUnit = new();
+                        NoProto.TrainUnit trainUnit = new();
                         trainUnit.Id = "****";
                         trainUnit.TypeDisplayName =
                             member.Type.DisplayName + "-" + member.Type.Carriages;
@@ -328,7 +318,7 @@ namespace ServiceSiteScheduling
                         .TrainRequests
                 )
                 {
-                    AlgoIfaceEvaluator.Train train = new();
+                    NoProto.Train train = new();
 
                     train.Id = outStandingTrain.DisplayName;
                     // train.Time = outStandingTrain.Arrival;
@@ -342,7 +332,7 @@ namespace ServiceSiteScheduling
                     {
                         foreach (var member in outStandingTrain.TrainUnits)
                         {
-                            AlgoIfaceEvaluator.TrainUnit trainUnit = new();
+                            NoProto.TrainUnit trainUnit = new();
                             trainUnit.Id = "****";
                             trainUnit.TypeDisplayName =
                                 member.Type.DisplayName + "-" + member.Type.Carriages;
@@ -357,75 +347,75 @@ namespace ServiceSiteScheduling
             return true;
         }
 
-        public static AlgoIfaceEvaluator.TrainUnitTypes CreateTrainUnitTypes()
+        public static void CreateTrainUnitTypes(IList<NoProto.TrainUnitType> trainUnitTypes)
         {
-            AlgoIfaceEvaluator.TrainUnitTypes trainUnitTypes = new();
+            trainUnitTypes.Add(
+                new()
+                {
+                    // SLT-4
+                    DisplayName = "SLT-4",
+                    Carriages = 4,
+                    Length = 69.36,
+                    CombineDuration = 180,
+                    SplitDuration = 120,
+                    NeedsElectricity = true,
+                    TypePrefix = "SLT",
+                    NeedsLoco = false,
+                    IsLoco = false,
+                    BackNormTime = 120,
+                    BackAdditionTime = 16,
+                }
+            );
 
-            AlgoIfaceEvaluator.TrainUnitType trainUnitType = new();
+            trainUnitTypes.Add(
+                new()
+                {
+                    // SLT-6
+                    DisplayName = "SLT-6",
+                    Carriages = 6,
+                    Length = 100.54,
+                    CombineDuration = 180,
+                    SplitDuration = 120,
+                    NeedsElectricity = true,
+                    TypePrefix = "SLT",
+                    NeedsLoco = false,
+                    IsLoco = false,
+                    BackNormTime = 120,
+                    BackAdditionTime = 15,
+                }
+            );
 
-            // SLT-4
-            trainUnitType.DisplayName = "SLT-4";
-            trainUnitType.Carriages = 4;
-            trainUnitType.Length = 69.36;
-            trainUnitType.CombineDuration = 180;
-            trainUnitType.SplitDuration = 120;
-            trainUnitType.NeedsElectricity = true;
-            trainUnitType.TypePrefix = "SLT";
-            trainUnitType.NeedsLoco = false;
-            trainUnitType.IsLoco = false;
-            trainUnitType.BackNormTime = 120;
-            trainUnitType.BackAdditionTime = 16;
+            trainUnitTypes.Add(
+                new()
+                {
+                    // SNG-3
+                    DisplayName = "SNG-3",
+                    Carriages = 3,
+                    Length = 59.50,
+                    CombineDuration = 180,
+                    SplitDuration = 120,
+                    NeedsElectricity = true,
+                    TypePrefix = "SNG",
+                    NeedsLoco = false,
+                    IsLoco = false,
+                }
+            );
 
-            trainUnitTypes.Types_.Add(trainUnitType);
-
-            trainUnitType = new AlgoIfaceEvaluator.TrainUnitType();
-
-            // SLT-6
-            trainUnitType.DisplayName = "SLT-6";
-            trainUnitType.Carriages = 6;
-            trainUnitType.Length = 100.54;
-            trainUnitType.CombineDuration = 180;
-            trainUnitType.SplitDuration = 120;
-            trainUnitType.NeedsElectricity = true;
-            trainUnitType.TypePrefix = "SLT";
-            trainUnitType.NeedsLoco = false;
-            trainUnitType.IsLoco = false;
-            trainUnitType.BackNormTime = 120;
-            trainUnitType.BackAdditionTime = 15;
-
-            trainUnitTypes.Types_.Add(trainUnitType);
-
-            trainUnitType = new AlgoIfaceEvaluator.TrainUnitType();
-
-            // SNG-3
-            trainUnitType.DisplayName = "SNG-3";
-            trainUnitType.Carriages = 3;
-            trainUnitType.Length = 59.50;
-            trainUnitType.CombineDuration = 180;
-            trainUnitType.SplitDuration = 120;
-            trainUnitType.NeedsElectricity = true;
-            trainUnitType.TypePrefix = "SNG";
-            trainUnitType.NeedsLoco = false;
-            trainUnitType.IsLoco = false;
-
-            trainUnitTypes.Types_.Add(trainUnitType);
-
-            trainUnitType = new AlgoIfaceEvaluator.TrainUnitType();
-
-            // SNG-4
-            trainUnitType.DisplayName = "SNG-4";
-            trainUnitType.Carriages = 4;
-            trainUnitType.Length = 75.70;
-            trainUnitType.CombineDuration = 180;
-            trainUnitType.SplitDuration = 120;
-            trainUnitType.NeedsElectricity = true;
-            trainUnitType.TypePrefix = "SNG";
-            trainUnitType.NeedsLoco = false;
-            trainUnitType.IsLoco = false;
-
-            trainUnitTypes.Types_.Add(trainUnitType);
-
-            return trainUnitTypes;
+            trainUnitTypes.Add(
+                new()
+                {
+                    // SNG-4
+                    DisplayName = "SNG-4",
+                    Carriages = 4,
+                    Length = 75.70,
+                    CombineDuration = 180,
+                    SplitDuration = 120,
+                    NeedsElectricity = true,
+                    TypePrefix = "SNG",
+                    NeedsLoco = false,
+                    IsLoco = false,
+                }
+            );
         }
     }
 }
