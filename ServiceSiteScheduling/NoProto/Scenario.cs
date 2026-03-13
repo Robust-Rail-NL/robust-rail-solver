@@ -179,7 +179,7 @@ namespace ServiceSiteScheduling.NoProto
 
         public string? TypeDisplayName { get; set; }
 
-        public IList<TaskSpec>? tasks { get; set; }
+        public IList<TaskSpec>? Tasks { get; set; }
     }
 
     // TrainUnitType is a type of train unit
@@ -208,6 +208,28 @@ namespace ServiceSiteScheduling.NoProto
         // kopmaaktijd = backNormTime + #carriage * backAdditionTime
         public ulong? BackNormTime { get; set; }
         public ulong? BackAdditionTime { get; set; }
+
+        // this is the speed of the train but that is yet to be determinded wether that is here or location specific #warning
+        public ulong? TravelSpeed { get; set; }
+
+        // Startup + Shutdown
+        public ulong? StartUpTime { get; set; }
+
+        // for example: "SLT" or "VIRM"
+        public string? TypePrefix { get; set; }
+
+        // This TrainUnitType needs a locomotive, e.g. it cannot drive itself
+        public bool NeedsLoco { get; set; }
+
+        // Can pull/push other wagons
+        public bool IsLoco { get; set; }
+
+        // This train needs electricity, so it can only drive on electrified trackparts
+        public bool NeedsElectricity { get; set; }
+
+        // Prefix of train IDs of this type (i.e., the last two digits are removed)
+        // For example, for SLT4 this is 24
+        public int IdPrefix { get; set; }
     }
 
     // A ShuntingUnit is a combination of TrainUnits,
