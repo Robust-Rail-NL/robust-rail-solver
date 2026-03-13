@@ -821,41 +821,6 @@ namespace ServiceSiteScheduling
             }
         }
 
-        static void Test()
-        {
-            try
-            {
-                AlgoIface.Location location;
-                using (var input = File.OpenRead("database/TUSS-Instance-Generator/location.json"))
-                    location = AlgoIface.Location.Parser.ParseFrom(input);
-
-                Console.WriteLine("Location:");
-
-                string json = JsonFormatter.Default.Format(location);
-
-                byte[] locationBytes = location.ToByteArray();
-                Console.WriteLine("Location :" + locationBytes.Length);
-
-                Console.WriteLine(Convert.ToBase64String(location.ToByteArray()));
-
-                var location_TrackParts = location.TrackParts;
-
-                if (location_TrackParts == null)
-                {
-                    throw new NullReferenceException("Parsed message is null.");
-                }
-
-                foreach (AlgoIface.TrackPart trackType in location_TrackParts)
-                {
-                    Console.WriteLine("ID : " + trackType.Id);
-                }
-            }
-            catch (Exception e)
-            {
-                throw new ArgumentException("error during parsing", e);
-            }
-        }
-
         static bool StoreScenarioAndEvaluationResults(
             string PathScenarioForEval,
             string PathToStoreEvalScenario,

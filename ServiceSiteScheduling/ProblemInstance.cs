@@ -1,7 +1,10 @@
-﻿using ServiceSiteScheduling.Servicing;
+﻿using System.Diagnostics;
+using System.Text.Json;
+using ServiceSiteScheduling.Servicing;
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
+using Switch = ServiceSiteScheduling.TrackParts.Switch;
 
 namespace ServiceSiteScheduling
 {
@@ -24,10 +27,10 @@ namespace ServiceSiteScheduling
         public Dictionary<TrainType, List<DepartureTrain>> DeparturesByType;
         public DepartureTrain[] DeparturesOrdered;
 
-        public AlgoIface.Location InterfaceLocation;
+        public NoProto.Location InterfaceLocation;
         public AlgoIface.Scenario InterfaceScenario;
         public Dictionary<TrainUnit, AlgoIface.TrainUnit> TrainUnitConversion;
-        public Dictionary<ServiceType, AlgoIface.Facility> FacilityConversion;
+        public Dictionary<ServiceType, NoProto.Facility> FacilityConversion;
         public Dictionary<ulong, TrackSwitchContainer> GatewayConversion;
 
         public Service[][] FreeServices;
@@ -85,12 +88,12 @@ namespace ServiceSiteScheduling
 
         public static ProblemInstance ParseJson(string locationpath, string scenariopath)
         {
-            AlgoIface.Location location;
+            NoProto.Location location;
             using (var input = File.OpenRead(locationpath))
             using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
-                location = AlgoIface.Location.Parser.ParseJson(jsonContent);
+                location = JsonSerializer.Deserialize<NoProto.Location>(jsonContent);
             }
 
             AlgoIface.Scenario scenario;
@@ -106,9 +109,9 @@ namespace ServiceSiteScheduling
 
         public static ProblemInstance Parse(string locationpath, string scenariopath)
         {
-            AlgoIface.Location location;
+            NoProto.Location location;
             using (var input = File.OpenRead(locationpath))
-                location = AlgoIface.Location.Parser.ParseFrom(input);
+                location = JsonSerializer.Deserialize<NoProto.Location>(input);
 
             AlgoIface.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
@@ -118,7 +121,7 @@ namespace ServiceSiteScheduling
         }
 
         public static ProblemInstance Parse(
-            AlgoIface.Location location,
+            NoProto.Location location,
             AlgoIface.Scenario scenario,
             int debugLevel = 0
         )
@@ -146,7 +149,7 @@ namespace ServiceSiteScheduling
             {
                 switch (part.Type)
                 {
-                    case AlgoIface.TrackPartType.RailRoad:
+                    case NoProto.TrackPartType.RailRoad:
                         Track track = new(
                             part.Id,
                             part.Name,
@@ -160,19 +163,19 @@ namespace ServiceSiteScheduling
                         tracks.Add(track);
                         infrastructuremap[part.Id] = track;
                         break;
-                    case AlgoIface.TrackPartType.Switch:
+                    case NoProto.TrackPartType.Switch:
                         infrastructuremap[part.Id] = new Switch(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.EnglishSwitch:
+                    case NoProto.TrackPartType.EnglishSwitch:
                         infrastructuremap[part.Id] = new EnglishSwitch(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.HalfEnglishSwitch:
+                    case NoProto.TrackPartType.HalfEnglishSwitch:
                         infrastructuremap[part.Id] = new HalfEnglishSwitch(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.Intersection:
+                    case NoProto.TrackPartType.Intersection:
                         infrastructuremap[part.Id] = new Intersection(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.Bumper:
+                    case NoProto.TrackPartType.Bumper:
                         var gateway = new GateWay(part.Id, part.Name);
                         infrastructuremap[part.Id] = gateway;
                         gateways.Add(gateway);
@@ -192,93 +195,99 @@ namespace ServiceSiteScheduling
 
                 switch (part.Type)
                 {
-                    case AlgoIface.TrackPartType.RailRoad:
+                    case NoProto.TrackPartType.RailRoad:
                         Track track = infrastructuremap[part.Id] as Track;
                         Infrastructure A = null,
                             B = null;
-                        if (part.ASide.Count > 0)
-                            infrastructuremap.TryGetValue(part.ASide.First(), out A);
-                        if (part.BSide.Count > 0)
-                            infrastructuremap.TryGetValue(part.BSide.First(), out B);
+                        if (part.ASide.Length > 0)
+                            infrastructuremap.TryGetValue(part.ASide[0].Id, out A);
+                        if (part.BSide.Length > 0)
+                            infrastructuremap.TryGetValue(part.BSide[0].Id, out B);
                         track.Connect(A, B);
 
                         break;
-                    case AlgoIface.TrackPartType.Switch:
+                    case NoProto.TrackPartType.Switch:
                         Switch @switch = infrastructuremap[part.Id] as Switch;
-                        if (part.ASide.Count == 1)
+                        if (part.ASide.Length == 1)
                         { // A side is connected to two B side infrastructure
+                            Debug.Assert(part.BSide.Length == 2);
                             @switch.Connect(
-                                infrastructuremap[part.ASide.First()],
+                                infrastructuremap[part.ASide[0].Id],
                                 new Infrastructure[2]
                                 {
-                                    infrastructuremap[part.BSide.First()],
-                                    infrastructuremap[part.BSide.Last()],
+                                    infrastructuremap[part.BSide[0].Id],
+                                    infrastructuremap[part.BSide[1].Id],
                                 }
                             );
                         }
                         else
                         { // B side is connected to two A side infrastructure
+                            Debug.Assert(part.ASide.Length == 2);
                             @switch.Connect(
-                                infrastructuremap[part.BSide.First()],
+                                infrastructuremap[part.BSide[0].Id],
                                 new Infrastructure[2]
                                 {
-                                    infrastructuremap[part.ASide.First()],
-                                    infrastructuremap[part.ASide.Last()],
+                                    infrastructuremap[part.ASide[0].Id],
+                                    infrastructuremap[part.ASide[1].Id],
                                 }
                             );
                         }
 
                         break;
-                    case AlgoIface.TrackPartType.EnglishSwitch:
+                    case NoProto.TrackPartType.EnglishSwitch:
                         EnglishSwitch englishswitch = infrastructuremap[part.Id] as EnglishSwitch;
                         englishswitch.Connect(
-                            part.ASide.Select(neighbor => infrastructuremap[neighbor]).ToList(),
-                            part.BSide.Select(neighbor => infrastructuremap[neighbor]).ToList()
+                            part.ASide.Select(neighbor => infrastructuremap[neighbor.Id]).ToList(),
+                            part.BSide.Select(neighbor => infrastructuremap[neighbor.Id]).ToList()
                         );
                         break;
-                    case AlgoIface.TrackPartType.HalfEnglishSwitch:
+                    case NoProto.TrackPartType.HalfEnglishSwitch:
+                        Debug.Assert(part.ASide.Length == 2);
+                        Debug.Assert(part.BSide.Length == 2);
                         HalfEnglishSwitch halfenglishswitch =
                             infrastructuremap[part.Id] as HalfEnglishSwitch;
                         halfenglishswitch.Connect(
-                            infrastructuremap[part.ASide.First()],
-                            infrastructuremap[part.ASide.Last()],
-                            infrastructuremap[part.BSide.First()],
-                            infrastructuremap[part.BSide.Last()]
+                            infrastructuremap[part.ASide[0].Id],
+                            infrastructuremap[part.ASide[1].Id],
+                            infrastructuremap[part.BSide[0].Id],
+                            infrastructuremap[part.BSide[1].Id]
                         );
                         break;
-                    case AlgoIface.TrackPartType.Intersection:
+                    case NoProto.TrackPartType.Intersection:
+                        Debug.Assert(part.ASide.Length == 2);
+                        Debug.Assert(part.BSide.Length == 2);
                         Intersection intersection = infrastructuremap[part.Id] as Intersection;
                         intersection.Connect(
-                            infrastructuremap[part.ASide.First()],
-                            infrastructuremap[part.BSide.Last()],
-                            infrastructuremap[part.ASide.Last()],
-                            infrastructuremap[part.BSide.First()]
+                            infrastructuremap[part.ASide[0].Id],
+                            infrastructuremap[part.BSide[1].Id],
+                            infrastructuremap[part.ASide[1].Id],
+                            infrastructuremap[part.BSide[0].Id]
                         );
                         break;
-                    case AlgoIface.TrackPartType.Bumper:
+                    case NoProto.TrackPartType.Bumper:
                         GateWay gateway = infrastructuremap[part.Id] as GateWay;
 
                         if (debugLevel > 1)
                         {
                             Console.WriteLine($"gateway : {gateway}");
                         }
-                        if (part.ASide.Count != 0)
+                        if (part.ASide.Length != 0)
                         {
                             if (debugLevel > 1)
                             {
                                 Console.WriteLine($"Track part A: {part.Id}");
                                 Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
                             }
-                            gateway.Connect(infrastructuremap[part.ASide.First()]);
+                            gateway.Connect(infrastructuremap[part.ASide[0].Id]);
                         }
-                        else if (part.BSide.Count != 0)
+                        else if (part.BSide.Length != 0)
                         {
                             if (debugLevel > 1)
                             {
                                 Console.WriteLine($"Track part B: {part.Id}");
                                 Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
                             }
-                            gateway.Connect(infrastructuremap[part.BSide.First()]);
+                            gateway.Connect(infrastructuremap[part.BSide[0].Id]);
                         }
                         else
                         { // Remove gateway from gateways dict
@@ -305,15 +314,15 @@ namespace ServiceSiteScheduling
                 }
             }
 
-            Dictionary<AlgoIface.TaskType, ServiceType> taskmap = [];
+            Dictionary<NoProto.TaskType, ServiceType> taskmap = [];
             var tasktypes = scenario
                 .In.Trains.Aggregate(
-                    new List<AlgoIface.TaskType>(),
+                    new List<NoProto.TaskType>(),
                     (list, train) =>
                     {
                         list.AddRange(
                             train.Members.Aggregate(
-                                new List<AlgoIface.TaskType>(),
+                                new List<NoProto.TaskType>(),
                                 (l, unit) =>
                                 {
                                     l.AddRange(unit.Tasks.Select(task => task.Type));
@@ -356,7 +365,7 @@ namespace ServiceSiteScheduling
                 var facilitytracks = new List<Track>();
                 foreach (var part in facility.RelatedTrackParts)
                 {
-                    if (infrastructuremap.TryGetValue(part, out Infrastructure infra))
+                    if (infrastructuremap.TryGetValue(part.Id, out Infrastructure infra))
                     {
                         var track = infra as Track;
                         facilitytracks.Add(track);
