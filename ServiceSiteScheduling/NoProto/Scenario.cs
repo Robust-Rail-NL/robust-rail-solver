@@ -1,5 +1,7 @@
 #nullable enable
 
+using System.Collections;
+
 namespace ServiceSiteScheduling.NoProto
 {
     // A Scenario contains the part of the problem specification which varies daily,
@@ -12,42 +14,42 @@ namespace ServiceSiteScheduling.NoProto
         public ScenarioInStanding? InStanding { get; set; }
         public ScenarioOutStanding? OutStanding { get; set; }
 
-        public ulong? StartTime { get; set; }
-        public ulong? EndTime { get; set; }
+        public required ulong StartTime { get; set; }
+        public required ulong EndTime { get; set; }
     }
 
     // Defines all trains arriving at the shunting area.
     public class ScenarioIn
     {
-        public IncomingTrain[]? Trains { get; set; }
+        public IList<IncomingTrain>? Trains { get; set; }
     }
 
     // Defines all requests for trains leaving the shunting area.
     public class ScenarioOut
     {
-        public TrainRequest[]? TrainRequests { get; set; }
+        public IList<TrainRequest>? TrainRequests { get; set; }
     }
 
     // Defines all trains that were alrady at the shunting area (before the scenario starts).
     public class ScenarioInStanding
     {
-        public IncomingTrain[]? Trains { get; set; }
+        public IList<IncomingTrain>? Trains { get; set; }
     }
 
     // Defines all trains that will stay at the shunting area (after the scenario ends).
     public class ScenarioOutStanding
     {
-        public TrainRequest[]? TrainRequests { get; set; }
+        public IList<TrainRequest>? TrainRequests { get; set; }
     }
 
     // An incoming train
     public class IncomingTrain
     {
         // The TrackPart ID of the location this train arrives over.
-        public ulong? EntryTrackPart { get; set; }
+        public required ulong EntryTrackPart { get; set; }
 
         // The TrackPart ID of the location this train is at after arriving.
-        public ulong? FirstParkingTrackPart { get; set; }
+        public required ulong FirstParkingTrackPart { get; set; }
 
         // Arrival on the track, and departure from the track
         // Times are in seconds since the epoch.
@@ -56,11 +58,11 @@ namespace ServiceSiteScheduling.NoProto
 
         public string? Id { get; set; }
 
-        public IncomingTrainUnit[]? Members { get; set; }
+        public IList<IncomingTrainUnit>? Members { get; set; }
 
         // The index of the train unit when in- or outstanding, with lower indices
         // at the A-side of the track
-        public double? StandingIndex { get; set; }
+        public required double StandingIndex { get; set; }
     }
 
     public class IncomingTrainUnit
@@ -68,17 +70,17 @@ namespace ServiceSiteScheduling.NoProto
         public TrainUnit? TrainUnit { get; set; }
 
         // Tasks for this train unit
-        public TaskSpec[]? Tasks { get; set; }
+        public IList<TaskSpec>? Tasks { get; set; }
     }
 
     // A request for a train to leave the shunting area
     public class TrainRequest
     {
         // The TrackPart ID of the location this train leaves over.
-        public ulong? LeaveTrackPart { get; set; }
+        public required ulong LeaveTrackPart { get; set; }
 
         // The TrackPart ID of the location this train is at before leaving.
-        public ulong? LastParkingTrackPart { get; set; }
+        public required ulong LastParkingTrackPart { get; set; }
 
         // Arrival on the track, and departure from the track
         // Times are in seconds since the epoch.
@@ -89,7 +91,7 @@ namespace ServiceSiteScheduling.NoProto
         public string? DisplayName { get; set; }
 
         // Outgoing train units; if in a TrainUnit the id field is not specified, then any train unit will do, provided that the other fields (train type, number of carriages) are still adhered to.
-        public TrainUnit[]? TrainUnits { get; set; }
+        public IList<TrainUnit>? TrainUnits { get; set; }
 
         // The index of the train unit when in- or outstanding, with lower indices
         // at the A-side of the track
@@ -137,21 +139,35 @@ namespace ServiceSiteScheduling.NoProto
     // and moves as a unit at some point in time.
     public class ShuntingUnit
     {
+        public ShuntingUnit() { }
+
+        public ShuntingUnit(ShuntingUnit other)
+        {
+            this.Id = other.Id;
+            if (other.Members != null)
+                this.Members = new List<TrainUnit>(other.Members);
+            if (other.ParentIDs != null)
+                this.ParentIDs = new List<string>(other.ParentIDs);
+            if (other.ChildIDs != null)
+                this.ChildIDs = new List<string>(other.ChildIDs);
+            this.StandingType = other.StandingType;
+        }
+
         // Unique ID of this ShuntingUnit
         public string? Id { get; set; }
 
         // The TrainUnits contained in this ShuntingUnit
-        public TrainUnit[]? Members { get; set; }
+        public IList<TrainUnit>? Members { get; set; }
 
         // The parents of a current ShuntingUnit,
         // that is, the shuntingunits which have been merged into this one,
         // or the shuntingunit that has been split into (among others) this one.
-        public string[]? ParentIDs { get; set; }
+        public IList<string>? ParentIDs { get; set; }
 
         // The children of the current ShuntingUnit,
         // that is, the shuntingunits which contain parts of this shuntingunit.
         // Alternatively, ShuntingUnit S has parent P iff P has child S.
-        public string[]? ChildIDs { get; set; }
+        public IList<string>? ChildIDs { get; set; }
 
         // If field is defined it states InStanding when the train unit was alredy on the yard even if the action says it is an arrival
         // or it states OutStanding when the train unit will stay in the shunting yards after the scenario ends even if the action is an exite one

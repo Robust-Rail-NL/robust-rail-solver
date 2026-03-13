@@ -28,8 +28,8 @@ namespace ServiceSiteScheduling
         public DepartureTrain[] DeparturesOrdered;
 
         public NoProto.Location InterfaceLocation;
-        public AlgoIface.Scenario InterfaceScenario;
-        public Dictionary<TrainUnit, AlgoIface.TrainUnit> TrainUnitConversion;
+        public NoProto.Scenario InterfaceScenario;
+        public Dictionary<TrainUnit, NoProto.TrainUnit> TrainUnitConversion;
         public Dictionary<ServiceType, NoProto.Facility> FacilityConversion;
         public Dictionary<ulong, TrackSwitchContainer> GatewayConversion;
 
@@ -93,15 +93,16 @@ namespace ServiceSiteScheduling
             using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
+                // TODO configure serializer
                 location = JsonSerializer.Deserialize<NoProto.Location>(jsonContent);
             }
 
-            AlgoIface.Scenario scenario;
+            NoProto.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
             using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
-                scenario = AlgoIface.Scenario.Parser.ParseJson(jsonContent);
+                scenario = JsonSerializer.Deserialize<NoProto.Scenario>(jsonContent); // TODO configure serializer
             }
 
             return Parse(location, scenario);
@@ -113,16 +114,16 @@ namespace ServiceSiteScheduling
             using (var input = File.OpenRead(locationpath))
                 location = JsonSerializer.Deserialize<NoProto.Location>(input);
 
-            AlgoIface.Scenario scenario;
+            NoProto.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
-                scenario = AlgoIface.Scenario.Parser.ParseFrom(input);
+                scenario = JsonSerializer.Deserialize<NoProto.Scenario>(input);
 
             return Parse(location, scenario);
         }
 
         public static ProblemInstance Parse(
             NoProto.Location location,
-            AlgoIface.Scenario scenario,
+            NoProto.Scenario scenario,
             int debugLevel = 0
         )
         {
@@ -199,18 +200,18 @@ namespace ServiceSiteScheduling
                         Track track = infrastructuremap[part.Id] as Track;
                         Infrastructure A = null,
                             B = null;
-                        if (part.ASide.Length > 0)
+                        if (part.ASide.Count > 0)
                             infrastructuremap.TryGetValue(part.ASide[0].Id, out A);
-                        if (part.BSide.Length > 0)
+                        if (part.BSide.Count > 0)
                             infrastructuremap.TryGetValue(part.BSide[0].Id, out B);
                         track.Connect(A, B);
 
                         break;
                     case NoProto.TrackPartType.Switch:
                         Switch @switch = infrastructuremap[part.Id] as Switch;
-                        if (part.ASide.Length == 1)
+                        if (part.ASide.Count == 1)
                         { // A side is connected to two B side infrastructure
-                            Debug.Assert(part.BSide.Length == 2);
+                            Debug.Assert(part.BSide.Count == 2);
                             @switch.Connect(
                                 infrastructuremap[part.ASide[0].Id],
                                 new Infrastructure[2]
@@ -222,7 +223,7 @@ namespace ServiceSiteScheduling
                         }
                         else
                         { // B side is connected to two A side infrastructure
-                            Debug.Assert(part.ASide.Length == 2);
+                            Debug.Assert(part.ASide.Count == 2);
                             @switch.Connect(
                                 infrastructuremap[part.BSide[0].Id],
                                 new Infrastructure[2]
@@ -242,8 +243,8 @@ namespace ServiceSiteScheduling
                         );
                         break;
                     case NoProto.TrackPartType.HalfEnglishSwitch:
-                        Debug.Assert(part.ASide.Length == 2);
-                        Debug.Assert(part.BSide.Length == 2);
+                        Debug.Assert(part.ASide.Count == 2);
+                        Debug.Assert(part.BSide.Count == 2);
                         HalfEnglishSwitch halfenglishswitch =
                             infrastructuremap[part.Id] as HalfEnglishSwitch;
                         halfenglishswitch.Connect(
@@ -254,8 +255,8 @@ namespace ServiceSiteScheduling
                         );
                         break;
                     case NoProto.TrackPartType.Intersection:
-                        Debug.Assert(part.ASide.Length == 2);
-                        Debug.Assert(part.BSide.Length == 2);
+                        Debug.Assert(part.ASide.Count == 2);
+                        Debug.Assert(part.BSide.Count == 2);
                         Intersection intersection = infrastructuremap[part.Id] as Intersection;
                         intersection.Connect(
                             infrastructuremap[part.ASide[0].Id],
@@ -271,7 +272,7 @@ namespace ServiceSiteScheduling
                         {
                             Console.WriteLine($"gateway : {gateway}");
                         }
-                        if (part.ASide.Length != 0)
+                        if (part.ASide.Count != 0)
                         {
                             if (debugLevel > 1)
                             {
@@ -280,7 +281,7 @@ namespace ServiceSiteScheduling
                             }
                             gateway.Connect(infrastructuremap[part.ASide[0].Id]);
                         }
-                        else if (part.BSide.Length != 0)
+                        else if (part.BSide.Count != 0)
                         {
                             if (debugLevel > 1)
                             {
@@ -433,7 +434,7 @@ namespace ServiceSiteScheduling
             List<TrainType> traintypes = [];
             List<TrainUnit> trainunits = [];
             List<ArrivalTrain> arrivals = [];
-            Dictionary<AlgoIface.TrainUnitType, TrainType> traintypemap = [];
+            Dictionary<NoProto.TrainUnitType, TrainType> traintypemap = [];
             Dictionary<string, TrainUnit> trainunitmap = [];
             instance.TrainUnitConversion = [];
             instance.GatewayConversion = [];

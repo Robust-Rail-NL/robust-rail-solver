@@ -2,6 +2,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Text.Json;
 using Google.Protobuf;
 using Microsoft.Extensions.Logging;
 using ServiceSiteScheduling.Matching;
@@ -1054,15 +1055,12 @@ namespace ServiceSiteScheduling.Solutions
 
         public void WriteJSONFile(string filePath)
         {
-            AlgoIface.Plan? plan = this.ToProtobuf();
-            var formatter = new JsonFormatter(
-                JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)
-            );
-            string jsonPlan = formatter.Format(plan);
+            NoProto.Plan? plan = this.ToProtobuf();
+            string jsonPlan = JsonSerializer.Serialize(plan);
             File.WriteAllText(filePath, jsonPlan);
         }
 
-        public AlgoIface.Plan? ToProtobuf()
+        public NoProto.Plan? ToProtobuf()
         {
             if (
                 ProblemInstance.Current.InterfaceLocation == null
@@ -1070,9 +1068,9 @@ namespace ServiceSiteScheduling.Solutions
             )
                 return null;
 
-            List<AlgoIface.Action> actions = [];
+            List<NoProto.Action> actions = [];
 
-            Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion = [];
+            Dictionary<ShuntTrain, NoProto.ShuntingUnit> trainconversion = [];
 
             MoveTask? move = this.First;
             while (move != null)
@@ -1086,10 +1084,10 @@ namespace ServiceSiteScheduling.Solutions
                     // Add split
                     if (routing.IsSplit)
                     {
-                        var splitaction = new AlgoIface.Action();
+                        var splitaction = new NoProto.Action();
                         splitaction.Location = routing.ToTrack.ID;
-                        splitaction.TaskType = new AlgoIface.TaskType();
-                        splitaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Split;
+                        splitaction.TaskType = new NoProto.TaskType();
+                        splitaction.TaskType.Predefined = NoProto.PredefinedTaskType.Split;
                         splitaction.EndTime = endtime;
                         splitaction.StartTime = endtime = (ulong)(
                             routing.End
@@ -1110,10 +1108,10 @@ namespace ServiceSiteScheduling.Solutions
                     // Add move
                     if (move.Duration > 0)
                     {
-                        var moveaction = new AlgoIface.Action();
+                        var moveaction = new NoProto.Action();
                         moveaction.Location = routing.FromTrack.ID;
-                        moveaction.TaskType = new AlgoIface.TaskType();
-                        moveaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Move;
+                        moveaction.TaskType = new NoProto.TaskType();
+                        moveaction.TaskType.Predefined = NoProto.PredefinedTaskType.Move;
                         moveaction.StartTime = (ulong)routing.Start;
                         moveaction.EndTime = endtime;
                         moveaction.ShuntingUnit = GetShuntUnit(move.Train, trainconversion);
@@ -1125,7 +1123,7 @@ namespace ServiceSiteScheduling.Solutions
                             {
                                 if (infra != previous)
                                 {
-                                    var resource = new AlgoIface.Resource();
+                                    var resource = new NoProto.Resource();
                                     resource.TrackPartId = infra.ID;
                                     resource.Name = infra.ID.ToString();
                                     moveaction.Resources.Add(resource);
@@ -1164,10 +1162,10 @@ namespace ServiceSiteScheduling.Solutions
                         {
                             foreach (var task in tasks)
                             {
-                                var mergeaction = new AlgoIface.Action();
+                                var mergeaction = new NoProto.Action();
                                 mergeaction.Location = task.Track.ID;
-                                mergeaction.TaskType = new AlgoIface.TaskType();
-                                mergeaction.TaskType.Predefined = AlgoIface
+                                mergeaction.TaskType = new NoProto.TaskType();
+                                mergeaction.TaskType.Predefined = NoProto
                                     .PredefinedTaskType
                                     .Combine;
                                 mergeaction.StartTime = (ulong)starttime;
@@ -1192,10 +1190,10 @@ namespace ServiceSiteScheduling.Solutions
                         }
 
                         // Add move
-                        var moveaction = new AlgoIface.Action();
+                        var moveaction = new NoProto.Action();
                         moveaction.Location = route.Tracks[0].ID;
-                        moveaction.TaskType = new AlgoIface.TaskType();
-                        moveaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Move;
+                        moveaction.TaskType = new NoProto.TaskType();
+                        moveaction.TaskType.Predefined = NoProto.PredefinedTaskType.Move;
                         moveaction.StartTime = (ulong)starttime;
                         moveaction.EndTime = (ulong)(starttime + route.Duration);
                         moveaction.ShuntingUnit = shuntingunit;
@@ -1207,7 +1205,7 @@ namespace ServiceSiteScheduling.Solutions
                             {
                                 if (infra != previous)
                                 {
-                                    var resource = new AlgoIface.Resource();
+                                    var resource = new NoProto.Resource();
                                     resource.TrackPartId = infra.ID;
                                     resource.Name = infra.ID.ToString();
                                     moveaction.Resources.Add(resource);
@@ -1229,10 +1227,10 @@ namespace ServiceSiteScheduling.Solutions
                     {
                         foreach (var route in departurerouting.GetRoutes())
                         {
-                            var mergeaction = new AlgoIface.Action();
+                            var mergeaction = new NoProto.Action();
                             mergeaction.Location = departurerouting.Next.Track.ID;
-                            mergeaction.TaskType = new AlgoIface.TaskType();
-                            mergeaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Combine;
+                            mergeaction.TaskType = new NoProto.TaskType();
+                            mergeaction.TaskType.Predefined = NoProto.PredefinedTaskType.Combine;
                             mergeaction.StartTime = (ulong)starttime;
                             mergeaction.EndTime = (ulong)departurerouting.End;
                             mergeaction.ShuntingUnit = GetShuntUnit(route.Train, trainconversion);
@@ -1294,26 +1292,22 @@ namespace ServiceSiteScheduling.Solutions
             }
 
             // Sort the actions in the plan
-            Dictionary<AlgoIface.PredefinedTaskType, int> taskTypeOrder = [];
+            Dictionary<NoProto.PredefinedTaskType, int> taskTypeOrder = [];
             int idx = 0;
-            taskTypeOrder[AlgoIface.PredefinedTaskType.Arrive] = idx++;
-            taskTypeOrder[AlgoIface.PredefinedTaskType.Move] = idx++;
-            taskTypeOrder[AlgoIface.PredefinedTaskType.Wait] = idx++;
-            taskTypeOrder[AlgoIface.PredefinedTaskType.Split] = idx++;
-            taskTypeOrder[AlgoIface.PredefinedTaskType.Combine] = idx++;
-            taskTypeOrder[AlgoIface.PredefinedTaskType.Exit] = idx++;
-            int otherTaskType = idx++;
+            taskTypeOrder[NoProto.PredefinedTaskType.Arrive] = idx++;
+            taskTypeOrder[NoProto.PredefinedTaskType.Move] = idx++;
+            taskTypeOrder[NoProto.PredefinedTaskType.Wait] = idx++;
+            taskTypeOrder[NoProto.PredefinedTaskType.Split] = idx++;
+            taskTypeOrder[NoProto.PredefinedTaskType.Combine] = idx++;
+            taskTypeOrder[NoProto.PredefinedTaskType.Exit] = idx++;
+            taskTypeOrder[default] = idx++;
 
-            AlgoIface.Plan plan_pb = new();
+            NoProto.Plan plan_pb = new();
             foreach (
-                AlgoIface.Action a in actions
+                NoProto.Action a in actions
                     .OrderBy(a => a.StartTime)
                     .ThenBy(a => a.EndTime)
-                    .ThenBy(a =>
-                        a.TaskType.TaskTypeCase == AlgoIface.TaskType.TaskTypeOneofCase.Predefined
-                            ? taskTypeOrder[a.TaskType.Predefined]
-                            : otherTaskType
-                    )
+                    .ThenBy(a => taskTypeOrder[a.TaskType.Predefined ?? default])
                     .ThenBy(a => a.TaskType.Other)
             )
             {
@@ -1428,8 +1422,8 @@ namespace ServiceSiteScheduling.Solutions
 
         private static void AddTrackAction(
             TrackTask task,
-            Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion,
-            List<AlgoIface.Action> actions
+            Dictionary<ShuntTrain, NoProto.ShuntingUnit> trainconversion,
+            List<NoProto.Action> actions
         )
         {
             AddTrackAction(task, task.End, trainconversion, actions);
@@ -1438,20 +1432,20 @@ namespace ServiceSiteScheduling.Solutions
         private static void AddTrackAction(
             TrackTask task,
             Time endtime,
-            Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion,
-            List<AlgoIface.Action> actions
+            Dictionary<ShuntTrain, NoProto.ShuntingUnit> trainconversion,
+            List<NoProto.Action> actions
         )
         {
-            var trackaction = new AlgoIface.Action();
+            var trackaction = new NoProto.Action();
             trackaction.Location = task.Track.ID;
             trackaction.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
-            trackaction.TaskType = new AlgoIface.TaskType();
+            trackaction.TaskType = new NoProto.TaskType();
             switch (task.TaskType)
             {
                 case TrackTaskType.Arrival:
                 {
                     var arrival = (ArrivalTask)task;
-                    trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Arrive;
+                    trackaction.TaskType.Predefined = NoProto.PredefinedTaskType.Arrive;
                     trackaction.StartTime = trackaction.EndTime = (ulong)arrival.ScheduledTime;
 
                     var gatewayconnection = ProblemInstance.Current.GatewayConversion[
@@ -1462,7 +1456,7 @@ namespace ServiceSiteScheduling.Solutions
                     foreach (var infra in gatewayconnection.Path)
                         if (infra != previous)
                         {
-                            var resource = new AlgoIface.Resource();
+                            var resource = new NoProto.Resource();
                             resource.TrackPartId = infra.ID;
                             resource.Name = infra.ID.ToString();
                             trackaction.Resources.Add(resource);
@@ -1473,11 +1467,11 @@ namespace ServiceSiteScheduling.Solutions
 
                     if (endtime > arrival.ScheduledTime)
                     {
-                        var nextparking = new AlgoIface.Action();
+                        var nextparking = new NoProto.Action();
                         nextparking.Location = task.Track.ID;
                         nextparking.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
-                        nextparking.TaskType = new AlgoIface.TaskType();
-                        nextparking.TaskType.Predefined = AlgoIface.PredefinedTaskType.Wait;
+                        nextparking.TaskType = new NoProto.TaskType();
+                        nextparking.TaskType.Predefined = NoProto.PredefinedTaskType.Wait;
                         nextparking.StartTime = trackaction.EndTime;
                         nextparking.EndTime = (ulong)endtime;
                         actions.Add(nextparking);
@@ -1485,7 +1479,7 @@ namespace ServiceSiteScheduling.Solutions
                     break;
                 }
                 case TrackTaskType.Parking:
-                    trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Wait;
+                    trackaction.TaskType.Predefined = NoProto.PredefinedTaskType.Wait;
                     trackaction.StartTime = (ulong)task.Start;
                     trackaction.EndTime = (ulong)endtime;
                     break;
@@ -1493,11 +1487,11 @@ namespace ServiceSiteScheduling.Solutions
                     var service = (ServiceTask)task;
                     if (service.Start > service.Previous.End)
                     {
-                        var previousparking = new AlgoIface.Action();
+                        var previousparking = new NoProto.Action();
                         previousparking.Location = task.Track.ID;
                         previousparking.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
-                        previousparking.TaskType = new AlgoIface.TaskType();
-                        previousparking.TaskType.Predefined = AlgoIface.PredefinedTaskType.Wait;
+                        previousparking.TaskType = new NoProto.TaskType();
+                        previousparking.TaskType.Predefined = NoProto.PredefinedTaskType.Wait;
                         previousparking.StartTime = (ulong)service.Previous.End;
                         previousparking.EndTime = (ulong)service.Start;
                         actions.Add(previousparking);
@@ -1507,16 +1501,16 @@ namespace ServiceSiteScheduling.Solutions
                     trackaction.EndTime = trackaction.StartTime + (ulong)service.MinimumDuration;
                     if (endtime - service.Start > service.MinimumDuration)
                     {
-                        var nextparking = new AlgoIface.Action();
+                        var nextparking = new NoProto.Action();
                         nextparking.Location = task.Track.ID;
                         nextparking.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
-                        nextparking.TaskType = new AlgoIface.TaskType();
-                        nextparking.TaskType.Predefined = AlgoIface.PredefinedTaskType.Wait;
+                        nextparking.TaskType = new NoProto.TaskType();
+                        nextparking.TaskType.Predefined = NoProto.PredefinedTaskType.Wait;
                         nextparking.StartTime = trackaction.EndTime;
                         nextparking.EndTime = (ulong)endtime;
                         actions.Add(nextparking);
                     }
-                    var facilityresource = new AlgoIface.Resource();
+                    var facilityresource = new NoProto.Resource();
                     facilityresource.FacilityId = ProblemInstance
                         .Current
                         .FacilityConversion[service.Type]
@@ -1528,7 +1522,7 @@ namespace ServiceSiteScheduling.Solutions
                     break;
                 case TrackTaskType.Departure:
                 {
-                    trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Exit;
+                    trackaction.TaskType.Predefined = NoProto.PredefinedTaskType.Exit;
                     trackaction.StartTime = trackaction.EndTime = (ulong)task.End;
                     var gatewayconnection2 = ProblemInstance.Current.GatewayConversion[
                         task.Track.ID
@@ -1539,7 +1533,7 @@ namespace ServiceSiteScheduling.Solutions
                         var infra = gatewayconnection2.Path[i];
                         if (infra != previous2)
                         {
-                            var resource = new AlgoIface.Resource();
+                            var resource = new NoProto.Resource();
                             resource.TrackPartId = infra.ID;
                             resource.Name = infra.ID.ToString();
                             trackaction.Resources.Add(resource);
@@ -1553,14 +1547,13 @@ namespace ServiceSiteScheduling.Solutions
             actions.Add(trackaction);
         }
 
-        private static AlgoIface.ShuntingUnit GetShuntUnit(
+        private static NoProto.ShuntingUnit GetShuntUnit(
             ShuntTrain train,
             Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion
-        )
         {
-            if (!trainconversion.TryGetValue(train, out AlgoIface.ShuntingUnit? shuntingunit))
+            if (!trainconversion.TryGetValue(train, out NoProto.ShuntingUnit? shuntingunit))
             {
-                shuntingunit = new AlgoIface.ShuntingUnit();
+                shuntingunit = new NoProto.ShuntingUnit();
                 foreach (var unit in train.Units)
                     shuntingunit.Members.Add(
                         ProblemInstance.Current.TrainUnitConversion[unit.Base]
@@ -1576,8 +1569,7 @@ namespace ServiceSiteScheduling.Solutions
             }
             else
             {
-                var _shuntingunit = new AlgoIface.ShuntingUnit();
-                _shuntingunit.MergeFrom(shuntingunit);
+                var _shuntingunit = new NoProto.ShuntingUnit(shuntingunit);
 
                 trainconversion[train] = _shuntingunit;
                 return _shuntingunit;

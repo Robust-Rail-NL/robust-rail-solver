@@ -4,22 +4,24 @@ namespace ServiceSiteScheduling.NoProto
 {
     public class Location
     {
-        public TrackPart[]? TrackParts { get; set; }
-        public Facility[]? Facilities { get; set; }
-        public TaskType[]? TaskTypes { get; set; }
+        public IList<TrackPart>? TrackParts { get; set; }
+        public IList<Facility>? Facilities { get; set; }
+        public IList<TaskType>? TaskTypes { get; set; }
     }
 
     public class Resource
     {
         public string? Name { get; set; }
+        public ulong? FacilityId { get; internal set; }
+        public ulong? TrackPartId { get; internal set; }
     }
 
     public class Facility
     {
-        public long? Id { get; set; }
+        public ulong? Id { get; set; }
         public string? Type { get; set; }
-        public TrackPart[]? RelatedTrackParts { get; set; }
-        public TaskType[]? TaskTypes { get; set; }
+        public IList<TrackPart>? RelatedTrackParts { get; set; }
+        public IList<TaskType>? TaskTypes { get; set; }
         public int? SimultaneousUsageCount { get; set; }
     }
 
@@ -41,8 +43,8 @@ namespace ServiceSiteScheduling.NoProto
     {
         public required ulong Id { get; set; }
         public TrackPartType? Type { get; set; }
-        public TrackPart[]? ASide { get; set; }
-        public TrackPart[]? BSide { get; set; }
+        public IList<TrackPart>? ASide { get; set; }
+        public IList<TrackPart>? BSide { get; set; }
         public double? Length { get; set; }
         public string? Name { get; set; }
         public required bool SawMovementAllowed { get; set; }
