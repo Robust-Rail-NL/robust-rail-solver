@@ -55,6 +55,16 @@ namespace ServiceSiteScheduling.NoProto
     {
         public PredefinedTaskType? Predefined { get; set; }
         public string? Other { get; set; }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is TaskType type && Predefined == type.Predefined && Other == type.Other;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Predefined, Other);
+        }
     }
 
     public enum PredefinedTaskType

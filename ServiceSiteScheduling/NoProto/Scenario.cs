@@ -268,20 +268,20 @@ namespace ServiceSiteScheduling.NoProto
         public string? Id { get; set; }
 
         // The TrainUnits contained in this ShuntingUnit
-        public IList<TrainUnit>? Members { get; set; }
+        public IList<TrainUnit> Members { get; set; } = [];
 
         // The TrainUnits contained in this ShuntingUnit
-        public IList<string>? MemberIDs { get; set; }
+        public IList<string> MemberIDs { get; set; } = [];
 
         // The parents of a current ShuntingUnit,
         // that is, the shuntingunits which have been merged into this one,
         // or the shuntingunit that has been split into (among others) this one.
-        public IList<string>? ParentIDs { get; set; }
+        public IList<string> ParentIDs { get; set; } = [];
 
         // The children of the current ShuntingUnit,
         // that is, the shuntingunits which contain parts of this shuntingunit.
         // Alternatively, ShuntingUnit S has parent P iff P has child S.
-        public IList<string>? ChildIDs { get; set; }
+        public IList<string> ChildIDs { get; set; } = [];
 
         // If field is defined it states InStanding when the train unit was alredy on the yard even if the action says it is an arrival
         // or it states OutStanding when the train unit will stay in the shunting yards after the scenario ends even if the action is an exite one
