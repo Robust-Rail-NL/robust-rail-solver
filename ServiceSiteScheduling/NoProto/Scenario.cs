@@ -62,7 +62,7 @@ namespace ServiceSiteScheduling.NoProto
 
         // The index of the train unit when in- or outstanding, with lower indices
         // at the A-side of the track
-        public required double StandingIndex { get; set; }
+        public double? StandingIndex { get; set; }
     }
 
     public class IncomingTrainUnit
@@ -185,13 +185,27 @@ namespace ServiceSiteScheduling.NoProto
     // TrainUnitType is a type of train unit
     public class TrainUnitType
     {
+        public override bool Equals(object? obj)
+        {
+            if (obj is TrainUnitType tut)
+            {
+                return tut.DisplayName == this.DisplayName && tut.Carriages == this.Carriages;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return $"{this.DisplayName}-{this.Carriages}".GetHashCode();
+        }
+
         // Name of the train unit type
         // For example, "SGM" or "SLT".
-        public string? DisplayName { get; set; }
+        public required string DisplayName { get; set; }
 
         // Number of carriages. This is the total number of carriages,
         // including the first and last carriage.
-        public uint? Carriages { get; set; }
+        public required uint Carriages { get; set; }
 
         // Length of this train unit, in meters
         public double? Length { get; set; }

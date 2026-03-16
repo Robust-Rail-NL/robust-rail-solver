@@ -20,7 +20,7 @@ namespace ServiceSiteScheduling.NoProto
     {
         public ulong? Id { get; set; }
         public string? Type { get; set; }
-        public IList<TrackPart>? RelatedTrackParts { get; set; }
+        public IList<ulong>? RelatedTrackParts { get; set; }
         public IList<TaskType>? TaskTypes { get; set; }
         public int? SimultaneousUsageCount { get; set; }
     }
@@ -43,8 +43,8 @@ namespace ServiceSiteScheduling.NoProto
     {
         public required ulong Id { get; set; }
         public TrackPartType? Type { get; set; }
-        public IList<TrackPart>? ASide { get; set; }
-        public IList<TrackPart>? BSide { get; set; }
+        public IList<ulong>? ASide { get; set; }
+        public IList<ulong>? BSide { get; set; }
         public double? Length { get; set; }
         public string? Name { get; set; }
         public required bool SawMovementAllowed { get; set; }

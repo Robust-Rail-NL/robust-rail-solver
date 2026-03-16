@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ServiceSiteScheduling.Servicing;
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
@@ -88,13 +89,24 @@ namespace ServiceSiteScheduling
 
         public static ProblemInstance ParseJson(string locationpath, string scenariopath)
         {
+            JsonSerializerOptions options = new()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                NumberHandling = System
+                    .Text
+                    .Json
+                    .Serialization
+                    .JsonNumberHandling
+                    .AllowReadingFromString,
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+            };
+
             NoProto.Location location;
             using (var input = File.OpenRead(locationpath))
             using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
-                // TODO configure serializer
-                location = JsonSerializer.Deserialize<NoProto.Location>(jsonContent);
+                location = JsonSerializer.Deserialize<NoProto.Location>(jsonContent, options);
             }
 
             NoProto.Scenario scenario;
@@ -102,7 +114,7 @@ namespace ServiceSiteScheduling
             using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
-                scenario = JsonSerializer.Deserialize<NoProto.Scenario>(jsonContent); // TODO configure serializer
+                scenario = JsonSerializer.Deserialize<NoProto.Scenario>(jsonContent, options);
             }
 
             return Parse(location, scenario);
@@ -201,9 +213,9 @@ namespace ServiceSiteScheduling
                         Infrastructure A = null,
                             B = null;
                         if (part.ASide.Count > 0)
-                            infrastructuremap.TryGetValue(part.ASide[0].Id, out A);
+                            infrastructuremap.TryGetValue(part.ASide[0], out A);
                         if (part.BSide.Count > 0)
-                            infrastructuremap.TryGetValue(part.BSide[0].Id, out B);
+                            infrastructuremap.TryGetValue(part.BSide[0], out B);
                         track.Connect(A, B);
 
                         break;
@@ -213,11 +225,11 @@ namespace ServiceSiteScheduling
                         { // A side is connected to two B side infrastructure
                             Debug.Assert(part.BSide.Count == 2);
                             @switch.Connect(
-                                infrastructuremap[part.ASide[0].Id],
+                                infrastructuremap[part.ASide[0]],
                                 new Infrastructure[2]
                                 {
-                                    infrastructuremap[part.BSide[0].Id],
-                                    infrastructuremap[part.BSide[1].Id],
+                                    infrastructuremap[part.BSide[0]],
+                                    infrastructuremap[part.BSide[1]],
                                 }
                             );
                         }
@@ -225,11 +237,11 @@ namespace ServiceSiteScheduling
                         { // B side is connected to two A side infrastructure
                             Debug.Assert(part.ASide.Count == 2);
                             @switch.Connect(
-                                infrastructuremap[part.BSide[0].Id],
+                                infrastructuremap[part.BSide[0]],
                                 new Infrastructure[2]
                                 {
-                                    infrastructuremap[part.ASide[0].Id],
-                                    infrastructuremap[part.ASide[1].Id],
+                                    infrastructuremap[part.ASide[0]],
+                                    infrastructuremap[part.ASide[1]],
                                 }
                             );
                         }
@@ -238,8 +250,8 @@ namespace ServiceSiteScheduling
                     case NoProto.TrackPartType.EnglishSwitch:
                         EnglishSwitch englishswitch = infrastructuremap[part.Id] as EnglishSwitch;
                         englishswitch.Connect(
-                            part.ASide.Select(neighbor => infrastructuremap[neighbor.Id]).ToList(),
-                            part.BSide.Select(neighbor => infrastructuremap[neighbor.Id]).ToList()
+                            part.ASide.Select(neighbor => infrastructuremap[neighbor]).ToList(),
+                            part.BSide.Select(neighbor => infrastructuremap[neighbor]).ToList()
                         );
                         break;
                     case NoProto.TrackPartType.HalfEnglishSwitch:
@@ -248,10 +260,10 @@ namespace ServiceSiteScheduling
                         HalfEnglishSwitch halfenglishswitch =
                             infrastructuremap[part.Id] as HalfEnglishSwitch;
                         halfenglishswitch.Connect(
-                            infrastructuremap[part.ASide[0].Id],
-                            infrastructuremap[part.ASide[1].Id],
-                            infrastructuremap[part.BSide[0].Id],
-                            infrastructuremap[part.BSide[1].Id]
+                            infrastructuremap[part.ASide[0]],
+                            infrastructuremap[part.ASide[1]],
+                            infrastructuremap[part.BSide[0]],
+                            infrastructuremap[part.BSide[1]]
                         );
                         break;
                     case NoProto.TrackPartType.Intersection:
@@ -259,10 +271,10 @@ namespace ServiceSiteScheduling
                         Debug.Assert(part.BSide.Count == 2);
                         Intersection intersection = infrastructuremap[part.Id] as Intersection;
                         intersection.Connect(
-                            infrastructuremap[part.ASide[0].Id],
-                            infrastructuremap[part.BSide[1].Id],
-                            infrastructuremap[part.ASide[1].Id],
-                            infrastructuremap[part.BSide[0].Id]
+                            infrastructuremap[part.ASide[0]],
+                            infrastructuremap[part.BSide[1]],
+                            infrastructuremap[part.ASide[1]],
+                            infrastructuremap[part.BSide[0]]
                         );
                         break;
                     case NoProto.TrackPartType.Bumper:
@@ -279,7 +291,7 @@ namespace ServiceSiteScheduling
                                 Console.WriteLine($"Track part A: {part.Id}");
                                 Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
                             }
-                            gateway.Connect(infrastructuremap[part.ASide[0].Id]);
+                            gateway.Connect(infrastructuremap[part.ASide[0]]);
                         }
                         else if (part.BSide.Count != 0)
                         {
@@ -288,7 +300,7 @@ namespace ServiceSiteScheduling
                                 Console.WriteLine($"Track part B: {part.Id}");
                                 Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
                             }
-                            gateway.Connect(infrastructuremap[part.BSide[0].Id]);
+                            gateway.Connect(infrastructuremap[part.BSide[0]]);
                         }
                         else
                         { // Remove gateway from gateways dict
@@ -366,7 +378,7 @@ namespace ServiceSiteScheduling
                 var facilitytracks = new List<Track>();
                 foreach (var part in facility.RelatedTrackParts)
                 {
-                    if (infrastructuremap.TryGetValue(part.Id, out Infrastructure infra))
+                    if (infrastructuremap.TryGetValue(part, out Infrastructure infra))
                     {
                         var track = infra as Track;
                         facilitytracks.Add(track);
@@ -521,7 +533,7 @@ namespace ServiceSiteScheduling
                             Side.None,
                             (int)instance.ScenarioStartTime,
                             true,
-                            arrivaltrain.StandingIndex
+                            arrivaltrain.StandingIndex ?? 0.0
                         );
                         artificialTimeScale++;
                         arrivals.Add(train);
@@ -553,7 +565,7 @@ namespace ServiceSiteScheduling
                             infra.Access,
                             (int)instance.ScenarioStartTime,
                             true,
-                            arrivaltrain.StandingIndex
+                            arrivaltrain.StandingIndex ?? 0.0
                         );
                         artificialTimeScale++;
                         arrivals.Add(train);
@@ -642,7 +654,7 @@ namespace ServiceSiteScheduling
             foreach (var departuretrain in scenario.Out.TrainRequests)
             {
                 var units = departuretrain.TrainUnits.Select(unit =>
-                    unit.Id == string.Empty
+                    string.IsNullOrEmpty(unit.Id)
                         ? new DepartureTrainUnit(traintypemap[unit.Type])
                         : new DepartureTrainUnit(trainunitmap[unit.Id])
                 );

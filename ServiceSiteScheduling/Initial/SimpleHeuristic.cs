@@ -195,7 +195,15 @@ namespace ServiceSiteScheduling.Initial
             var schedule = new Dictionary<ServiceResource, LinkedList<ServiceTask>>();
             foreach (var type in ProblemInstance.Current.ServiceTypes)
             foreach (var resource in type.Resources)
+            {
+                Console.WriteLine("adding resource to schedule");
                 schedule[resource] = new LinkedList<ServiceTask>();
+            }
+            if (schedule.Count == 0)
+            {
+                Console.WriteLine("empty schedule");
+            }
+            Console.WriteLine("hello");
 
             List<ServiceTask> candidates = [];
             Dictionary<ShuntTrain, LinkedList<ServiceTask>> orderedservices = [];
