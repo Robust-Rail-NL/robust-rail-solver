@@ -477,11 +477,10 @@ namespace ServiceSiteScheduling.LocalSearch
                                 }
                             }
                             // Write JSON plan to file
-                            string current_plan =
-                                tmp_plan_path
-                                + "sa_plan_iteration"
-                                + iteration.ToString()
-                                + ".json";
+                            string current_plan = Path.Combine(
+                                tmp_plan_path,
+                                "tabu_plan_iteration" + iteration.ToString() + ".json"
+                            );
                             if (debugLevel > 0)
                                 Console.WriteLine(
                                     $"New best solution found at iteration {iteration}, writing plan to {current_plan}"
