@@ -1056,7 +1056,7 @@ namespace ServiceSiteScheduling.Solutions
         public void WriteJSONFile(string filePath)
         {
             NoProto.Plan? plan = this.ToProtobuf();
-            string jsonPlan = JsonSerializer.Serialize(plan);
+            string jsonPlan = plan.SerializeJson();
             File.WriteAllText(filePath, jsonPlan);
         }
 

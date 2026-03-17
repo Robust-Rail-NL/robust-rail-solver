@@ -28,7 +28,7 @@ namespace ServiceSiteScheduling
 
         public bool StoreScenarioEvaluator(string FileName)
         {
-            string json_scenario_evaluator = JsonSerializer.Serialize(InterfaceScenarioEvaluator);
+            string json_scenario_evaluator = InterfaceScenarioEvaluator.SerializeJson();
 
             // string json_scenario_evaluator = JsonFormatter.Default.Format(InterfaceScenarioEvaluator);
 
@@ -99,9 +99,7 @@ namespace ServiceSiteScheduling
             var formatter = new JsonFormatter(
                 JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)
             );
-            string json_scenario_solver = JsonSerializer.Serialize(
-                ProblemInstanceSolver.InterfaceScenario
-            );
+            string json_scenario_solver = ProblemInstanceSolver.InterfaceScenario.SerializeJson();
 
             String PathToStoreSolverScenario = PathToStoreEvalScenario;
 
@@ -135,7 +133,7 @@ namespace ServiceSiteScheduling
 
         public void PrintScenarioEvaluator()
         {
-            string json_parsed = JsonSerializer.Serialize(InterfaceScenarioEvaluator);
+            string json_parsed = InterfaceScenarioEvaluator.SerializeJson();
             // string json_parsed = JsonFormatter.Default.Format(InterfaceScenarioEvaluator);
 
             Console.WriteLine("******* The Evaluator's scenario *******");

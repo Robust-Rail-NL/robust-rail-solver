@@ -1,7 +1,20 @@
-﻿namespace ServiceSiteScheduling.Utilities
+﻿using System.Text.Json;
+
+namespace ServiceSiteScheduling.Utilities
 {
     public static class Extensions
     {
+        private static readonly JsonSerializerOptions serializerOptions = new()
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+
+        public static string SerializeJson<T>(this T obj)
+        {
+            return JsonSerializer.Serialize(obj, serializerOptions);
+        }
+
         public static T1 MinItem<T1, T>(this IList<T1> elements, Func<T1, T> selector)
             where T : IComparable
         {

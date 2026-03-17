@@ -952,9 +952,7 @@ namespace ServiceSiteScheduling
                     throw new NullReferenceException("Parsed location is null.");
                 }
 
-                string json_parsed = JsonSerializer.Serialize(
-                    ProblemInstance.Current.InterfaceLocation
-                );
+                string json_parsed = ProblemInstance.Current.InterfaceLocation.SerializeJson();
                 string json_original = ProblemInstance.ParseJsonToString(location_path);
 
                 var token_parsed = JsonDocument.Parse(json_parsed);
@@ -982,9 +980,7 @@ namespace ServiceSiteScheduling
 
             try
             {
-                string json_parsed = JsonSerializer.Serialize(
-                    ProblemInstance.Current.InterfaceScenario
-                );
+                string json_parsed = ProblemInstance.Current.InterfaceScenario.SerializeJson();
 
                 var scenario_in = ProblemInstance.Current.InterfaceScenario.In;
                 var scenario_out = ProblemInstance.Current.InterfaceScenario.Out;
