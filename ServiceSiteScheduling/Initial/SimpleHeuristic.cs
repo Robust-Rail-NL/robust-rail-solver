@@ -203,7 +203,6 @@ namespace ServiceSiteScheduling.Initial
             {
                 Console.WriteLine("empty schedule");
             }
-            Console.WriteLine("hello");
 
             List<ServiceTask> candidates = [];
             Dictionary<ShuntTrain, LinkedList<ServiceTask>> orderedservices = [];
