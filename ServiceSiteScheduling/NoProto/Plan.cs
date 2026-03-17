@@ -9,7 +9,7 @@ namespace ServiceSiteScheduling.NoProto
 
         // A list of all TrackParts. From this a rail graph can be constructed.
         // This field should be temporary and be replaced as soon as we send input to the algorithm.
-        public IList<TrackPart> TrackParts { get; set; } = [];
+        public IList<TrackPart>? TrackParts { get; set; }
     }
 
     public class Action
@@ -33,10 +33,10 @@ namespace ServiceSiteScheduling.NoProto
         // Other resources besides the TrackPart involved with the Action.
         // For example for taskType = InternalCleaning there could be
         // a CleaningPlatform Facility Resource.
-        public IList<Resource>? Resources { get; set; } = [];
+        public IList<Resource> Resources { get; set; } = [];
 
         // Train units involved in this Action
         // If not specified, all train units are involved.
-        public IList<string>? TrainUnitIds { get; set; } = [];
+        public IList<string>? TrainUnitIds { get; set; }
     }
 }

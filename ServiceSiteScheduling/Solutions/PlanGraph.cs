@@ -1553,7 +1553,7 @@ namespace ServiceSiteScheduling.Solutions
         {
             if (!trainconversion.TryGetValue(train, out NoProto.ShuntingUnit? shuntingunit))
             {
-                shuntingunit = new NoProto.ShuntingUnit();
+                shuntingunit = new NoProto.ShuntingUnit(init: true);
                 foreach (var unit in train.Units)
                     shuntingunit.Members.Add(
                         ProblemInstance.Current.TrainUnitConversion[unit.Base]
