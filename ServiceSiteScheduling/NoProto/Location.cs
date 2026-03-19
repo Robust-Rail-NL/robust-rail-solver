@@ -1,83 +1,85 @@
 #nullable enable
 
+using System.Collections.Immutable;
+
 namespace ServiceSiteScheduling.NoProto
 {
-    public class Location
+    public record Location
     {
         public IList<TrackPart>? TrackParts { get; set; }
         public IList<Facility>? Facilities { get; set; }
         public IList<TaskType>? TaskTypes { get; set; }
     }
 
-    public class Resource
+    public record Resource
     {
         public string? Name { get; set; }
         public ulong? FacilityId { get; internal set; }
         public ulong? TrackPartId { get; internal set; }
     }
 
-    public class Facility
+    public record Facility
     {
         public ulong? Id { get; set; }
         public string? Type { get; set; }
-        public IList<ulong>? RelatedTrackParts { get; set; }
-        public IList<TaskType>? TaskTypes { get; set; }
+        public ImmutableArray<ulong> RelatedTrackParts { get; init; } = [];
+        public ImmutableArray<TaskType> TaskTypes { get; init; } = [];
         public int? SimultaneousUsageCount { get; set; }
     }
 
     public enum TrackPartType
     {
-        RailRoad = 0,
+        RailRoad,
 
         // Switches
-        Switch = 1,
-        EnglishSwitch = 2,
-        HalfEnglishSwitch = 3,
+        Switch,
+        EnglishSwitch,
+        HalfEnglishSwitch,
 
         // Other
-        Intersection = 4,
-        Bumper = 5,
+        Intersection,
+        Bumper,
     }
 
-    public class TrackPart
+    public record TrackPart
     {
         public required ulong Id { get; set; }
         public TrackPartType? Type { get; set; }
-        public IList<ulong>? ASide { get; set; }
-        public IList<ulong>? BSide { get; set; }
+        public ImmutableArray<ulong> ASide { get; init; }
+        public ImmutableArray<ulong> BSide { get; init; }
         public double? Length { get; set; }
         public string? Name { get; set; }
         public required bool SawMovementAllowed { get; set; }
         public required bool ParkingAllowed { get; set; }
     }
 
-    public class TaskType
+    public record TaskType
     {
-        public PredefinedTaskType? Predefined { get; set; }
-        public string? Other { get; set; }
+        public PredefinedTaskType? Predefined { get; init; }
+        public string? Other { get; init; }
 
-        public override bool Equals(object? obj)
+        public TaskType(PredefinedTaskType? predefined, string? other)
         {
-            return obj is TaskType type && Predefined == type.Predefined && Other == type.Other;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Predefined, Other);
+            if (predefined == null && other == null || predefined != null && other != null)
+            {
+                throw new ArgumentException("Exactly one constructor argument must be null");
+            }
+            this.Predefined = predefined;
+            this.Other = other;
         }
     }
 
     public enum PredefinedTaskType
     {
         // Movement
-        Move = 0,
-        Split = 1,
-        Combine = 2,
+        Move,
+        Split,
+        Combine,
 
         // Special
-        Wait = 3,
-        Arrive = 4,
-        Exit = 5,
+        Wait,
+        Arrive,
+        Exit,
 
         // StandOut = 6,
         // StandIn = 7,

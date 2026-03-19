@@ -179,8 +179,10 @@ namespace ServiceSiteScheduling
                                 if (taskSolver.Type.Other != null)
                                 {
                                     Debug.Assert(taskSolver.Type.Predefined == null);
-                                    NoProto.TaskType taskTypeEvaluator = new();
-                                    taskTypeEvaluator.Other = taskSolver.Type.Other;
+                                    NoProto.TaskType taskTypeEvaluator = new(
+                                        null,
+                                        taskSolver.Type.Other
+                                    );
                                     tasksEvaluator.Type = taskTypeEvaluator;
 
                                     if (taskSolver.Type.Other == "Reinigingsperron")
@@ -246,8 +248,10 @@ namespace ServiceSiteScheduling
                                     if (taskSolver.Type.Other != null)
                                     {
                                         Debug.Assert(taskSolver.Type.Predefined == null);
-                                        NoProto.TaskType taskTypeEvaluator = new();
-                                        taskTypeEvaluator.Other = taskSolver.Type.Other;
+                                        NoProto.TaskType taskTypeEvaluator = new(
+                                            null,
+                                            taskSolver.Type.Other
+                                        );
                                         tasksEvaluator.Type = taskTypeEvaluator;
 
                                         if (taskSolver.Type.Other == "Reinigingsperron")

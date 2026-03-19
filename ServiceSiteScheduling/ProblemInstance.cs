@@ -92,15 +92,11 @@ namespace ServiceSiteScheduling
             JsonSerializerOptions options = new()
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                NumberHandling = System
-                    .Text
-                    .Json
-                    .Serialization
-                    .JsonNumberHandling
-                    .AllowReadingFromString,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString,
                 Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
             };
 
+            Console.WriteLine($"Parsing JSON location from {locationpath}");
             NoProto.Location location;
             using (var input = File.OpenRead(locationpath))
             using (StreamReader reader = new(input))
@@ -109,6 +105,7 @@ namespace ServiceSiteScheduling
                 location = JsonSerializer.Deserialize<NoProto.Location>(jsonContent, options);
             }
 
+            Console.WriteLine($"Parsing JSON scenario from {scenariopath}");
             NoProto.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
             using (StreamReader reader = new(input))
@@ -213,18 +210,20 @@ namespace ServiceSiteScheduling
                         Track track = infrastructuremap[part.Id] as Track;
                         Infrastructure A = null,
                             B = null;
-                        if (part.ASide.Count > 0)
+                        if (part.ASide.Length > 0)
+                        {
                             infrastructuremap.TryGetValue(part.ASide[0], out A);
-                        if (part.BSide.Count > 0)
+                        }
+                        if (part.BSide.Length > 0)
                             infrastructuremap.TryGetValue(part.BSide[0], out B);
                         track.Connect(A, B);
 
                         break;
                     case NoProto.TrackPartType.Switch:
                         Switch @switch = infrastructuremap[part.Id] as Switch;
-                        if (part.ASide.Count == 1)
+                        if (part.ASide.Length == 1)
                         { // A side is connected to two B side infrastructure
-                            Debug.Assert(part.BSide.Count == 2);
+                            Debug.Assert(part.BSide.Length == 2);
                             @switch.Connect(
                                 infrastructuremap[part.ASide[0]],
                                 new Infrastructure[2]
@@ -236,7 +235,7 @@ namespace ServiceSiteScheduling
                         }
                         else
                         { // B side is connected to two A side infrastructure
-                            Debug.Assert(part.ASide.Count == 2);
+                            Debug.Assert(part.ASide.Length == 2);
                             @switch.Connect(
                                 infrastructuremap[part.BSide[0]],
                                 new Infrastructure[2]
@@ -256,8 +255,8 @@ namespace ServiceSiteScheduling
                         );
                         break;
                     case NoProto.TrackPartType.HalfEnglishSwitch:
-                        Debug.Assert(part.ASide.Count == 2);
-                        Debug.Assert(part.BSide.Count == 2);
+                        Debug.Assert(part.ASide.Length == 2);
+                        Debug.Assert(part.BSide.Length == 2);
                         HalfEnglishSwitch halfenglishswitch =
                             infrastructuremap[part.Id] as HalfEnglishSwitch;
                         halfenglishswitch.Connect(
@@ -268,8 +267,8 @@ namespace ServiceSiteScheduling
                         );
                         break;
                     case NoProto.TrackPartType.Intersection:
-                        Debug.Assert(part.ASide.Count == 2);
-                        Debug.Assert(part.BSide.Count == 2);
+                        Debug.Assert(part.ASide.Length == 2);
+                        Debug.Assert(part.BSide.Length == 2);
                         Intersection intersection = infrastructuremap[part.Id] as Intersection;
                         intersection.Connect(
                             infrastructuremap[part.ASide[0]],
@@ -285,7 +284,7 @@ namespace ServiceSiteScheduling
                         {
                             Console.WriteLine($"gateway : {gateway}");
                         }
-                        if (part.ASide.Count != 0)
+                        if (part.ASide.Length != 0)
                         {
                             if (debugLevel > 1)
                             {
@@ -294,7 +293,7 @@ namespace ServiceSiteScheduling
                             }
                             gateway.Connect(infrastructuremap[part.ASide[0]]);
                         }
-                        else if (part.BSide.Count != 0)
+                        else if (part.BSide.Length != 0)
                         {
                             if (debugLevel > 1)
                             {
@@ -398,7 +397,9 @@ namespace ServiceSiteScheduling
                     {
                         var crew = new ServiceCrew(
                             "crew " + i,
-                            facility.TaskTypes.Select(type => taskmap[type])
+                            facility
+                                .TaskTypes.AsQueryable<NoProto.TaskType>()
+                                .Select(type => taskmap[type])
                         );
                         crews.Add(crew);
                     }
