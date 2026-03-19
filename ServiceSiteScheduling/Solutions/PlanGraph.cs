@@ -1203,14 +1203,18 @@ namespace ServiceSiteScheduling.Solutions
             taskTypeOrder[AlgoIface.PredefinedTaskType.Split] = idx++;
             taskTypeOrder[AlgoIface.PredefinedTaskType.Combine] = idx++;
             taskTypeOrder[AlgoIface.PredefinedTaskType.Exit] = idx++;
-            taskTypeOrder[default(AlgoIface.PredefinedTaskType)] = idx++;
+            int otherTaskType = idx++;
 
             AlgoIface.Plan plan_pb = new();
             foreach (
                 AlgoIface.Action a in actions
                     .OrderBy(a => a.StartTime)
                     .ThenBy(a => a.EndTime)
-                    .ThenBy(a => taskTypeOrder[a.TaskType.Predefined])
+                    .ThenBy(a =>
+                        a.TaskType.TaskTypeCase == AlgoIface.TaskType.TaskTypeOneofCase.Predefined
+                            ? taskTypeOrder[a.TaskType.Predefined]
+                            : otherTaskType
+                    )
                     .ThenBy(a => a.TaskType.Other)
             )
             {

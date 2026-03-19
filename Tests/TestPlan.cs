@@ -1,6 +1,7 @@
 namespace Tests;
 
 using System;
+using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -65,46 +66,62 @@ public class TestPlan(ITestOutputHelper output)
         Plan? plan = JsonSerializer.Deserialize<Plan>(json_text, options);
         long lastStartTime = long.MinValue;
         long lastEndTime = long.MinValue;
-        PredefinedTaskType? lastPTT = PredefinedTaskType.Arrive;
+        PredefinedTaskType? lastPTT = TaskType.ORDER[0];
         string? lastOTT = null;
         foreach (Task task in plan?.Actions ?? [])
         {
             Assert.True(task.TaskType.Predefined == null || task.TaskType.Other == null);
             Assert.True(task.TaskType.Predefined != null || task.TaskType.Other != null);
-            if (task.StartTime == lastStartTime)
+            if (lastStartTime == task.StartTime)
             {
-                if (task.EndTime == lastEndTime)
+                if (lastEndTime == task.EndTime)
                 {
-                    if (task.TaskType.Predefined == null)
-                    {
-                        Assert.True(
-                            lastPTT != null || lastOTT?.CompareTo(task.TaskType.Other) <= 0
-                        );
-                    }
-                    else
-                    {
-                        Assert.NotNull(lastPTT);
-                        Assert.Null(lastOTT);
-                        Assert.True(
-                            Array.IndexOf(TaskType.ORDER, lastPTT)
-                                <= Array.IndexOf(TaskType.ORDER, task.TaskType.Predefined)
-                        );
-                    }
+                    Assert.True(CompareTaskType(lastPTT, lastOTT, task) <= 0);
                 }
                 else
                 {
-                    Assert.True(task.EndTime > lastEndTime);
-                    lastEndTime = task.EndTime;
+                    Assert.True(lastEndTime < task.EndTime);
                 }
             }
             else
             {
-                Assert.True(task.StartTime > lastStartTime);
-                lastStartTime = task.StartTime;
-                lastEndTime = long.MinValue;
+                Assert.True(lastStartTime < task.StartTime);
             }
+            lastStartTime = task.StartTime;
+            lastEndTime = task.EndTime;
+            lastPTT = task.TaskType.Predefined;
+            lastOTT = task.TaskType.Other;
         }
         return true;
+    }
+
+    private static int CompareTaskType(PredefinedTaskType? lastPTT, string? lastOTT, Task task)
+    {
+        if (task.TaskType.Predefined == null)
+        {
+            if (lastOTT != null)
+            {
+                return lastOTT.CompareTo(task.TaskType.Other);
+            }
+            else
+            {
+                Debug.Assert(lastPTT != null);
+                return -1;
+            }
+        }
+        else
+        {
+            if (lastPTT != null)
+            {
+                return Array.IndexOf(TaskType.ORDER, lastPTT)
+                    - Array.IndexOf(TaskType.ORDER, task.TaskType.Predefined);
+            }
+            else
+            {
+                Debug.Assert(lastOTT != null);
+                return 1;
+            }
+        }
     }
 }
 
