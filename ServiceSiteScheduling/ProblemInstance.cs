@@ -136,7 +136,7 @@ namespace ServiceSiteScheduling
             int debugLevel = 0
         )
         {
-            debugLevel = 2;
+            //debugLevel = 2;
             ProblemInstance instance = new();
 
             // Get start and end time of the scenario

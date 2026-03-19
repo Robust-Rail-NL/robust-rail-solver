@@ -98,7 +98,7 @@ namespace ServiceSiteScheduling
                     $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
                     $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json",
                     $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/plan.json",
-                    debugLevel: 2
+                    debugLevel: 0
                 );
             }
         }
