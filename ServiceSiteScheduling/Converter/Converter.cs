@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Google.Protobuf;
+using ServiceSiteScheduling.NoProto;
 using ServiceSiteScheduling.Servicing;
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
@@ -10,7 +11,7 @@ namespace ServiceSiteScheduling
 {
     class Converter
     {
-        NoProto.EvaluatorScenario InterfaceScenarioEvaluator;
+        EvaluatorScenario InterfaceScenarioEvaluator;
         ProblemInstance ProblemInstanceSolver;
 
         public string PathToStoreEvalScenario;
@@ -19,7 +20,7 @@ namespace ServiceSiteScheduling
         {
             this.ProblemInstanceSolver = problemInstanceSolver;
             this.PathToStoreEvalScenario = pathScenarioEval;
-            this.InterfaceScenarioEvaluator = new NoProto.EvaluatorScenario()
+            this.InterfaceScenarioEvaluator = new EvaluatorScenario()
             {
                 StartTime = problemInstanceSolver.ScenarioStartTime,
                 EndTime = problemInstanceSolver.ScenarioEndTime,
@@ -150,7 +151,7 @@ namespace ServiceSiteScheduling
 
             foreach (var arrivalTrain in ProblemInstanceSolver.InterfaceScenario.In.Trains)
             {
-                NoProto.Train train = new();
+                Train train = new();
 
                 train.Id = arrivalTrain.Id;
                 train.Time = arrivalTrain.Departure;
@@ -172,17 +173,14 @@ namespace ServiceSiteScheduling
 
                         if (member.Tasks.Count > 0)
                         {
-                            NoProto.TaskSpec tasksEvaluator = new();
+                            TaskSpec tasksEvaluator = new();
                             foreach (var taskSolver in member.Tasks)
                             {
                                 string requiredskill = "";
                                 if (taskSolver.Type.Other != null)
                                 {
                                     Debug.Assert(taskSolver.Type.Predefined == null);
-                                    NoProto.TaskType taskTypeEvaluator = new(
-                                        null,
-                                        taskSolver.Type.Other
-                                    );
+                                    TaskType taskTypeEvaluator = new(null, taskSolver.Type.Other);
                                     tasksEvaluator.Type = taskTypeEvaluator;
 
                                     if (taskSolver.Type.Other == "Reinigingsperron")
@@ -218,7 +216,7 @@ namespace ServiceSiteScheduling
                     var arrivalTrain in ProblemInstanceSolver.InterfaceScenario.InStanding.Trains
                 )
                 {
-                    NoProto.Train train = new();
+                    Train train = new();
 
                     train.Id = arrivalTrain.Id;
                     // train.Time = arrivalTrain.Departure;
@@ -241,14 +239,14 @@ namespace ServiceSiteScheduling
 
                             if (member.Tasks.Count > 0)
                             {
-                                NoProto.TaskSpec tasksEvaluator = new();
+                                TaskSpec tasksEvaluator = new();
                                 foreach (var taskSolver in member.Tasks)
                                 {
                                     string requiredskill = "";
                                     if (taskSolver.Type.Other != null)
                                     {
                                         Debug.Assert(taskSolver.Type.Predefined == null);
-                                        NoProto.TaskType taskTypeEvaluator = new(
+                                        TaskType taskTypeEvaluator = new(
                                             null,
                                             taskSolver.Type.Other
                                         );
@@ -284,7 +282,7 @@ namespace ServiceSiteScheduling
                 var departureTrain in ProblemInstanceSolver.InterfaceScenario.Out.TrainRequests
             )
             {
-                NoProto.Train train = new();
+                Train train = new();
 
                 train.Id = departureTrain.DisplayName;
                 train.Time = departureTrain.Arrival;
@@ -320,7 +318,7 @@ namespace ServiceSiteScheduling
                         .TrainRequests
                 )
                 {
-                    NoProto.Train train = new();
+                    Train train = new();
 
                     train.Id = outStandingTrain.DisplayName;
                     // train.Time = outStandingTrain.Arrival;
@@ -349,7 +347,7 @@ namespace ServiceSiteScheduling
             return true;
         }
 
-        public static void CreateTrainUnitTypes(IList<NoProto.TrainUnitType> trainUnitTypes)
+        public static void CreateTrainUnitTypes(IList<TrainUnitType> trainUnitTypes)
         {
             trainUnitTypes.Add(
                 new()

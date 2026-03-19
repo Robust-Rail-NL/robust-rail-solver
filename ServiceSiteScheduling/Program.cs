@@ -968,7 +968,7 @@ namespace ServiceSiteScheduling
                     {
                         Console.WriteLine("The Location file parsing was successful");
                         Console.WriteLine(
-                            $"    Location with {ProblemInstance.Current.Tracks.Length} tracks and {ProblemInstance.Current.InterfaceLocation.TrackParts.Count} track parts, including {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type == NoProto.TrackPartType.RailRoad && tp.ParkingAllowed)} parking tracks, {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type != NoProto.TrackPartType.RailRoad && tp.Type != NoProto.TrackPartType.Bumper)} crossings and {ProblemInstance.Current.InterfaceLocation.Facilities.Count} servicing tracks"
+                            $"    Location with {ProblemInstance.Current.Tracks.Length} tracks and {ProblemInstance.Current.InterfaceLocation.TrackParts.Length} track parts, including {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type == NoProto.TrackPartType.RailRoad && tp.ParkingAllowed)} parking tracks, {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type != NoProto.TrackPartType.RailRoad && tp.Type != NoProto.TrackPartType.Bumper)} crossings and {ProblemInstance.Current.InterfaceLocation.Facilities.Length} servicing tracks"
                         );
                     }
                 }

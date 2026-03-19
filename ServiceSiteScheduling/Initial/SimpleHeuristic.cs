@@ -196,12 +196,7 @@ namespace ServiceSiteScheduling.Initial
             foreach (var type in ProblemInstance.Current.ServiceTypes)
             foreach (var resource in type.Resources)
             {
-                Console.WriteLine("adding resource to schedule");
                 schedule[resource] = new LinkedList<ServiceTask>();
-            }
-            if (schedule.Count == 0)
-            {
-                Console.WriteLine("empty schedule");
             }
 
             List<ServiceTask> candidates = [];

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ServiceSiteScheduling.Utilities
 {
@@ -6,8 +7,13 @@ namespace ServiceSiteScheduling.Utilities
     {
         private static readonly JsonSerializerOptions serializerOptions = new()
         {
+            NumberHandling =
+                JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            IndentCharacter = '\t',
+            IndentSize = 1,
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
         };
 
         public static string SerializeJson<T>(this T obj)

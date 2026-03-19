@@ -1,18 +1,20 @@
 #nullable enable
 
+using System.Collections.Immutable;
+
 namespace ServiceSiteScheduling.NoProto
 {
     // This message contains the result of a shunting algorithm.
-    public class Plan
+    public record Plan
     {
-        public IList<Action> Actions { get; set; } = [];
+        public ImmutableArray<Action> Actions { get; set; } = [];
 
         // A list of all TrackParts. From this a rail graph can be constructed.
         // This field should be temporary and be replaced as soon as we send input to the algorithm.
         public IList<TrackPart>? TrackParts { get; set; }
     }
 
-    public class Action
+    public record Action
     {
         // The time interval of this action.
         // Times are in seconds since the epoch.
@@ -38,5 +40,31 @@ namespace ServiceSiteScheduling.NoProto
         // Train units involved in this Action
         // If not specified, all train units are involved.
         public IList<string>? TrainUnitIds { get; set; }
+
+        // Compute hash code from all fields except the lists.
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(
+                this.StartTime,
+                this.EndTime,
+                this.TaskType,
+                this.ShuntingUnit,
+                this.Location
+            );
+        }
+
+        // Determine equality based on all fields except the lists.
+        public virtual bool Equals(Action? other)
+        {
+            if (other == null)
+                return false;
+            if (other.StartTime != this.StartTime || other.EndTime != this.EndTime)
+                return false;
+            if (!(this.ShuntingUnit?.Equals(other.ShuntingUnit) ?? other.ShuntingUnit == null))
+                return false;
+            if (other.Location != this.Location)
+                return false;
+            return true;
+        }
     }
 }

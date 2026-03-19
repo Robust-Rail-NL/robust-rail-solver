@@ -1,31 +1,36 @@
 #nullable enable
 
 using System.Collections.Immutable;
+using ServiceSiteScheduling.TrackParts;
 
 namespace ServiceSiteScheduling.NoProto
 {
-    public record Location
+    public record Location(
+        ImmutableArray<TrackPart> TrackParts,
+        ImmutableArray<Facility> Facilities,
+        ImmutableArray<TaskType> TaskTypes
+    );
+
+    public record Resource(string? Name, ulong? FacilityId, ulong? TrackPartId)
     {
-        public IList<TrackPart>? TrackParts { get; set; }
-        public IList<Facility>? Facilities { get; set; }
-        public IList<TaskType>? TaskTypes { get; set; }
+        internal static Resource FromFacility(Facility facility)
+        {
+            return new Resource(facility.Id.ToString(), facility.Id, null);
+        }
+
+        internal static Resource FromInfra(Infrastructure infra)
+        {
+            return new Resource(infra.ID.ToString(), null, infra.ID);
+        }
     }
 
-    public record Resource
-    {
-        public string? Name { get; set; }
-        public ulong? FacilityId { get; internal set; }
-        public ulong? TrackPartId { get; internal set; }
-    }
-
-    public record Facility
-    {
-        public ulong? Id { get; set; }
-        public string? Type { get; set; }
-        public ImmutableArray<ulong> RelatedTrackParts { get; init; } = [];
-        public ImmutableArray<TaskType> TaskTypes { get; init; } = [];
-        public int? SimultaneousUsageCount { get; set; }
-    }
+    public record Facility(
+        ulong? Id,
+        string? Type,
+        ImmutableArray<ulong> RelatedTrackParts,
+        ImmutableArray<TaskType> TaskTypes,
+        int? SimultaneousUsageCount
+    );
 
     public enum TrackPartType
     {
@@ -41,17 +46,16 @@ namespace ServiceSiteScheduling.NoProto
         Bumper,
     }
 
-    public record TrackPart
-    {
-        public required ulong Id { get; set; }
-        public TrackPartType? Type { get; set; }
-        public ImmutableArray<ulong> ASide { get; init; }
-        public ImmutableArray<ulong> BSide { get; init; }
-        public double? Length { get; set; }
-        public string? Name { get; set; }
-        public required bool SawMovementAllowed { get; set; }
-        public required bool ParkingAllowed { get; set; }
-    }
+    public record TrackPart(
+        ulong Id,
+        TrackPartType? Type,
+        ImmutableArray<ulong> ASide,
+        ImmutableArray<ulong> BSide,
+        double? Length,
+        string? Name,
+        bool SawMovementAllowed,
+        bool ParkingAllowed
+    );
 
     public record TaskType
     {
@@ -66,6 +70,22 @@ namespace ServiceSiteScheduling.NoProto
             }
             this.Predefined = predefined;
             this.Other = other;
+        }
+
+        private static readonly Dictionary<PredefinedTaskType, TaskType> TaskTypeMap = [];
+
+        public static TaskType FromPredefined(PredefinedTaskType predefined)
+        {
+            if (TaskTypeMap.TryGetValue(predefined, out var taskType))
+            {
+                return taskType;
+            }
+            else
+            {
+                taskType = new TaskType(predefined, null);
+                TaskTypeMap[predefined] = taskType;
+                return taskType;
+            }
         }
     }
 

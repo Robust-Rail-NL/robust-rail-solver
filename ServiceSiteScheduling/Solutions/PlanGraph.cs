@@ -3,15 +3,16 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
-using Google.Protobuf;
 using Microsoft.Extensions.Logging;
 using ServiceSiteScheduling.Matching;
+using ServiceSiteScheduling.NoProto;
 using ServiceSiteScheduling.Parking;
 using ServiceSiteScheduling.Routing;
 using ServiceSiteScheduling.Tasks;
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
+using static ServiceSiteScheduling.NoProto.PredefinedTaskType;
 
 namespace ServiceSiteScheduling.Solutions
 {
@@ -971,7 +972,7 @@ namespace ServiceSiteScheduling.Solutions
 
         public void OutputForDemian()
         {
-            using (System.IO.StreamWriter sw = new("demian.txt"))
+            using (StreamWriter sw = new("demian.txt"))
             {
                 MoveTask? move = this.First;
                 while (move != null)
@@ -1055,12 +1056,12 @@ namespace ServiceSiteScheduling.Solutions
 
         public void WriteJSONFile(string filePath)
         {
-            NoProto.Plan? plan = this.ToProtobuf();
+            Plan? plan = this.ToProtobuf();
             string jsonPlan = plan.SerializeJson();
             File.WriteAllText(filePath, jsonPlan);
         }
 
-        public NoProto.Plan? ToProtobuf()
+        public Plan? ToProtobuf()
         {
             if (
                 ProblemInstance.Current.InterfaceLocation == null
@@ -1070,7 +1071,7 @@ namespace ServiceSiteScheduling.Solutions
 
             List<NoProto.Action> actions = [];
 
-            Dictionary<ShuntTrain, NoProto.ShuntingUnit> trainconversion = [];
+            Dictionary<ShuntTrain, ShuntingUnit> trainconversion = [];
 
             MoveTask? move = this.First;
             while (move != null)
@@ -1086,10 +1087,7 @@ namespace ServiceSiteScheduling.Solutions
                     {
                         var splitaction = new NoProto.Action();
                         splitaction.Location = routing.ToTrack.ID;
-                        splitaction.TaskType = new NoProto.TaskType(
-                            NoProto.PredefinedTaskType.Split,
-                            null
-                        );
+                        splitaction.TaskType = TaskType.FromPredefined(Split);
                         splitaction.EndTime = endtime;
                         splitaction.StartTime = endtime = (ulong)(
                             routing.End
@@ -1112,10 +1110,7 @@ namespace ServiceSiteScheduling.Solutions
                     {
                         var moveaction = new NoProto.Action();
                         moveaction.Location = routing.FromTrack.ID;
-                        moveaction.TaskType = new NoProto.TaskType(
-                            NoProto.PredefinedTaskType.Move,
-                            null
-                        );
+                        moveaction.TaskType = TaskType.FromPredefined(Move);
                         moveaction.StartTime = (ulong)routing.Start;
                         moveaction.EndTime = endtime;
                         moveaction.ShuntingUnit = GetShuntUnit(move.Train, trainconversion);
@@ -1127,9 +1122,7 @@ namespace ServiceSiteScheduling.Solutions
                             {
                                 if (infra != previous)
                                 {
-                                    var resource = new NoProto.Resource();
-                                    resource.TrackPartId = infra.ID;
-                                    resource.Name = infra.ID.ToString();
+                                    var resource = Resource.FromInfra(infra);
                                     moveaction.Resources.Add(resource);
 
                                     previous = infra;
@@ -1168,10 +1161,7 @@ namespace ServiceSiteScheduling.Solutions
                             {
                                 var mergeaction = new NoProto.Action();
                                 mergeaction.Location = task.Track.ID;
-                                mergeaction.TaskType = new NoProto.TaskType(
-                                    NoProto.PredefinedTaskType.Combine,
-                                    null
-                                );
+                                mergeaction.TaskType = TaskType.FromPredefined(Combine);
                                 mergeaction.StartTime = (ulong)starttime;
                                 mergeaction.EndTime = (ulong)(
                                     starttime
@@ -1196,10 +1186,7 @@ namespace ServiceSiteScheduling.Solutions
                         // Add move
                         var moveaction = new NoProto.Action();
                         moveaction.Location = route.Tracks[0].ID;
-                        moveaction.TaskType = new NoProto.TaskType(
-                            NoProto.PredefinedTaskType.Move,
-                            null
-                        );
+                        moveaction.TaskType = TaskType.FromPredefined(Move);
                         moveaction.StartTime = (ulong)starttime;
                         moveaction.EndTime = (ulong)(starttime + route.Duration);
                         moveaction.ShuntingUnit = shuntingunit;
@@ -1211,9 +1198,7 @@ namespace ServiceSiteScheduling.Solutions
                             {
                                 if (infra != previous)
                                 {
-                                    var resource = new NoProto.Resource();
-                                    resource.TrackPartId = infra.ID;
-                                    resource.Name = infra.ID.ToString();
+                                    var resource = Resource.FromInfra(infra);
                                     moveaction.Resources.Add(resource);
 
                                     previous = infra;
@@ -1235,10 +1220,7 @@ namespace ServiceSiteScheduling.Solutions
                         {
                             var mergeaction = new NoProto.Action();
                             mergeaction.Location = departurerouting.Next.Track.ID;
-                            mergeaction.TaskType = new NoProto.TaskType(
-                                NoProto.PredefinedTaskType.Combine,
-                                null
-                            );
+                            mergeaction.TaskType = TaskType.FromPredefined(Combine);
                             mergeaction.StartTime = (ulong)starttime;
                             mergeaction.EndTime = (ulong)departurerouting.End;
                             mergeaction.ShuntingUnit = GetShuntUnit(route.Train, trainconversion);
@@ -1300,17 +1282,17 @@ namespace ServiceSiteScheduling.Solutions
             }
 
             // Sort the actions in the plan
-            Dictionary<NoProto.PredefinedTaskType, int> taskTypeOrder = [];
+            Dictionary<PredefinedTaskType, int> taskTypeOrder = [];
             int idx = 0;
-            taskTypeOrder[NoProto.PredefinedTaskType.Arrive] = idx++;
-            taskTypeOrder[NoProto.PredefinedTaskType.Move] = idx++;
-            taskTypeOrder[NoProto.PredefinedTaskType.Wait] = idx++;
-            taskTypeOrder[NoProto.PredefinedTaskType.Split] = idx++;
-            taskTypeOrder[NoProto.PredefinedTaskType.Combine] = idx++;
-            taskTypeOrder[NoProto.PredefinedTaskType.Exit] = idx++;
+            taskTypeOrder[Arrive] = idx++;
+            taskTypeOrder[Move] = idx++;
+            taskTypeOrder[Wait] = idx++;
+            taskTypeOrder[Split] = idx++;
+            taskTypeOrder[Combine] = idx++;
+            taskTypeOrder[Exit] = idx++;
             taskTypeOrder[default] = idx++;
 
-            NoProto.Plan plan_pb = new();
+            Plan plan_pb = new();
             foreach (
                 NoProto.Action a in actions
                     .OrderBy(a => a.StartTime)
@@ -1430,7 +1412,7 @@ namespace ServiceSiteScheduling.Solutions
 
         private static void AddTrackAction(
             TrackTask task,
-            Dictionary<ShuntTrain, NoProto.ShuntingUnit> trainconversion,
+            Dictionary<ShuntTrain, ShuntingUnit> trainconversion,
             List<NoProto.Action> actions
         )
         {
@@ -1440,7 +1422,7 @@ namespace ServiceSiteScheduling.Solutions
         private static void AddTrackAction(
             TrackTask task,
             Time endtime,
-            Dictionary<ShuntTrain, NoProto.ShuntingUnit> trainconversion,
+            Dictionary<ShuntTrain, ShuntingUnit> trainconversion,
             List<NoProto.Action> actions
         )
         {
@@ -1463,9 +1445,7 @@ namespace ServiceSiteScheduling.Solutions
                     foreach (var infra in gatewayconnection.Path)
                         if (infra != previous)
                         {
-                            var resource = new NoProto.Resource();
-                            resource.TrackPartId = infra.ID;
-                            resource.Name = infra.ID.ToString();
+                            var resource = Resource.FromInfra(infra);
                             trackaction.Resources.Add(resource);
 
                             previous = infra;
@@ -1477,10 +1457,7 @@ namespace ServiceSiteScheduling.Solutions
                         var nextparking = new NoProto.Action();
                         nextparking.Location = task.Track.ID;
                         nextparking.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
-                        nextparking.TaskType = new NoProto.TaskType(
-                            NoProto.PredefinedTaskType.Wait,
-                            null
-                        );
+                        nextparking.TaskType = TaskType.FromPredefined(Wait);
                         nextparking.StartTime = trackaction.EndTime;
                         nextparking.EndTime = (ulong)endtime;
                         actions.Add(nextparking);
@@ -1488,10 +1465,7 @@ namespace ServiceSiteScheduling.Solutions
                     break;
                 }
                 case TrackTaskType.Parking:
-                    trackaction.TaskType = new NoProto.TaskType(
-                        NoProto.PredefinedTaskType.Wait,
-                        null
-                    );
+                    trackaction.TaskType = TaskType.FromPredefined(Wait);
                     trackaction.StartTime = (ulong)task.Start;
                     trackaction.EndTime = (ulong)endtime;
                     break;
@@ -1502,15 +1476,12 @@ namespace ServiceSiteScheduling.Solutions
                         var previousparking = new NoProto.Action();
                         previousparking.Location = task.Track.ID;
                         previousparking.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
-                        previousparking.TaskType = new NoProto.TaskType(
-                            NoProto.PredefinedTaskType.Wait,
-                            null
-                        );
+                        previousparking.TaskType = TaskType.FromPredefined(Wait);
                         previousparking.StartTime = (ulong)service.Previous.End;
                         previousparking.EndTime = (ulong)service.Start;
                         actions.Add(previousparking);
                     }
-                    trackaction.TaskType = new NoProto.TaskType(null, service.Type.Name);
+                    trackaction.TaskType = new TaskType(null, service.Type.Name);
                     trackaction.StartTime = (ulong)service.Start;
                     trackaction.EndTime = trackaction.StartTime + (ulong)service.MinimumDuration;
                     if (endtime - service.Start > service.MinimumDuration)
@@ -1518,22 +1489,14 @@ namespace ServiceSiteScheduling.Solutions
                         var nextparking = new NoProto.Action();
                         nextparking.Location = task.Track.ID;
                         nextparking.ShuntingUnit = GetShuntUnit(task.Train, trainconversion);
-                        nextparking.TaskType = new NoProto.TaskType(
-                            NoProto.PredefinedTaskType.Wait,
-                            null
-                        );
+                        nextparking.TaskType = TaskType.FromPredefined(Wait);
                         nextparking.StartTime = trackaction.EndTime;
                         nextparking.EndTime = (ulong)endtime;
                         actions.Add(nextparking);
                     }
-                    var facilityresource = new NoProto.Resource();
-                    facilityresource.FacilityId = ProblemInstance
-                        .Current
-                        .FacilityConversion[service.Type]
-                        .Id;
-                    facilityresource.Name = ProblemInstance
-                        .Current.FacilityConversion[service.Type]
-                        .Id.ToString();
+                    var facilityresource = Resource.FromFacility(
+                        ProblemInstance.Current.FacilityConversion[service.Type]
+                    );
                     trackaction.Resources.Add(facilityresource);
                     break;
                 case TrackTaskType.Departure:
@@ -1549,9 +1512,7 @@ namespace ServiceSiteScheduling.Solutions
                         var infra = gatewayconnection2.Path[i];
                         if (infra != previous2)
                         {
-                            var resource = new NoProto.Resource();
-                            resource.TrackPartId = infra.ID;
-                            resource.Name = infra.ID.ToString();
+                            var resource = Resource.FromInfra(infra);
                             trackaction.Resources.Add(resource);
                         }
                         previous2 = infra;
@@ -1563,13 +1524,13 @@ namespace ServiceSiteScheduling.Solutions
             actions.Add(trackaction);
         }
 
-        private static NoProto.ShuntingUnit GetShuntUnit(
+        private static ShuntingUnit GetShuntUnit(
             ShuntTrain train,
             Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion
         {
-            if (!trainconversion.TryGetValue(train, out NoProto.ShuntingUnit? shuntingunit))
+            if (!trainconversion.TryGetValue(train, out ShuntingUnit? shuntingunit))
             {
-                shuntingunit = new NoProto.ShuntingUnit(init: true);
+                shuntingunit = new ShuntingUnit(init: true);
                 foreach (var unit in train.Units)
                     shuntingunit.Members.Add(
                         ProblemInstance.Current.TrainUnitConversion[unit.Base]
@@ -1585,7 +1546,7 @@ namespace ServiceSiteScheduling.Solutions
             }
             else
             {
-                var _shuntingunit = new NoProto.ShuntingUnit(shuntingunit);
+                var _shuntingunit = new ShuntingUnit(shuntingunit);
 
                 trainconversion[train] = _shuntingunit;
                 return _shuntingunit;
