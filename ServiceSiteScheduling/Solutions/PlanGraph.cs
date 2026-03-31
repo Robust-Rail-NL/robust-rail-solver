@@ -997,7 +997,17 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public AlgoIface.Plan GenerateOutputJSONformat()
+        public void WriteJSONFile(string filePath)
+        {
+            AlgoIface.Plan plan = this.ToProtobuf();
+            var formatter = new JsonFormatter(
+                JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)
+            );
+            string jsonPlan = formatter.Format(plan);
+            File.WriteAllText(filePath, jsonPlan);
+        }
+
+        public AlgoIface.Plan ToProtobuf()
         {
             if (
                 ProblemInstance.Current.InterfaceLocation == null
@@ -1005,7 +1015,7 @@ namespace ServiceSiteScheduling.Solutions
             )
                 return null;
 
-            AlgoIface.Plan plan = new();
+            List<AlgoIface.Action> actions = [];
 
             Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion = [];
 
@@ -1031,7 +1041,7 @@ namespace ServiceSiteScheduling.Solutions
                             - routing.Train.Units[0].Type.SplitDuration * (routing.Next.Count - 1)
                         );
                         splitaction.ShuntingUnit = GetShuntUnit(move.Train, trainconversion);
-                        plan.Actions.Add(splitaction);
+                        actions.Add(splitaction);
 
                         // add parent-child relation
                         foreach (var task in routing.Next)
@@ -1072,11 +1082,11 @@ namespace ServiceSiteScheduling.Solutions
                         // remove first
                         moveaction.Resources.RemoveAt(0);
                         // add to plan
-                        plan.Actions.Add(moveaction);
+                        actions.Add(moveaction);
                     }
 
                     // Add task
-                    AddTrackAction(routing.Previous, trainconversion, plan);
+                    AddTrackAction(routing.Previous, trainconversion, actions);
                 }
                 else
                 {
@@ -1092,7 +1102,7 @@ namespace ServiceSiteScheduling.Solutions
 
                         // Add tasks
                         foreach (var task in tasks)
-                            AddTrackAction(task, starttime, trainconversion, plan);
+                            AddTrackAction(task, starttime, trainconversion, actions);
 
                         // Add merge
                         if (tasks.Count() > 1)
@@ -1115,7 +1125,7 @@ namespace ServiceSiteScheduling.Solutions
                                     task.Train,
                                     trainconversion
                                 );
-                                plan.Actions.Add(mergeaction);
+                                actions.Add(mergeaction);
 
                                 // add parent-child-relation
                                 mergeaction.ShuntingUnit.ChildIDs.Add(shuntingunit.Id);
@@ -1155,7 +1165,7 @@ namespace ServiceSiteScheduling.Solutions
                         if (moveaction.Resources.Count > 0)
                             moveaction.Resources.RemoveAt(0);
                         // add to plan
-                        plan.Actions.Add(moveaction);
+                        actions.Add(moveaction);
                         starttime += route.Duration;
                     }
                     var departureshuntunit = GetShuntUnit(departurerouting.Train, trainconversion);
@@ -1171,7 +1181,7 @@ namespace ServiceSiteScheduling.Solutions
                             mergeaction.StartTime = (ulong)starttime;
                             mergeaction.EndTime = (ulong)departurerouting.End;
                             mergeaction.ShuntingUnit = GetShuntUnit(route.Train, trainconversion);
-                            plan.Actions.Add(mergeaction);
+                            actions.Add(mergeaction);
 
                             // add parent-child-relation
                             mergeaction.ShuntingUnit.ChildIDs.Add(departureshuntunit.Id);
@@ -1179,11 +1189,39 @@ namespace ServiceSiteScheduling.Solutions
                         }
                     }
                     // Add departure
-                    AddTrackAction(departurerouting.Next, trainconversion, plan);
+                    AddTrackAction(departurerouting.Next, trainconversion, actions);
                 }
                 move = move.NextMove;
             }
-            return plan;
+
+            // Sort the actions in the plan
+            Dictionary<AlgoIface.PredefinedTaskType, int> taskTypeOrder = [];
+            int idx = 0;
+            taskTypeOrder[AlgoIface.PredefinedTaskType.Arrive] = idx++;
+            taskTypeOrder[AlgoIface.PredefinedTaskType.Move] = idx++;
+            taskTypeOrder[AlgoIface.PredefinedTaskType.Wait] = idx++;
+            taskTypeOrder[AlgoIface.PredefinedTaskType.Split] = idx++;
+            taskTypeOrder[AlgoIface.PredefinedTaskType.Combine] = idx++;
+            taskTypeOrder[AlgoIface.PredefinedTaskType.Exit] = idx++;
+            int otherTaskType = idx++;
+
+            AlgoIface.Plan plan_pb = new();
+            foreach (
+                AlgoIface.Action a in actions
+                    .OrderBy(a => a.StartTime)
+                    .ThenBy(a => a.EndTime)
+                    .ThenBy(a =>
+                        a.TaskType.TaskTypeCase == AlgoIface.TaskType.TaskTypeOneofCase.Predefined
+                            ? taskTypeOrder[a.TaskType.Predefined]
+                            : otherTaskType
+                    )
+                    .ThenBy(a => a.TaskType.Other)
+            )
+            {
+                plan_pb.Actions.Add(a);
+            }
+
+            return plan_pb;
         }
 
         public void DisplayMovements()
@@ -1289,17 +1327,17 @@ namespace ServiceSiteScheduling.Solutions
         private static void AddTrackAction(
             TrackTask task,
             Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion,
-            AlgoIface.Plan plan
+            List<AlgoIface.Action> actions
         )
         {
-            AddTrackAction(task, task.End, trainconversion, plan);
+            AddTrackAction(task, task.End, trainconversion, actions);
         }
 
         private static void AddTrackAction(
             TrackTask task,
             Time endtime,
             Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion,
-            AlgoIface.Plan plan
+            List<AlgoIface.Action> actions
         )
         {
             var trackaction = new AlgoIface.Action();
@@ -1361,7 +1399,7 @@ namespace ServiceSiteScheduling.Solutions
                         nextparking.TaskType.Predefined = AlgoIface.PredefinedTaskType.Wait;
                         nextparking.StartTime = trackaction.EndTime;
                         nextparking.EndTime = (ulong)endtime;
-                        plan.Actions.Add(nextparking);
+                        actions.Add(nextparking);
                     }
                     break;
                 case TrackTaskType.Parking:
@@ -1380,7 +1418,7 @@ namespace ServiceSiteScheduling.Solutions
                         previousparking.TaskType.Predefined = AlgoIface.PredefinedTaskType.Wait;
                         previousparking.StartTime = (ulong)service.Previous.End;
                         previousparking.EndTime = (ulong)service.Start;
-                        plan.Actions.Add(previousparking);
+                        actions.Add(previousparking);
                     }
                     trackaction.TaskType.Other = service.Type.Name;
                     trackaction.StartTime = (ulong)service.Start;
@@ -1394,7 +1432,7 @@ namespace ServiceSiteScheduling.Solutions
                         nextparking.TaskType.Predefined = AlgoIface.PredefinedTaskType.Wait;
                         nextparking.StartTime = trackaction.EndTime;
                         nextparking.EndTime = (ulong)endtime;
-                        plan.Actions.Add(nextparking);
+                        actions.Add(nextparking);
                     }
                     var facilityresource = new AlgoIface.Resource();
                     facilityresource.FacilityId = ProblemInstance
@@ -1456,7 +1494,7 @@ namespace ServiceSiteScheduling.Solutions
                     }
                     break;
             }
-            plan.Actions.Add(trackaction);
+            actions.Add(trackaction);
         }
 
         private static AlgoIface.ShuntingUnit GetShuntUnit(

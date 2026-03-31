@@ -1,0 +1,18 @@
+Mode: "Standard"
+
+TabuSearch:
+  Iterations: 40
+  IterationsUntilReset: 100
+  TabuListLength: 16
+  Bias: 0.5
+
+SimulatedAnnealing:
+  MaxDuration: 10
+  StopWhenFeasible: true
+  IterationsUntilReset: 150000
+  T: 15
+  A: 0.97
+  Q: 2000
+  Reset: 2000
+  Bias: 0.2
+  IntensifyOnImprovement: false

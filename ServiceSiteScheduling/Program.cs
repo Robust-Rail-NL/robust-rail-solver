@@ -21,18 +21,7 @@ namespace ServiceSiteScheduling
                     {
                         config_file = arg.Substring("--config=".Length);
                         Console.WriteLine("Using config file: " + config_file);
-                        if (!File.Exists(config_file))
-                        {
-                            Console.Error.WriteLine(
-                                $"Error: Config file '{config_file}' not found."
-                            );
-                            Environment.Exit(1);
-                        }
-
-                        string yaml = File.ReadAllText(config_file);
-                        var deserializer = new Deserializer();
-                        // The config has a debugLevel value: 0=only important info, 1=some info, 2=all info
-                        Config config = deserializer.Deserialize<Config>(new StringReader(yaml));
+                        Config config = Config.ReadFrom(config_file);
 
                         string directoryPath = Path.GetDirectoryName(config.PlanPath);
                         if (!Directory.Exists(directoryPath) && directoryPath != null)
@@ -118,7 +107,7 @@ namespace ServiceSiteScheduling
         // Output:  @plan_path: path to where the plan (.json) file will be written
         // Method: First it calls a Tabu Search method to find an initial plan (Graph) that is used by
         //         a Simulated Annealing method to find the final schedle plan (Totally Ordered Graph)
-        static void CreatePlan(
+        internal static void CreatePlan(
             string location_path,
             string scenario_path,
             string plan_path,
@@ -184,7 +173,7 @@ namespace ServiceSiteScheduling
                 }
                 else
                 {
-                    ts.Run(40, 100, 16, 0.5);
+                    ts.Run(40, 100, 16, 0.5, debugLevel, tmp_plan_path);
                 }
                 LocalSearch.SimulatedAnnealing sa = new(random, ts.Graph);
                 if (config != null)
@@ -252,14 +241,7 @@ namespace ServiceSiteScheduling
                 }
 
                 // Write JSON plan to file
-                Plan plan_pb = sa.Graph.GenerateOutputJSONformat();
-                var formatter = new JsonFormatter(
-                    JsonFormatter
-                        .Settings.Default.WithIndentation("\t")
-                        .WithFormatDefaultValues(true)
-                );
-                string jsonPlan = formatter.Format(plan_pb);
-                File.WriteAllText(plan_path, jsonPlan);
+                sa.Graph.WriteJSONFile(plan_path);
                 Console.WriteLine("Plan written to: " + plan_path);
 
                 File.WriteAllText(
@@ -405,15 +387,7 @@ namespace ServiceSiteScheduling
                 Console.WriteLine("------------------------------");
                 Console.WriteLine($"Generate JSON format plan");
                 Console.WriteLine("------------------------------");
-                // Write Plan to json file
-                Plan plan_pb = sa.Graph.GenerateOutputJSONformat();
-                var formatter = new JsonFormatter(
-                    JsonFormatter
-                        .Settings.Default.WithIndentation("\t")
-                        .WithFormatDefaultValues(true)
-                );
-                string jsonPlan = formatter.Format(plan_pb);
-                File.WriteAllText(plan_path, jsonPlan);
+                sa.Graph.WriteJSONFile(plan_path);
                 Console.WriteLine(
                     "----------------------------------------------------------------------"
                 );
@@ -1178,7 +1152,7 @@ namespace ServiceSiteScheduling
         }
     }
 
-    class Config
+    internal class Config
     {
         public ConfigTabuSearch TabuSearch { get; set; }
 
@@ -1269,5 +1243,19 @@ namespace ServiceSiteScheduling
         public string PlanPath { get; set; }
         public string TemporaryPlanPath { get; set; }
         public string Mode { get; set; }
+
+        internal static Config ReadFrom(string config_file)
+        {
+            if (!File.Exists(config_file))
+            {
+                Console.Error.WriteLine($"Error: Config file '{config_file}' not found.");
+                Environment.Exit(1);
+            }
+
+            string yaml = File.ReadAllText(config_file);
+            var deserializer = new Deserializer();
+            // The config has a debugLevel value: 0=only important info, 1=some info, 2=all info
+            return deserializer.Deserialize<Config>(new StringReader(yaml));
+        }
     }
 }

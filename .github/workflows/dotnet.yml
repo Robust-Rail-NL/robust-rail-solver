@@ -9,10 +9,6 @@ on:
   pull_request:
     branches: [ "main", "dev" ]
 
-defaults:
-  run:
-    working-directory: ./ServiceSiteScheduling
-
 jobs:
   check_formatting:
     runs-on: ubuntu-latest
@@ -21,7 +17,8 @@ jobs:
     - uses: actions/checkout@v4
     - run: |
         dotnet tool restore
-        dotnet csharpier check .
+        dotnet csharpier check ./ServiceSiteScheduling/
+        dotnet csharpier check ./Tests/
   build:
     runs-on: ubuntu-latest
     steps:
@@ -31,8 +28,11 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore HIP.csproj
+      run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore HIP.csproj
+      run: dotnet build --no-restore
     - name: Run
-      run: dotnet run --no-build --verbosity normal
+      working-directory: ./ServiceSiteScheduling
+      run: dotnet run --no-build --verbosity normal --project HIP.csproj
+    - name: Test
+      run: dotnet run --no-build --project Tests/ServiceSiteScheduling.Tests.csproj
