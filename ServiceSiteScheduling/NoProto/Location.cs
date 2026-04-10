@@ -5,11 +5,12 @@ using ServiceSiteScheduling.TrackParts;
 
 namespace ServiceSiteScheduling.NoProto
 {
-    public record Location(
-        ImmutableArray<TrackPart> TrackParts,
-        ImmutableArray<Facility> Facilities,
-        ImmutableArray<TaskType> TaskTypes
-    );
+    public record Location
+    {
+        public ImmutableArray<TrackPart> TrackParts { get; init; } = [];
+        public ImmutableArray<Facility> Facilities { get; init; } = [];
+        public ImmutableArray<TaskType> TaskTypes { get; init; } = [];
+    }
 
     public record Resource(string? Name, ulong? FacilityId, ulong? TrackPartId)
     {
@@ -46,16 +47,17 @@ namespace ServiceSiteScheduling.NoProto
         Bumper,
     }
 
-    public record TrackPart(
-        ulong Id,
-        TrackPartType? Type,
-        ImmutableArray<ulong> ASide,
-        ImmutableArray<ulong> BSide,
-        double? Length,
-        string? Name,
-        bool SawMovementAllowed,
-        bool ParkingAllowed
-    );
+    public record TrackPart
+    {
+        public ulong Id { get; init; }
+        public TrackPartType? Type { get; init; }
+        public ImmutableArray<ulong> ASide { get; init; } = [];
+        public ImmutableArray<ulong> BSide { get; init; } = [];
+        public double? Length { get; init; }
+        public string? Name { get; init; }
+        public bool SawMovementAllowed { get; init; }
+        public bool ParkingAllowed { get; init; }
+    }
 
     public record TaskType
     {

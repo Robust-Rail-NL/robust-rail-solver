@@ -6,10 +6,10 @@ namespace ServiceSiteScheduling.NoProto
 {
     // A Scenario contains the part of the problem specification which varies daily,
     // that is the trains which come in and go out of the shunting area.
-    public class Scenario
+    public record Scenario
     {
-        public ScenarioIn? In { get; set; }
-        public ScenarioOut? Out { get; set; }
+        public required ScenarioIn In { get; set; }
+        public required ScenarioOut Out { get; set; }
 
         public ScenarioInStanding? InStanding { get; set; }
         public ScenarioOutStanding? OutStanding { get; set; }
@@ -19,31 +19,31 @@ namespace ServiceSiteScheduling.NoProto
     }
 
     // Defines all trains arriving at the shunting area.
-    public class ScenarioIn
+    public record ScenarioIn
     {
-        public IList<IncomingTrain>? Trains { get; set; }
+        public IList<IncomingTrain> Trains { get; init; } = [];
     }
 
     // Defines all requests for trains leaving the shunting area.
-    public class ScenarioOut
+    public record ScenarioOut
     {
-        public IList<TrainRequest>? TrainRequests { get; set; }
+        public IList<TrainRequest> TrainRequests { get; init; } = [];
     }
 
     // Defines all trains that were alrady at the shunting area (before the scenario starts).
-    public class ScenarioInStanding
+    public record ScenarioInStanding
     {
-        public IList<IncomingTrain>? Trains { get; set; }
+        public IList<IncomingTrain> Trains { get; init; } = [];
     }
 
     // Defines all trains that will stay at the shunting area (after the scenario ends).
-    public class ScenarioOutStanding
+    public record ScenarioOutStanding
     {
-        public IList<TrainRequest>? TrainRequests { get; set; }
+        public IList<TrainRequest> TrainRequests { get; init; } = [];
     }
 
     // An incoming train
-    public class IncomingTrain
+    public record IncomingTrain
     {
         // The TrackPart ID of the location this train arrives over.
         public required ulong EntryTrackPart { get; set; }
@@ -58,19 +58,19 @@ namespace ServiceSiteScheduling.NoProto
 
         public string? Id { get; set; }
 
-        public IList<IncomingTrainUnit>? Members { get; set; }
+        public IList<IncomingTrainUnit> Members { get; init; } = [];
 
         // The index of the train unit when in- or outstanding, with lower indices
         // at the A-side of the track
         public double? StandingIndex { get; set; }
     }
 
-    public class IncomingTrainUnit
+    public record IncomingTrainUnit
     {
-        public TrainUnit? TrainUnit { get; set; }
+        public required TrainUnit TrainUnit { get; set; }
 
         // Tasks for this train unit
-        public IList<TaskSpec>? Tasks { get; set; }
+        public IList<TaskSpec> Tasks { get; init; } = [];
     }
 
     // A request for a train to leave the shunting area
@@ -170,7 +170,7 @@ namespace ServiceSiteScheduling.NoProto
     }
 
     // TrainUnit represents a combination of carriages which can move independently.
-    public class TrainUnit
+    public record TrainUnit
     {
         // A unique identifier of the unit
         public string? Id { get; set; }
@@ -179,7 +179,7 @@ namespace ServiceSiteScheduling.NoProto
 
         public string? TypeDisplayName { get; set; }
 
-        public IList<TaskSpec>? Tasks { get; set; }
+        public IList<TaskSpec> Tasks { get; init; } = [];
     }
 
     // TrainUnitType is a type of train unit

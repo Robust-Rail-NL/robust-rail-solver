@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 using ServiceSiteScheduling.Servicing;
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
@@ -165,7 +166,7 @@ namespace ServiceSiteScheduling
                             part.Id,
                             part.Name,
                             ServiceType.None,
-                            (int)part.Length,
+                            (int)(part.Length ?? 0),
                             Side.None,
                             part.ParkingAllowed,
                             part.SawMovementAllowed
@@ -192,7 +193,12 @@ namespace ServiceSiteScheduling
                         gateways.Add(gateway);
                         break;
                     default:
-                        break;
+                        Logging
+                            .GetLogger()
+                            .LogWarning(
+                                $"No TrackPartType set for TrackPart {part.Name} ({part.Id}); assuming RailRoad"
+                            );
+                        goto case NoProto.TrackPartType.RailRoad;
                 }
             }
             instance.Tracks = tracks.ToArray();
@@ -308,7 +314,7 @@ namespace ServiceSiteScheduling
                         }
                         break;
                     default:
-                        break;
+                        goto case NoProto.TrackPartType.RailRoad;
                 }
             }
             Dictionary<GateWay, TrackSwitchContainer> gatewayconnections = [];
