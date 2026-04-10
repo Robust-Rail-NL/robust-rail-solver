@@ -1,18 +1,14 @@
 {
     "trackParts": [
         {
+            "id": "0",
             "aSide": [
-                "51"
+                51
             ],
             "bSide": [
                 "50"
             ],
-            "name": "51b",
-            "id": "0",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "51b"
         },
         {
             "id": "1",
@@ -25,8 +21,7 @@
             "length": 480.0,
             "name": "52",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "2",
@@ -39,8 +34,7 @@
             "length": 431.0,
             "name": "53",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "3",
@@ -53,8 +47,7 @@
             "length": 387.0,
             "name": "54",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "4",
@@ -67,8 +60,7 @@
             "length": 357.0,
             "name": "55",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "5",
@@ -81,8 +73,7 @@
             "length": 222.0,
             "name": "56",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "6",
@@ -95,8 +86,7 @@
             "length": 202.0,
             "name": "57",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "7",
@@ -109,8 +99,7 @@
             "length": 203.0,
             "name": "58",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "8",
@@ -123,8 +112,7 @@
             "length": 271.0,
             "name": "59",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "9",
@@ -137,8 +125,7 @@
             "length": 248.0,
             "name": "60",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "10",
@@ -151,8 +138,7 @@
             "length": 247.0,
             "name": "61",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "11",
@@ -165,8 +151,7 @@
             "length": 247.0,
             "name": "62",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "12",
@@ -178,9 +163,7 @@
             ],
             "length": 272.0,
             "name": "63",
-            "sawMovementAllowed": true,
-            "type": "RailRoad",
-            "parkingAllowed": false
+            "sawMovementAllowed": true
         },
         {
             "id": "13",
@@ -191,10 +174,7 @@
                 "45"
             ],
             "length": 210.0,
-            "name": "64",
-            "type": "RailRoad",
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "64"
         },
         {
             "id": "14",
@@ -207,22 +187,20 @@
             "length": 475.0,
             "name": "104a",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "parkingAllowed": true
         },
         {
             "id": "15",
             "aSide": [
-                "42"
+				"59"
             ],
             "bSide": [
-                "59"
+                "42"
             ],
-            "length": 255.0,
-            "name": "906a",
+            "length": 480.0,
+            "name": "906b",
             "sawMovementAllowed": true,
-            "type": "RailRoad",
-            "parkingAllowed": false
+            "parkingAllowed": true
         },
         {
             "id": "16",
@@ -232,11 +210,7 @@
             "bSide": [
                 "51"
             ],
-            "name": "952_974",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "952_974"
         },
         {
             "id": "17",
@@ -246,11 +220,7 @@
             "bSide": [
                 "52"
             ],
-            "name": "953_973",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "953_973"
         },
         {
             "id": "18",
@@ -260,11 +230,7 @@
             "bSide": [
                 "53"
             ],
-            "name": "954_957",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "954_957"
         },
         {
             "id": "19",
@@ -274,11 +240,7 @@
             "bSide": [
                 "71"
             ],
-            "name": "954_975",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "954_975"
         },
         {
             "id": "20",
@@ -288,11 +250,7 @@
             "bSide": [
                 "55"
             ],
-            "name": "958_959",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "958_959"
         },
         {
             "id": "21",
@@ -302,12 +260,8 @@
             "bSide": [
                 "66"
             ],
-            "name": "958_978",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
-        },
+            "name": "958_978"
+		},
         {
             "id": "22",
             "aSide": [
@@ -316,11 +270,7 @@
             "bSide": [
                 "56"
             ],
-            "name": "959_960",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "959_960"
         },
         {
             "id": "23",
@@ -330,11 +280,7 @@
             "bSide": [
                 "57"
             ],
-            "name": "960_961",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "960_961"
         },
         {
             "id": "24",
@@ -344,11 +290,7 @@
             "bSide": [
                 "58"
             ],
-            "name": "961_963",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "961_963"
         },
         {
             "id": "25",
@@ -358,11 +300,7 @@
             "bSide": [
                 "60"
             ],
-            "name": "964_965",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "964_965"
         },
         {
             "id": "26",
@@ -372,11 +310,7 @@
             "bSide": [
                 "68"
             ],
-            "name": "967_968",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "967_968"
         },
         {
             "id": "27",
@@ -386,11 +320,7 @@
             "bSide": [
                 "69"
             ],
-            "name": "969_979",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "969_979"
         },
         {
             "id": "28",
@@ -400,11 +330,7 @@
             "bSide": [
                 "62"
             ],
-            "name": "971_972",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "971_972"
         },
         {
             "id": "29",
@@ -414,11 +340,7 @@
             "bSide": [
                 "63"
             ],
-            "name": "972_973",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "972_973"
         },
         {
             "id": "30",
@@ -428,11 +350,7 @@
             "bSide": [
                 "64"
             ],
-            "name": "976_977",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "976_977"
         },
         {
             "id": "31",
@@ -442,11 +360,7 @@
             "bSide": [
                 "65"
             ],
-            "name": "977_978",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "977_978"
         },
         {
             "id": "32",
@@ -456,11 +370,7 @@
             "bSide": [
                 "68"
             ],
-            "name": "967_kruis1",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "967_kruis1"
         },
         {
             "id": "33",
@@ -470,11 +380,7 @@
             "bSide": [
                 "49"
             ],
-            "name": "968_kruis1",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "968_kruis1"
         },
         {
             "id": "34",
@@ -484,11 +390,7 @@
             "bSide": [
                 "49"
             ],
-            "name": "971_kruis1",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "971_kruis1"
         },
         {
             "id": "35",
@@ -498,11 +400,7 @@
             "bSide": [
                 "62"
             ],
-            "name": "972_kruis1",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "972_kruis1"
         },
         {
             "id": "36",
@@ -512,11 +410,7 @@
             "bSide": [
                 "51"
             ],
-            "name": "952_kruis2",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "952_kruis2"
         },
         {
             "id": "37",
@@ -526,11 +420,7 @@
             "bSide": [
                 "52"
             ],
-            "name": "953_kruis2",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "953_kruis2"
         },
         {
             "id": "38",
@@ -540,11 +430,7 @@
             "bSide": [
                 "48"
             ],
-            "name": "973_kruis2",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "973_kruis2"
         },
         {
             "id": "39",
@@ -554,11 +440,7 @@
             "bSide": [
                 "48"
             ],
-            "name": "974_kruis2",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "974_kruis2"
         },
         {
             "id": "40",
@@ -568,25 +450,20 @@
             "bSide": [
                 "50"
             ],
-            "name": "425_sein436",
-            "type": "RailRoad",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "425_sein436"
         },
         {
             "id": "41",
             "aSide": [
-                "59"
+				"47"
             ],
             "bSide": [
-                "47"
+				"59"
             ],
-            "length": 255.0,
-            "name": "906b",
-            "sawMovementAllowed": true,
-            "parkingAllowed": true,
-            "type": "RailRoad"
+            "length": 480.0,
+            "name": "906a",
+            "parkingAllowed": false,
+            "sawMovementAllowed": false
         },
         {
             "id": "42",
@@ -594,11 +471,7 @@
             "bSide": [
                 "15"
             ],
-            "name": "Sein70",
-            "aSide": [],
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Sein70"
         },
         {
             "id": "43",
@@ -606,11 +479,7 @@
             "bSide": [
                 "40"
             ],
-            "name": "Sein436",
-            "aSide": [],
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Sein436"
         },
         {
             "id": "44",
@@ -618,11 +487,7 @@
             "aSide": [
                 "12"
             ],
-            "name": "Stootblok63",
-            "bSide": [],
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Stootblok63"
         },
         {
             "id": "45",
@@ -630,11 +495,7 @@
             "aSide": [
                 "13"
             ],
-            "name": "Stootblok64",
-            "bSide": [],
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Stootblok64"
         },
         {
             "id": "46",
@@ -642,11 +503,7 @@
             "aSide": [
                 "14"
             ],
-            "name": "Stootblok104a",
-            "bSide": [],
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Stootblok104a"
         },
         {
             "id": "47",
@@ -654,11 +511,7 @@
             "aSide": [
                 "41"
             ],
-            "name": "Stootblok906b",
-            "bSide": [],
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Stootblok906a"
         },
         {
             "id": "48",
@@ -671,10 +524,7 @@
                 "37",
                 "36"
             ],
-            "name": "Kruis2",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Kruis2"
         },
         {
             "id": "49",
@@ -687,10 +537,7 @@
                 "32",
                 "35"
             ],
-            "name": "Kruis1",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Kruis1"
         },
         {
             "id": "50",
@@ -702,10 +549,7 @@
             "bSide": [
                 "14"
             ],
-            "name": "Wissel425",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Wissel425"
         },
         {
             "id": "51",
@@ -717,10 +561,7 @@
             "bSide": [
                 "0"
             ],
-            "name": "Wissel952",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Wissel952"
         },
         {
             "id": "52",
@@ -732,10 +573,7 @@
             "bSide": [
                 "9"
             ],
-            "name": "Wissel953",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Wissel953"
         },
         {
             "id": "53",
@@ -747,10 +585,7 @@
             "bSide": [
                 "19"
             ],
-            "name": "Wissel954",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Wissel954"
         },
         {
             "id": "54",
@@ -762,85 +597,67 @@
             "bSide": [
                 "18"
             ],
-            "name": "Wissel957",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Wissel957"
         },
         {
             "id": "55",
             "type": "Switch",
             "aSide": [
-                "20"
-            ],
-            "bSide": [
                 "21",
                 "4"
             ],
-            "name": "Wissel958",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "bSide": [
+                "20"
+            ],
+            "name": "Wissel958"
         },
         {
             "id": "56",
             "type": "Switch",
             "aSide": [
-                "22"
-            ],
-            "bSide": [
                 "20",
                 "3"
             ],
-            "name": "Wissel959",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "bSide": [
+                "22"
+            ],
+            "name": "Wissel959"
         },
         {
             "id": "57",
             "type": "Switch",
             "aSide": [
-                "23"
-            ],
-            "bSide": [
                 "22",
                 "2"
             ],
-            "name": "Wissel960",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "bSide": [
+                "23"
+            ],
+            "name": "Wissel960"
         },
         {
             "id": "58",
             "type": "Switch",
             "aSide": [
-                "24"
-            ],
-            "bSide": [
                 "23",
                 "1"
             ],
-            "name": "Wissel961",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "bSide": [
+                "24"
+            ],
+            "name": "Wissel961"
         },
         {
             "id": "59",
             "type": "Switch",
             "aSide": [
-                "15"
+				"24",
+				"15"
             ],
             "bSide": [
-                "24",
                 "41"
             ],
-            "name": "Wissel963",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Wissel963"
         },
         {
             "id": "60",
@@ -852,10 +669,7 @@
             "bSide": [
                 "12"
             ],
-            "name": "Wissel964",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Wissel964"
         },
         {
             "id": "61",
@@ -867,10 +681,7 @@
             "bSide": [
                 "25"
             ],
-            "name": "Wissel965",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Wissel965"
         },
         {
             "id": "62",
@@ -882,85 +693,67 @@
             "bSide": [
                 "29"
             ],
-            "name": "Wissel972",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Wissel972"
         },
         {
             "id": "63",
             "type": "Switch",
             "aSide": [
-                "29"
-            ],
-            "bSide": [
                 "17",
                 "38"
             ],
-            "name": "Wissel973",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "bSide": [
+                "29"
+            ],
+            "name": "Wissel973"
         },
         {
             "id": "64",
             "type": "Switch",
             "aSide": [
-                "30"
-            ],
-            "bSide": [
                 "7",
                 "6"
             ],
-            "name": "Wissel976",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "bSide": [
+                "30"
+            ],
+            "name": "Wissel976"
         },
         {
             "id": "65",
             "type": "Switch",
             "aSide": [
-                "31"
-            ],
-            "bSide": [
                 "30",
                 "5"
             ],
-            "name": "Wissel977",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "bSide": [
+                "31"
+            ],
+            "name": "Wissel977"
         },
         {
             "id": "66",
             "type": "Switch",
             "aSide": [
-                "21"
-            ],
-            "bSide": [
                 "8",
                 "31"
             ],
-            "name": "Wissel978",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "bSide": [
+                "21"
+            ],
+            "name": "Wissel978"
         },
         {
             "id": "67",
             "type": "Switch",
             "aSide": [
-                "8"
-            ],
-            "bSide": [
                 "13",
                 "27"
             ],
-            "name": "Wissel979",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "bSide": [
+                "8"
+            ],
+            "name": "Wissel979"
         },
         {
             "id": "68",
@@ -973,10 +766,7 @@
                 "11",
                 "10"
             ],
-            "name": "Engels966_967",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Engels966_967"
         },
         {
             "id": "69",
@@ -989,10 +779,7 @@
                 "26",
                 "33"
             ],
-            "name": "Engels968_969",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Engels968_969"
         },
         {
             "id": "70",
@@ -1005,10 +792,7 @@
                 "34",
                 "28"
             ],
-            "name": "Engels970_971",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Engels970_971"
         },
         {
             "id": "71",
@@ -1021,10 +805,7 @@
                 "39",
                 "16"
             ],
-            "name": "Engels974_975",
-            "length": 0.0,
-            "sawMovementAllowed": false,
-            "parkingAllowed": false
+            "name": "Engels974_975"
         }
     ],
     "facilities": [
@@ -1052,11 +833,22 @@
                 {
                     "other": "Wasmachine"
                 }
-            ],
-            "simultaneousUsageCount": 1
+            ]
         },
         {
             "id": "74",
+            "type": "Inspectieput",
+            "relatedTrackParts": [
+                "13"
+            ],
+            "taskTypes": [
+                {
+                    "other": "Inspectieput"
+                }
+            ]
+        },
+        {
+            "id": "75",
             "type": "Monteur",
             "relatedTrackParts": [
                 "1",
@@ -1072,9 +864,7 @@
                 {
                     "other": "Monteur"
                 }
-            ],
-            "simultaneousUsageCount": 1
+            ]
         }
-    ],
-    "taskTypes": []
+    ]
 }

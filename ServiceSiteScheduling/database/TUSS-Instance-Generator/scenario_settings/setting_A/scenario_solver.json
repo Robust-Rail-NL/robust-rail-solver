@@ -2,14 +2,37 @@
     "in": {
         "trains": [
             {
-                "entryTrackPart": "42",
-                "arrival": "600",
-                "departure": "600",
-                "id": "2000",
+                "entryTrackPart": "47",
+                "arrival": "130",
+                "departure": "130",
+                "id": "0",
                 "members": [
                     {
                         "trainUnit": {
-                            "id": "2401",
+                            "id": "0",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 6,
+                                "length": 100.54,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "15"
+                            }
+                        }
+                    }
+                ],
+                "firstParkingTrackPart": "41"
+            },
+            {
+                "entryTrackPart": "47",
+                "arrival": "734",
+                "departure": "734",
+                "id": "1",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "1",
                             "type": {
                                 "displayName": "SLT",
                                 "carriages": 4,
@@ -20,62 +43,56 @@
                                 "backAdditionTime": "16",
                                 "reversalDuration": "0"
                             }
-                        },
-                        "tasks": [
-                            {
-                                "type": {
-                                    "other": "Reinigingsperron"
-                                },
-                                "priority": 1,
-                                "duration": "900"
-                            }
-                        ]
-                    }
-                ],
-                "firstParkingTrackPart": "15"
-            },
-            {
-                "entryTrackPart": "42",
-                "arrival": "900",
-                "departure": "900",
-                "id": "3000",
-                "members": [
+                        }
+                    },
                     {
                         "trainUnit": {
-                            "id": "2601",
+                            "id": "2",
                             "type": {
                                 "displayName": "SLT",
-                                "carriages": 6,
-                                "length": 100.54,
+                                "carriages": 4,
+                                "length": 69.36,
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "120",
-                                "backAdditionTime": "15",
+                                "backAdditionTime": "16",
                                 "reversalDuration": "0"
                             }
-                        },
-                        "tasks": [
-                            {
-                                "type": {
-                                    "other": "Reinigingsperron"
-                                },
-                                "priority": 1,
-                                "duration": "900"
-                            }
-                        ]
-                    }
+                        }
+                    }                    
                 ],
-                "firstParkingTrackPart": "15"
+                "firstParkingTrackPart": "41"
             }
         ]
     },
     "out": {
         "trainRequests": [
             {
-                "leaveTrackPart": "42",
-                "arrival": "1500",
-                "departure": "1500",
-                "displayName": "4000",
+                "leaveTrackPart": "47",
+                "arrival": "1152",
+                "departure": "1152",
+                "displayName": "4",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "SNG",
+                            "carriages": 4,
+                            "length": 75.7,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "reversalDuration": "0",
+                            "backNormTime": "0",
+                            "backAdditionTime": "0"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "41"
+            },
+            {
+                "leaveTrackPart": "47",
+                "arrival": "1326",
+                "departure": "1326",
+                "displayName": "5",
                 "trainUnits": [
                     {
                         "type": {
@@ -87,41 +104,40 @@
                             "reversalDuration": "0",
                             "backNormTime": "0",
                             "backAdditionTime": "0"
-                        },
-                        "id": ""
+                        }
                     },
                     {
                         "type": {
                             "displayName": "SNG",
-                            "carriages": 4,
-                            "length": 75.7,
+                            "carriages": 3,
+                            "length": 59.5,
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "reversalDuration": "0",
                             "backNormTime": "0",
                             "backAdditionTime": "0"
-                        },
-                        "id": ""
+                        }
                     }
                 ],
-                "lastParkingTrackPart": "15",
-                "standingIndex": 0.0
+                "lastParkingTrackPart": "41"
             }
         ]
     },
+    "endTime": "1800",
+    "startTime": "0",
     "inStanding": {
         "trains": [
             {
-                "entryTrackPart": "56",
-                "id": "4002",
+                "entryTrackPart": "67",
+                "id": "2",
                 "members": [
                     {
                         "trainUnit": {
-                            "id": "2802",
+                            "id": "3",
                             "type": {
                                 "displayName": "SNG",
-                                "carriages": 4,
-                                "length": 75.7,
+                                "carriages": 3,
+                                "length": 59.5,
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "reversalDuration": "0",
@@ -130,19 +146,10 @@
                             }
                         },
                         "tasks": []
-                    }
-                ],
-                "firstParkingTrackPart": "3",
-                "arrival": "0",
-                "departure": "0"
-            },
-            {
-                "entryTrackPart": "54",
-                "id": "4001",
-                "members": [
+                    },
                     {
                         "trainUnit": {
-                            "id": "2801",
+                            "id": "4",
                             "type": {
                                 "displayName": "SNG",
                                 "carriages": 3,
@@ -157,7 +164,32 @@
                         "tasks": []
                     }
                 ],
-                "firstParkingTrackPart": "2",
+                "firstParkingTrackPart": "8",
+                "arrival": "0",
+                "departure": "0"
+            },
+            {
+                "entryTrackPart": "53",
+                "id": "3",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "4",
+                            "type": {
+                                "displayName": "SNG",
+                                "carriages": 4,
+                                "length": 75.7,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "reversalDuration": "0",
+                                "backNormTime": "0",
+                                "backAdditionTime": "0"
+                            }
+                        },
+                        "tasks": []
+                    }
+                ],
+                "firstParkingTrackPart": "4",
                 "arrival": "0",
                 "departure": "0"
             }
@@ -166,31 +198,10 @@
     "outStanding": {
         "trainRequests": [
             {
-                "leaveTrackPart": "61",
-                "displayName": "2001",
-                "trainUnits": [
-                    {
-                        "type": {
-                            "displayName": "SLT",
-                            "carriages": 4,
-                            "length": 69.36,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "120",
-                            "backAdditionTime": "16",
-                            "reversalDuration": "0"
-                        },
-                        "id": ""
-                    }
-                ],
-                "lastParkingTrackPart": "11",
-                "arrival": "0",
-                "departure": "0",
-                "standingIndex": 0.0
-            },
-            {
-                "leaveTrackPart": "68",
-                "displayName": "3001",
+                "leaveTrackPart": "67",
+                "arrival": "1800",
+                "departure": "1800",
+                "displayName": "6",
                 "trainUnits": [
                     {
                         "type": {
@@ -206,13 +217,45 @@
                         "id": ""
                     }
                 ],
-                "lastParkingTrackPart": "10",
-                "arrival": "0",
-                "departure": "0",
+                "lastParkingTrackPart": "8",
+                "standingIndex": 0.0
+            },
+            {
+                "leaveTrackPart": "61",
+                "arrival": "1800",
+                "departure": "1800",
+                "displayName": "7",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "length": 69.36,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "16",
+                            "reversalDuration": "0"
+                        },
+                        "id": ""
+                    },
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "length": 69.36,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "16",
+                            "reversalDuration": "0"
+                        },
+                        "id": ""
+                    }
+                ],
+                "lastParkingTrackPart": "11",
                 "standingIndex": 0.0
             }
         ]
-    },
-    "endTime": "3600",
-    "startTime": "0"
+    }
 }
