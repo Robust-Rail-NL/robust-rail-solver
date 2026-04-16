@@ -429,52 +429,10 @@ namespace ServiceSiteScheduling
             instance.TrainUnitConversion = [];
             instance.GatewayConversion = [];
             var freeservicelists = new List<Service[]>();
+
             foreach (var arrivaltrain in scenario.In.Trains)
             {
-                var currenttrainunits = new List<TrainUnit>();
-                foreach (var unit in arrivaltrain.Members)
-                {
-                    if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType type))
-                    {
-                        var name =
-                            $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
-                        type = new(
-                            traintypes.Count,
-                            name,
-                            (int)unit.TrainUnit.Type.Length,
-                            instance.Tracks.Where(t => t.CanPark).ToArray(),
-                            (int)unit.TrainUnit.Type.BackNormTime,
-                            (int)unit.TrainUnit.Type.BackAdditionTime
-                                * (int)unit.TrainUnit.Type.Carriages,
-                            (int)unit.TrainUnit.Type.CombineDuration,
-                            (int)unit.TrainUnit.Type.SplitDuration
-                        );
-                        traintypes.Add(type);
-                        traintypemap[unit.TrainUnit.Type] = type;
-                    }
-                    TrainUnit trainunit = new(
-                        unit.TrainUnit.Id,
-                        trainunits.Count,
-                        type,
-                        unit.Tasks.Where(task =>
-                                taskmap[task.Type].LocationType == ServiceLocationType.Fixed
-                            )
-                            .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
-                            .ToArray(),
-                        instance.ServiceTypes
-                    );
-                    trainunits.Add(trainunit);
-                    currenttrainunits.Add(trainunit);
-                    trainunitmap[unit.TrainUnit.Id] = trainunit;
-                    instance.TrainUnitConversion[trainunit] = unit.TrainUnit;
-                    freeservicelists.Add(
-                        unit.Tasks.Where(task =>
-                                taskmap[task.Type].LocationType == ServiceLocationType.Free
-                            )
-                            .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
-                            .ToArray()
-                    );
-                }
+                var currenttrainunits = GetTrainTypesAndUnits(arrivaltrain);
 
                 if (debugLevel > 1)
                 {
@@ -525,51 +483,7 @@ namespace ServiceSiteScheduling
             {
                 foreach (var arrivaltrain in scenario.InStanding.Trains)
                 {
-                    var currenttrainunits = new List<TrainUnit>();
-                    foreach (var unit in arrivaltrain.Members)
-                    {
-                        if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType type))
-                        {
-                            var name =
-                                $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
-                            type = new(
-                                traintypes.Count,
-                                name,
-                                (int)unit.TrainUnit.Type.Length,
-                                instance.Tracks.Where(t => t.CanPark).ToArray(),
-                                (int)unit.TrainUnit.Type.BackNormTime,
-                                (int)unit.TrainUnit.Type.BackAdditionTime
-                                    * (int)unit.TrainUnit.Type.Carriages,
-                                (int)unit.TrainUnit.Type.CombineDuration,
-                                (int)unit.TrainUnit.Type.SplitDuration
-                            );
-                            traintypes.Add(type);
-                            traintypemap[unit.TrainUnit.Type] = type;
-                        }
-                        TrainUnit trainunit = new(
-                            unit.TrainUnit.Id,
-                            trainunits.Count,
-                            type,
-                            unit.Tasks.Where(task =>
-                                    taskmap[task.Type].LocationType == ServiceLocationType.Fixed
-                                )
-                                .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
-                                .ToArray(),
-                            instance.ServiceTypes
-                        );
-                        trainunits.Add(trainunit);
-                        currenttrainunits.Add(trainunit);
-                        trainunitmap[unit.TrainUnit.Id] = trainunit;
-                        instance.TrainUnitConversion[trainunit] = unit.TrainUnit;
-                        freeservicelists.Add(
-                            unit.Tasks.Where(task =>
-                                    taskmap[task.Type].LocationType == ServiceLocationType.Free
-                                )
-                                .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
-                                .ToArray()
-                        );
-                    }
-
+                    var currenttrainunits = GetTrainTypesAndUnits(arrivaltrain);
                     if (debugLevel > 1)
                     {
                         Console.WriteLine(
@@ -826,6 +740,58 @@ namespace ServiceSiteScheduling
                 unit.ID = id++;
 
             return instance;
+
+            /// <summary>
+            /// Extracts the train unit types in the arrival train and returns the train units.
+            /// </summary>
+            List<TrainUnit> GetTrainTypesAndUnits(AlgoIface.IncomingTrain arrivaltrain)
+            {
+                var currenttrainunits = new List<TrainUnit>();
+                foreach (var unit in arrivaltrain.Members)
+                {
+                    if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType type))
+                    {
+                        var name =
+                            $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
+                        type = new(
+                            traintypes.Count,
+                            name,
+                            (int)unit.TrainUnit.Type.Length,
+                            instance.Tracks.Where(t => t.CanPark).ToArray(),
+                            (int)unit.TrainUnit.Type.BackNormTime,
+                            (int)unit.TrainUnit.Type.BackAdditionTime
+                                * (int)unit.TrainUnit.Type.Carriages,
+                            (int)unit.TrainUnit.Type.CombineDuration,
+                            (int)unit.TrainUnit.Type.SplitDuration
+                        );
+                        traintypes.Add(type);
+                        traintypemap[unit.TrainUnit.Type] = type;
+                    }
+                    TrainUnit trainunit = new(
+                        unit.TrainUnit.Id,
+                        trainunits.Count,
+                        type,
+                        unit.Tasks.Where(task =>
+                                taskmap[task.Type].LocationType == ServiceLocationType.Fixed
+                            )
+                            .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
+                            .ToArray(),
+                        instance.ServiceTypes
+                    );
+                    trainunits.Add(trainunit);
+                    currenttrainunits.Add(trainunit);
+                    trainunitmap[unit.TrainUnit.Id] = trainunit;
+                    instance.TrainUnitConversion[trainunit] = unit.TrainUnit;
+                    freeservicelists.Add(
+                        unit.Tasks.Where(task =>
+                                taskmap[task.Type].LocationType == ServiceLocationType.Free
+                            )
+                            .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
+                            .ToArray()
+                    );
+                }
+                return currenttrainunits;
+            }
         }
     }
 }
