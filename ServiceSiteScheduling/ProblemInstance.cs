@@ -169,9 +169,9 @@ namespace ServiceSiteScheduling
                             (int)(part.Length ?? 0),
                             Side.None,
                             part.ParkingAllowed,
-                            part.SawMovementAllowed
+                            part.SawMovementAllowed,
+                            index++
                         );
-                        track.Index = index++;
                         tracks.Add(track);
                         infrastructuremap[part.Id] = track;
                         break;

@@ -108,9 +108,9 @@ namespace ServiceSiteScheduling.Solutions
                             (int)part.Length,
                             Side.None,
                             part.ParkingAllowed,
-                            part.SawMovementAllowed
+                            part.SawMovementAllowed,
+                            index++
                         );
-                        track.Index = index++;
                         infrastructuremap[part.Id] = track;
                         break;
                     case NoProto.TrackPartType.Switch:

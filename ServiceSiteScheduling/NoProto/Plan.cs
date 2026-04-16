@@ -1,13 +1,19 @@
 #nullable enable
 
-using System.Collections.Immutable;
-
 namespace ServiceSiteScheduling.NoProto
 {
-    // This message contains the result of a shunting algorithm.
-    public record Plan
+    public record UnhashableRecord
     {
-        public ImmutableArray<Action> Actions { get; set; } = [];
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException("This type of record cannot be hashed");
+        }
+    }
+
+    // This message contains the result of a shunting algorithm.
+    public record Plan : UnhashableRecord
+    {
+        public IList<Action> Actions { get; init; } = [];
 
         // A list of all TrackParts. From this a rail graph can be constructed.
         // This field should be temporary and be replaced as soon as we send input to the algorithm.
