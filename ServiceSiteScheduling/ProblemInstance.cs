@@ -125,13 +125,6 @@ namespace ServiceSiteScheduling
         {
             ProblemInstance instance = new();
 
-            // only for database/*.dat
-            bool include94139414 = false;
-            bool include24082409 = false;
-            bool include2610 = false;
-            bool include2611 = false;
-            bool noservices = false;
-
             // Get start and end time of the scenario
             // this is needed sice the start time will be associated with the arrival time
             // of the instanding trains (which were already on the shunting yard "before"
@@ -650,130 +643,6 @@ namespace ServiceSiteScheduling
                     Console.WriteLine($"Arrival train : {arrival}");
             }
 
-            // only for harder instances
-            TrainUnit tu9413 = null,
-                tu9414 = null;
-            if (include94139414)
-            {
-                tu9413 = new TrainUnit(
-                    "9413",
-                    trainunits.Count,
-                    traintypes[2],
-                    new Service[1] { new(instance.ServiceTypes[2], 37 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                tu9414 = new TrainUnit(
-                    "9414",
-                    trainunits.Count + 1,
-                    traintypes[2],
-                    new Service[1] { new(instance.ServiceTypes[2], 37 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                var at94139414 = new ArrivalTrain(
-                    new TrainUnit[2] { tu9413, tu9414 },
-                    instance.Tracks[15],
-                    Side.A,
-                    26 * Time.Hour + 17 * Time.Minute
-                );
-                trainunits.Add(tu9413);
-                trainunits.Add(tu9414);
-
-                arrivals.Add(at94139414);
-
-                freeservicelists.Add(Array.Empty<Service>());
-                freeservicelists.Add(Array.Empty<Service>());
-            }
-            TrainUnit tu2408 = null,
-                tu2409 = null;
-            if (include24082409)
-            {
-                tu2408 = new TrainUnit(
-                    "2408",
-                    trainunits.Count,
-                    traintypes[0],
-                    new Service[1] { new(instance.ServiceTypes[2], 15 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                tu2409 = new TrainUnit(
-                    "2409",
-                    trainunits.Count + 1,
-                    traintypes[0],
-                    new Service[1] { new(instance.ServiceTypes[2], 15 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                var at24082409 = new ArrivalTrain(
-                    new TrainUnit[2] { tu2408, tu2409 },
-                    instance.Tracks[15],
-                    Side.A,
-                    24 * Time.Hour
-                );
-                trainunits.Add(tu2408);
-                trainunits.Add(tu2409);
-
-                arrivals.Add(at24082409);
-
-                freeservicelists.Add(Array.Empty<Service>());
-                freeservicelists.Add(Array.Empty<Service>());
-            }
-            TrainUnit tu2610 = null;
-            if (include2610)
-            {
-                tu2610 = new TrainUnit(
-                    "2610",
-                    trainunits.Count,
-                    traintypes[0],
-                    new Service[1] { new(instance.ServiceTypes[2], 20 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                var at2610 = new ArrivalTrain(
-                    new TrainUnit[1] { tu2610 },
-                    instance.Tracks[15],
-                    Side.A,
-                    24 * Time.Hour + 30 * Time.Minute
-                );
-                trainunits.Add(tu2610);
-
-                arrivals.Add(at2610);
-
-                freeservicelists.Add(Array.Empty<Service>());
-            }
-            TrainUnit tu2611 = null;
-            if (include2611)
-            {
-                tu2611 = new TrainUnit(
-                    "2611",
-                    trainunits.Count,
-                    traintypes[0],
-                    new Service[1] { new(instance.ServiceTypes[2], 20 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                var at2611 = new ArrivalTrain(
-                    new TrainUnit[1] { tu2611 },
-                    instance.Tracks[15],
-                    Side.A,
-                    24 * Time.Hour + 45 * Time.Minute
-                );
-                trainunits.Add(tu2611);
-
-                arrivals.Add(at2611);
-
-                freeservicelists.Add(Array.Empty<Service>());
-            }
-
-            // No services
-            if (noservices)
-            {
-                foreach (var unit in trainunits)
-                {
-                    unit.RequiredServices = Array.Empty<Service>();
-                    for (int i = 0; i < unit.ServiceDurations.Length; i++)
-                        unit.ServiceDurations[i] = 0;
-                }
-
-                for (int i = 0; i < freeservicelists.Count; i++)
-                    freeservicelists[i] = Array.Empty<Service>();
-            }
-
             instance.TrainTypes = traintypes.ToArray();
             instance.TrainUnits = trainunits.ToArray();
             instance.FillTrains();
@@ -936,48 +805,6 @@ namespace ServiceSiteScheduling
             {
                 foreach (var departure in departures)
                     Console.WriteLine($"Departure train : {departure}");
-            }
-
-            // only for harder instance
-            if (include94139414)
-            {
-                var dt94139414 = new DepartureTrain(
-                    31 * Time.Hour + 17 * Time.Minute,
-                    new DepartureTrainUnit[2] { new(tu9413), new(tu9414) },
-                    instance.Tracks[15],
-                    Side.A
-                );
-                departures.Add(dt94139414);
-            }
-            if (include24082409)
-            {
-                var dt24082409 = new DepartureTrain(
-                    30 * Time.Hour + 30 * Time.Minute,
-                    new DepartureTrainUnit[2] { new(tu2408), new(tu2409) },
-                    instance.Tracks[15],
-                    Side.A
-                );
-                departures.Add(dt24082409);
-            }
-            if (include2610)
-            {
-                var dt2610 = new DepartureTrain(
-                    32 * Time.Hour + 10 * Time.Minute,
-                    new DepartureTrainUnit[1] { new(tu2610) },
-                    instance.Tracks[15],
-                    Side.A
-                );
-                departures.Add(dt2610);
-            }
-            if (include2611)
-            {
-                var dt2611 = new DepartureTrain(
-                    32 * Time.Hour + 30 * Time.Minute,
-                    new DepartureTrainUnit[1] { new(tu2611) },
-                    instance.Tracks[15],
-                    Side.A
-                );
-                departures.Add(dt2611);
             }
 
             instance.DeparturesOrdered = departures.OrderBy(departure => departure.Time).ToArray();
