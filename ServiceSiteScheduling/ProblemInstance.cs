@@ -333,6 +333,7 @@ namespace ServiceSiteScheduling
                 }
             }
 
+            // LP FIXME shouldn't we also iterate over InStanding here?
             Dictionary<NoProto.TaskType, ServiceType> taskmap = [];
             var tasktypes = scenario
                 .In.Trains.Aggregate(
@@ -508,76 +509,68 @@ namespace ServiceSiteScheduling
             // TODO: check scenario of two instanding trains maybe conflict will happen
             // because of the same arrival times ?
 
-            int artificialTimeScale = 0;
-            if (scenario.InStanding != null)
+            foreach (var arrivaltrain in scenario.InStanding?.Trains ?? [])
             {
-                foreach (var arrivaltrain in scenario.InStanding.Trains)
+                var currenttrainunits = GetTrainTypesAndUnits(arrivaltrain);
+
+                if (debugLevel > 1)
                 {
-                    var currenttrainunits = GetTrainTypesAndUnits(arrivaltrain);
+                    Console.WriteLine(
+                        $"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}"
+                    );
+                }
+
+                if (infrastructuremap[arrivaltrain.EntryTrackPart] is GateWay gateway)
+                {
                     if (debugLevel > 1)
                     {
                         Console.WriteLine(
-                            $"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}"
+                            $"************ Start time: {(int)instance.ScenarioStartTime}"
                         );
                     }
+                    var connection = gatewayconnections[gateway];
+                    instance.GatewayConversion[connection.Track.ID] = connection;
+                    var side = connection.Track.GetSide(
+                        connection.Path[connection.Path.Length - 2]
+                    );
+                    var train = new ArrivalTrain(
+                        currenttrainunits.ToArray(),
+                        connection.Track,
+                        Side.None,
+                        (int)instance.ScenarioStartTime,
+                        true,
+                        arrivaltrain.StandingIndex ?? 0.0
+                    );
+                    arrivals.Add(train);
 
-                    if (infrastructuremap[arrivaltrain.EntryTrackPart] is GateWay gateway)
+                    if (debugLevel > 1)
                     {
-                        if (debugLevel > 1)
-                        {
-                            Console.WriteLine(
-                                $"************ Start time: {(int)instance.ScenarioStartTime}"
-                            );
-                        }
-                        var connection = gatewayconnections[gateway];
-                        instance.GatewayConversion[connection.Track.ID] = connection;
-                        var side = connection.Track.GetSide(
-                            connection.Path[connection.Path.Length - 2]
-                        );
-
-                        var train = new ArrivalTrain(
-                            currenttrainunits.ToArray(),
-                            connection.Track,
-                            Side.None,
-                            (int)instance.ScenarioStartTime,
-                            true,
-                            arrivaltrain.StandingIndex ?? 0.0
-                        );
-                        artificialTimeScale++;
-                        arrivals.Add(train);
-
-                        if (debugLevel > 1)
-                        {
-                            Console.WriteLine($"connection :{connection}");
-                            Console.WriteLine($"gateway :{gateway}");
-                            Console.WriteLine($"side :{side}");
-                            Console.WriteLine($"connection.Track :{connection.Track}");
-                        }
+                        Console.WriteLine($"connection :{connection}");
+                        Console.WriteLine($"gateway :{gateway}");
+                        Console.WriteLine($"side :{side}");
+                        Console.WriteLine($"connection.Track :{connection.Track}");
                     }
-                    else
+                }
+                else
+                {
+                    var infra = infrastructuremap[arrivaltrain.FirstParkingTrackPart] as Track;
+
+                    // Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
+                    // TODO : add switch statement for more infratype
+                    if (debugLevel > 1)
                     {
-                        var infra = infrastructuremap[arrivaltrain.FirstParkingTrackPart] as Track;
-
-                        // Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
-                        // TODO : add switch statement for more infratype
-                        if (debugLevel > 1)
-                        {
-                            Console.WriteLine(
-                                $">>>>> Arrival Infra Access: {infra} - {infra.Access}"
-                            );
-                        }
-
-                        var train = new ArrivalTrain(
-                            currenttrainunits.ToArray(),
-                            infra,
-                            infra.Access,
-                            (int)instance.ScenarioStartTime,
-                            true,
-                            arrivaltrain.StandingIndex ?? 0.0
-                        );
-                        artificialTimeScale++;
-                        arrivals.Add(train);
+                        Console.WriteLine($">>>>> Arrival Infra Access: {infra} - {infra.Access}");
                     }
+
+                    var train = new ArrivalTrain(
+                        currenttrainunits.ToArray(),
+                        infra,
+                        infra.Access,
+                        (int)instance.ScenarioStartTime,
+                        true,
+                        arrivaltrain.StandingIndex ?? 0.0
+                    );
+                    arrivals.Add(train);
                 }
             }
 
