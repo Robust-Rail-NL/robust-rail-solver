@@ -1,27 +1,28 @@
-﻿namespace ServiceSiteScheduling.Matching
+﻿#nullable enable
+
+namespace ServiceSiteScheduling.Matching
 {
     class BipartiteGraph
     {
-        public ArrivalVertex[] Arrivals;
-        public DepartureVertex[] Departures;
+        public readonly ArrivalVertex[] Arrivals;
+        public readonly DepartureVertex[] Departures;
 
-        private bool[,] adjacencyMatrix;
-        private List<Match> fixedMatches;
-        private int[] distance;
-        private ArrivalVertex[] matchableArrivals;
-        private int infinity;
-        private ArrivalVertex dummy;
-        private DepartureVertex[] arrivalmatch;
-        private ArrivalVertex[] departurematch;
-        private Queue<ArrivalVertex> queue;
+        private readonly bool[,] adjacencyMatrix;
+        private readonly List<Match> fixedMatches;
+        private readonly int[] distance;
+        private readonly ArrivalVertex[] matchableArrivals;
+        private readonly int infinity;
+        private readonly ArrivalVertex dummy;
+        private readonly DepartureVertex?[] arrivalmatch;
+        private readonly ArrivalVertex[] departurematch;
 
-        private Train[] departuretrains;
-        private List<Unit> departureunits;
+        private readonly Train[] departuretrains;
+        private readonly List<Unit> departureunits;
 
         public BipartiteGraph()
         {
-            int size = ProblemInstance.Current.TrainUnits.Length;
-            this.adjacencyMatrix = new bool[size, size];
+            int unitCount = ProblemInstance.Current.TrainUnits.Length;
+            this.adjacencyMatrix = new bool[unitCount, unitCount];
             this.fixedMatches = [];
 
             // Construct the departure trains
@@ -60,6 +61,13 @@
                     departures.Add(new DepartureVertex(departureindex++, unit, departure));
             }
             this.Departures = departures.ToArray();
+
+            int arrivalCount = this.Arrivals.Length;
+            this.distance = new int[arrivalCount + 1];
+            this.infinity = arrivalCount + 1;
+            this.dummy = new ArrivalVertex(arrivalCount, null!, null!);
+            this.arrivalmatch = new DepartureVertex?[arrivalCount + 1];
+            this.departurematch = new ArrivalVertex[arrivalCount + 1];
 
             arrivalindex = 0;
             // Create all possible edges
@@ -111,10 +119,10 @@
             }
 
             foreach (var match in this.fixedMatches)
-                for (int i = 0; i < size; i++)
+                for (int i = 0; i < arrivalCount; i++)
                     this.adjacencyMatrix[match.Arrival.Index, i] = this.adjacencyMatrix[
                         i,
-                        match.Departure.Index
+                        match.Departure!.Index
                     ] = false;
 
             // Prune unnecessary edges
@@ -122,10 +130,10 @@
             while (change)
             {
                 change = false;
-                for (int i = 0; i < size && !change; i++)
+                for (int i = 0; i < arrivalCount && !change; i++)
                 {
                     int counter = 0;
-                    for (int j = 0; j < size && counter <= 1; j++)
+                    for (int j = 0; j < arrivalCount && counter <= 1; j++)
                     {
                         if (this.adjacencyMatrix[i, j])
                             counter++;
@@ -133,11 +141,11 @@
 
                     if (counter == 1)
                     {
-                        for (int j = 0; j < size; j++)
+                        for (int j = 0; j < arrivalCount; j++)
                             if (this.adjacencyMatrix[i, j])
                             {
                                 this.fixedMatches.Add(new Match(arrivals[i], departures[j]));
-                                for (int k = 0; k < size; k++)
+                                for (int k = 0; k < arrivalCount; k++)
                                     this.adjacencyMatrix[k, j] = false;
                                 break;
                             }
@@ -145,10 +153,10 @@
                     }
                 }
 
-                for (int i = 0; i < size && !change; i++)
+                for (int i = 0; i < arrivalCount && !change; i++)
                 {
                     int counter = 0;
-                    for (int j = 0; j < size && counter <= 1; j++)
+                    for (int j = 0; j < arrivalCount && counter <= 1; j++)
                     {
                         if (this.adjacencyMatrix[j, i])
                             counter++;
@@ -156,11 +164,11 @@
 
                     if (counter == 1)
                     {
-                        for (int j = 0; j < size; j++)
+                        for (int j = 0; j < arrivalCount; j++)
                             if (this.adjacencyMatrix[j, i])
                             {
                                 this.fixedMatches.Add(new Match(arrivals[i], departures[j]));
-                                for (int k = 0; k < size; k++)
+                                for (int k = 0; k < arrivalCount; k++)
                                     this.adjacencyMatrix[j, k] = false;
                                 break;
                             }
@@ -168,28 +176,24 @@
                     }
                 }
             }
-        }
 
-        public IList<Match> MaximumMatching()
-        {
-            int size = this.Arrivals.Length;
-            this.distance = new int[size + 1];
-            this.infinity = size + 1;
-            this.dummy = new ArrivalVertex(size, null, null);
-            this.queue = new Queue<ArrivalVertex>();
-            this.arrivalmatch = new DepartureVertex[size + 1];
-            this.departurematch = new ArrivalVertex[size + 1];
+            // construct a (kind of) adjacency list
             List<ArrivalVertex> vertices = [];
-            for (int i = 0; i < size; i++)
+            for (int i = 0; i < arrivalCount; i++)
             {
-                var arrival = this.Arrivals[i];
-                for (int j = 0; j < size; j++)
+                var arrival = Arrivals[i];
+                for (int j = 0; j < arrivalCount; j++)
                     if (this.adjacencyMatrix[i, j])
                         arrival.Adjacent.Add(this.Departures[j]);
                 if (arrival.Adjacent.Count > 0)
                     vertices.Add(arrival);
             }
             this.matchableArrivals = vertices.ToArray();
+        }
+
+        public IList<Match> MaximumMatching()
+        {
+            // LP: This is probably the Hopcroft-Karp algorithm (which uses both bfs and dfs)
 
             for (int i = 0; i < arrivalmatch.Length; i++)
             {
@@ -197,17 +201,18 @@
                 departurematch[i] = this.dummy;
             }
 
-            int matching = 0;
             while (this.BFS())
             {
                 foreach (var arrival in this.matchableArrivals)
-                    if (this.arrivalmatch[arrival.Index] == null && this.DFS(arrival))
-                        matching++;
+                    if (this.arrivalmatch[arrival.Index] == null)
+                    {
+                        this.DFS(arrival);
+                    }
             }
 
             var result = this
                 .arrivalmatch.Take(this.Arrivals.Length)
-                .Select((departure, index) => new Match(this.Arrivals[index], departure))
+                .Select((departure, index) => new Match(this.Arrivals[index], departure!))
                 .Where(match => match.Departure != null)
                 .ToList();
             result.AddRange(this.fixedMatches);
@@ -217,7 +222,9 @@
             {
                 var unmatchedarrivalunits = this
                     .Arrivals.Where(arrival => !result.Any(m => m.Arrival == arrival))
-                    .Select(arrival => $"{arrival.Unit.Name} {arrival.Train.Time}");
+                    .Select(arrival =>
+                        $"{arrival.Unit?.Name ?? "null"} {arrival.Train?.Time.ToString() ?? "null"}"
+                    );
                 var unmatcheddepartureunits = this
                     .Departures.Where(departure => !result.Any(m => m.Departure == departure))
                     .Select(departure =>
@@ -292,8 +299,8 @@
                 if (iteration++ > iterations)
                     break;
 
-                ArrivalVertex first = null,
-                    second = null;
+                ArrivalVertex first,
+                    second;
 
                 var set = arrivalsbytype.Values.ElementAt(random.Next(arrivalsbytype.Count));
                 first = set[random.Next(set.Count)];
@@ -368,7 +375,10 @@
             foreach (var matchpart in partsmatching)
             {
                 if (
-                    !trainparts.TryGetValue(matchpart.First().Departure.Train, out List<Part> parts)
+                    !trainparts.TryGetValue(
+                        matchpart.First().Departure.Train,
+                        out List<Part>? parts
+                    )
                 )
                     trainparts[matchpart.First().Departure.Train] = parts = [];
                 var part = new Part(matchpart.Select(m => m.Departure.Unit).ToArray());
@@ -389,33 +399,35 @@
 
         private bool BFS()
         {
+            Queue<ArrivalVertex> queue = new();
+
             foreach (var arrival in this.matchableArrivals)
                 if (this.arrivalmatch[arrival.Index] == null)
                 {
                     this.distance[arrival.Index] = 0;
-                    this.queue.Enqueue(arrival);
+                    queue.Enqueue(arrival);
                 }
                 else
                     this.distance[arrival.Index] = this.infinity;
 
             this.distance[this.dummy.Index] = this.infinity;
 
-            while (this.queue.Count > 0)
+            while (queue.Count > 0)
             {
-                var arrival = this.queue.Dequeue();
+                ArrivalVertex arrival = queue.Dequeue();
                 int dist = this.distance[arrival.Index];
                 if (dist < this.distance[this.dummy.Index])
-                    foreach (var departure in arrival.Adjacent)
+                    foreach (DepartureVertex departure in arrival.Adjacent)
                     {
-                        var match = this.departurematch[departure.Index];
+                        ArrivalVertex match = this.departurematch[departure.Index];
                         if (this.distance[match.Index] >= this.infinity)
                         {
                             this.distance[match.Index] = dist + 1;
-                            this.queue.Enqueue(match);
+                            queue.Enqueue(match);
                         }
                     }
             }
-
+            // return: did we find an augmenting path?
             return this.distance[this.dummy.Index] < this.infinity;
         }
 
@@ -453,19 +465,11 @@
         }
     }
 
-    class ArrivalVertex : Vertex
+    class ArrivalVertex(int index, Trains.TrainUnit unit, Trains.ArrivalTrain train) : Vertex(index)
     {
-        public List<DepartureVertex> Adjacent;
-        public Trains.TrainUnit Unit;
-        public Trains.ArrivalTrain Train;
-
-        public ArrivalVertex(int index, Trains.TrainUnit unit, Trains.ArrivalTrain train)
-            : base(index)
-        {
-            this.Unit = unit;
-            this.Train = train;
-            this.Adjacent = [];
-        }
+        public readonly List<DepartureVertex> Adjacent = [];
+        public readonly Trains.TrainUnit Unit = unit;
+        public readonly Trains.ArrivalTrain Train = train;
 
         public override string ToString()
         {
@@ -473,17 +477,10 @@
         }
     }
 
-    class DepartureVertex : Vertex
+    class DepartureVertex(int index, Unit unit, Train train) : Vertex(index)
     {
-        public Unit Unit;
-        public Train Train;
-
-        public DepartureVertex(int index, Unit unit, Train train)
-            : base(index)
-        {
-            this.Unit = unit;
-            this.Train = train;
-        }
+        public readonly Unit Unit = unit;
+        public readonly Train Train = train;
 
         public override string ToString()
         {
@@ -491,16 +488,10 @@
         }
     }
 
-    class Match
+    class Match(ArrivalVertex arrival, DepartureVertex departure)
     {
-        public ArrivalVertex Arrival;
-        public DepartureVertex Departure;
-
-        public Match(ArrivalVertex arrival, DepartureVertex departure)
-        {
-            this.Arrival = arrival;
-            this.Departure = departure;
-        }
+        public readonly ArrivalVertex Arrival = arrival;
+        public readonly DepartureVertex Departure = departure;
 
         public override string ToString()
         {
