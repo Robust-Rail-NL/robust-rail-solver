@@ -1,4 +1,7 @@
-﻿using ServiceSiteScheduling.Trains;
+﻿#nullable enable
+
+using System.Diagnostics;
+using ServiceSiteScheduling.Trains;
 
 namespace ServiceSiteScheduling.Matching
 {
@@ -7,13 +10,9 @@ namespace ServiceSiteScheduling.Matching
         public Train[] DepartureTrains { get; private set; }
         public List<Part>[] DeparturePartsByType { get; private set; }
 
-        private IList<ShuntTrainUnit> shuntUnits;
+        private readonly IList<ShuntTrainUnit> shuntUnits;
 
-        public TrainMatching(
-            Train[] trains,
-            IEnumerable<Unit> units,
-            IList<ShuntTrainUnit> shuntunits
-        )
+        public TrainMatching(Train[] trains, IList<ShuntTrainUnit> shuntunits)
         {
             this.DepartureTrains = trains;
             this.shuntUnits = shuntunits;
@@ -23,7 +22,7 @@ namespace ServiceSiteScheduling.Matching
             {
                 foreach (Part part in train.Parts)
                 {
-                    List<Part> parts = null;
+                    List<Part>? parts = null;
                     foreach (var list in bytype)
                         if (list[0].Types.SequenceEqual(part.Types))
                         {
@@ -40,6 +39,7 @@ namespace ServiceSiteScheduling.Matching
                     part.Matching = this;
                 }
             }
+            Debug.Assert(bytype.All(l => l.All(p => p.Matching != null)));
             this.DeparturePartsByType = bytype.ToArray();
         }
 

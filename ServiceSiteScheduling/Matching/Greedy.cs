@@ -1,9 +1,12 @@
-﻿using ServiceSiteScheduling.Trains;
+﻿using System.Diagnostics;
+using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.Matching
 {
-    static class Greedy
+    // LP: None of this code is currently used.
+
+    static class UnusedGreedy
     {
         public static TrainMatching Construct(
             ShuntTrain[] shunttrains,
@@ -13,7 +16,6 @@ namespace ServiceSiteScheduling.Matching
         {
             // Construct the departure trains
             Train[] departuretrains = new Train[ProblemInstance.Current.DeparturesOrdered.Length];
-            List<Unit> departureunits = [];
             for (int i = 0; i < ProblemInstance.Current.DeparturesOrdered.Length; i++)
             {
                 DepartureTrain departure = ProblemInstance.Current.DeparturesOrdered[i];
@@ -23,7 +25,6 @@ namespace ServiceSiteScheduling.Matching
                     DepartureTrainUnit departuretrainunit = departure.Units[j];
                     var unit = new Unit(departuretrainunit);
                     units[j] = unit;
-                    departureunits.Add(unit);
                 }
                 departuretrains[i] = new Train(departure, units);
                 foreach (Unit unit in units)
@@ -131,7 +132,8 @@ namespace ServiceSiteScheduling.Matching
             foreach (var kvp in trainparts)
                 kvp.Key.Parts = kvp.Value.ToArray();
 
-            TrainMatching result = new(departuretrains, departureunits, shunttrainunits);
+            Debug.Assert(departuretrains.All(t => t.Parts != null));
+            TrainMatching result = new(departuretrains, shunttrainunits);
             return result;
         }
 

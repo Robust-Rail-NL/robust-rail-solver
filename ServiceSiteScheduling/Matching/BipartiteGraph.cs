@@ -1,5 +1,7 @@
 ﻿#nullable enable
 
+using System.Diagnostics;
+
 namespace ServiceSiteScheduling.Matching
 {
     class BipartiteGraph
@@ -17,7 +19,6 @@ namespace ServiceSiteScheduling.Matching
         private readonly ArrivalVertex[] departurematch;
 
         private readonly Train[] departuretrains;
-        private readonly List<Unit> departureunits;
 
         public BipartiteGraph()
         {
@@ -27,7 +28,6 @@ namespace ServiceSiteScheduling.Matching
 
             // Construct the departure trains
             this.departuretrains = new Train[ProblemInstance.Current.DeparturesOrdered.Length];
-            this.departureunits = [];
             for (int i = 0; i < ProblemInstance.Current.DeparturesOrdered.Length; i++)
             {
                 Trains.DepartureTrain departure = ProblemInstance.Current.DeparturesOrdered[i];
@@ -37,7 +37,6 @@ namespace ServiceSiteScheduling.Matching
                     Trains.DepartureTrainUnit departuretrainunit = departure.Units[j];
                     var unit = new Unit(departuretrainunit);
                     units[j] = unit;
-                    this.departureunits.Add(unit);
                 }
                 this.departuretrains[i] = new Train(departure, units);
                 foreach (Unit unit in units)
@@ -186,7 +185,10 @@ namespace ServiceSiteScheduling.Matching
                     if (this.adjacencyMatrix[i, j])
                         arrival.Adjacent.Add(this.Departures[j]);
                 if (arrival.Adjacent.Count > 0)
+                {
+                    Debug.Assert(arrival.Adjacent.Count > 1);
                     vertices.Add(arrival);
+                }
             }
             this.matchableArrivals = vertices.ToArray();
         }
@@ -248,10 +250,13 @@ namespace ServiceSiteScheduling.Matching
             int reset = 5000
         )
         {
-            var multiparts = this
+            // For each train: all train units except the first.  Used to count (prevented) splits.
+            ArrivalVertex[] multiparts = this
                 .Arrivals.Where(vertex => vertex.Unit != vertex.Train.Units.First())
                 .ToArray();
-            Func<int[], int> cost = m =>
+
+            // Cost function: the number resulting shuntunits after splitting.  Every match error counts for five extra splits.
+            int cost(int[] m)
             {
                 int counter = 0;
                 foreach (var vertex in multiparts)
@@ -269,7 +274,7 @@ namespace ServiceSiteScheduling.Matching
                     if (!this.adjacencyMatrix[i, m[i]])
                         errors++;
                 return this.Arrivals.Length - counter + 5 * errors;
-            };
+            }
 
             Dictionary<Trains.TrainType, List<ArrivalVertex>> arrivalsbytype = [];
             foreach (var arrival in this.Arrivals)
@@ -278,12 +283,20 @@ namespace ServiceSiteScheduling.Matching
                 for (int i = 0; i < this.Arrivals.Length && !active; i++)
                     active = this.adjacencyMatrix[arrival.Index, i];
                 if (!active)
+                {
+                    // This is a fixed match
+                    Debug.Assert(this.fixedMatches.Any(m => m.Arrival == arrival));
+                    // if the following is indeed true, this is a quicker way to check than iterating over the adjacency matrix:
+                    Debug.Assert(arrival.Adjacent.Count == 0);
                     continue;
+                }
 
-                if (!arrivalsbytype.ContainsKey(arrival.Unit.Type))
-                    arrivalsbytype[arrival.Unit.Type] = [];
-                arrivalsbytype[arrival.Unit.Type].Add(arrival);
+                if (!arrivalsbytype.TryGetValue(arrival.Unit.Type, out var list))
+                    arrivalsbytype[arrival.Unit.Type] = list = [];
+                list.Add(arrival);
             }
+            // For each type, we have at least two arrivals. Otherwise, it would have resulted in a fixed match.
+            Debug.Assert(arrivalsbytype.Values.All(v => v.Count > 1));
 
             int[] matching = new int[this.Arrivals.Length];
             foreach (var match in initialmatching)
@@ -346,6 +359,7 @@ namespace ServiceSiteScheduling.Matching
                 }
             }
 
+            // Now we construct all sets of matches of trains (parts) that can be kept together
             List<List<Match>> partsmatching = [];
             for (int index = 0; index < bestsolution.Length; index++)
             {
@@ -374,12 +388,7 @@ namespace ServiceSiteScheduling.Matching
             Dictionary<Train, List<Part>> trainparts = [];
             foreach (var matchpart in partsmatching)
             {
-                if (
-                    !trainparts.TryGetValue(
-                        matchpart.First().Departure.Train,
-                        out List<Part>? parts
-                    )
-                )
+                if (!trainparts.TryGetValue(matchpart.First().Departure.Train, out var parts))
                     trainparts[matchpart.First().Departure.Train] = parts = [];
                 var part = new Part(matchpart.Select(m => m.Departure.Unit).ToArray());
                 parts.Add(part);
@@ -393,7 +402,8 @@ namespace ServiceSiteScheduling.Matching
             foreach (var kvp in trainparts)
                 kvp.Key.Parts = kvp.Value.ToArray();
 
-            TrainMatching result = new(this.departuretrains, this.departureunits, shunttrainunits);
+            Debug.Assert(departuretrains.All(t => t.Parts != null));
+            TrainMatching result = new(this.departuretrains, shunttrainunits);
             return result;
         }
 
