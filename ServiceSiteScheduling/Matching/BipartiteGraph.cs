@@ -307,57 +307,65 @@ namespace ServiceSiteScheduling.Matching
             int[] bestsolution = new int[matching.Length];
             Array.Copy(matching, bestsolution, matching.Length);
             int iteration = 0;
-            while (arrivalsbytype.Count > 0)
-            {
-                if (iteration++ > iterations)
-                    break;
-
-                ArrivalVertex first,
-                    second;
-
-                var set = arrivalsbytype.Values.ElementAt(random.Next(arrivalsbytype.Count));
-                first = set[random.Next(set.Count)];
-                var secondindex = random.Next(set.Count);
-                if (secondindex == first.Index)
-                    secondindex = (secondindex + 1) % set.Count;
-                second = set[secondindex];
-
-                if (
-                    this.adjacencyMatrix[first.Index, matching[second.Index]]
-                    && this.adjacencyMatrix[second.Index, matching[first.Index]]
-                )
+            if (arrivalsbytype.Count > 0)
+                while (true)
                 {
-                    int temp = matching[first.Index];
-                    matching[first.Index] = matching[second.Index];
-                    matching[second.Index] = temp;
+                    // perform local search
 
-                    int c = cost(matching);
+                    if (iteration++ > iterations)
+                        break;
 
-                    if (c < currentcost || Math.Exp((c - currentcost) / T) > random.NextDouble())
+                    ArrivalVertex first,
+                        second;
+
+                    var set = arrivalsbytype.Values.ElementAt(random.Next(arrivalsbytype.Count));
+                    first = set[random.Next(set.Count)];
+                    var secondindex = random.Next(set.Count);
+                    if (secondindex == first.Index)
+                        secondindex = (secondindex + 1) % set.Count;
+                    second = set[secondindex];
+
+                    if (
+                        this.adjacencyMatrix[first.Index, matching[second.Index]]
+                        && this.adjacencyMatrix[second.Index, matching[first.Index]]
+                    )
                     {
-                        currentcost = c;
-                        if (c < best)
+                        (matching[second.Index], matching[first.Index]) = (
+                            matching[first.Index],
+                            matching[second.Index]
+                        );
+                        int c = cost(matching);
+
+                        if (
+                            c < currentcost
+                            || Math.Exp((c - currentcost) / T) > random.NextDouble()
+                        )
                         {
-                            Array.Copy(matching, bestsolution, matching.Length);
-                            best = c;
+                            currentcost = c;
+                            if (c < best)
+                            {
+                                Array.Copy(matching, bestsolution, matching.Length);
+                                best = c;
+                            }
+                        }
+                        else
+                        {
+                            (matching[second.Index], matching[first.Index]) = (
+                                matching[first.Index],
+                                matching[second.Index]
+                            );
                         }
                     }
-                    else
+
+                    if (iteration % Q == 0)
+                        T *= alpha;
+
+                    if (iteration % reset == 0)
                     {
-                        matching[second.Index] = matching[first.Index];
-                        matching[first.Index] = temp;
+                        Array.Copy(bestsolution, matching, matching.Length);
+                        currentcost = best;
                     }
                 }
-
-                if (iteration % Q == 0)
-                    T *= alpha;
-
-                if (iteration % reset == 0)
-                {
-                    Array.Copy(bestsolution, matching, matching.Length);
-                    currentcost = best;
-                }
-            }
 
             // Now we construct all sets of matches of trains (parts) that can be kept together
             List<List<Match>> partsmatching = [];
