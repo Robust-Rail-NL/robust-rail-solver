@@ -62,12 +62,12 @@ namespace ServiceSiteScheduling.Matching
             }
             this.Departures = departures.ToArray();
 
-            int arrivalCount = this.Arrivals.Length;
-            this.distance = new int[arrivalCount + 1];
-            this.infinity = arrivalCount + 1;
-            this.dummy = new ArrivalVertex(arrivalCount, null!, null!);
-            this.arrivalmatch = new DepartureVertex?[arrivalCount + 1];
-            this.departurematch = new ArrivalVertex[arrivalCount + 1];
+            int matchCount = this.Arrivals.Length;
+            this.distance = new int[matchCount + 1];
+            this.infinity = matchCount + 1;
+            this.dummy = new ArrivalVertex(matchCount, null!, null!);
+            this.arrivalmatch = new DepartureVertex?[matchCount + 1];
+            this.departurematch = new ArrivalVertex[matchCount + 1];
 
             arrivalindex = 0;
             // Create all possible edges
@@ -119,7 +119,7 @@ namespace ServiceSiteScheduling.Matching
             }
 
             foreach (var match in this.fixedMatches)
-                for (int i = 0; i < arrivalCount; i++)
+                for (int i = 0; i < matchCount; i++)
                     this.adjacencyMatrix[match.Arrival.Index, i] = this.adjacencyMatrix[
                         i,
                         match.Departure!.Index
@@ -130,10 +130,10 @@ namespace ServiceSiteScheduling.Matching
             while (change)
             {
                 change = false;
-                for (int i = 0; i < arrivalCount && !change; i++)
+                for (int i = 0; i < matchCount && !change; i++)
                 {
                     int counter = 0;
-                    for (int j = 0; j < arrivalCount && counter <= 1; j++)
+                    for (int j = 0; j < matchCount && counter <= 1; j++)
                     {
                         if (this.adjacencyMatrix[i, j])
                             counter++;
@@ -141,11 +141,11 @@ namespace ServiceSiteScheduling.Matching
 
                     if (counter == 1)
                     {
-                        for (int j = 0; j < arrivalCount; j++)
+                        for (int j = 0; j < matchCount; j++)
                             if (this.adjacencyMatrix[i, j])
                             {
                                 this.fixedMatches.Add(new Match(arrivals[i], departures[j]));
-                                for (int k = 0; k < arrivalCount; k++)
+                                for (int k = 0; k < matchCount; k++)
                                     this.adjacencyMatrix[k, j] = false;
                                 break;
                             }
@@ -153,10 +153,10 @@ namespace ServiceSiteScheduling.Matching
                     }
                 }
 
-                for (int i = 0; i < arrivalCount && !change; i++)
+                for (int i = 0; i < matchCount && !change; i++)
                 {
                     int counter = 0;
-                    for (int j = 0; j < arrivalCount && counter <= 1; j++)
+                    for (int j = 0; j < matchCount && counter <= 1; j++)
                     {
                         if (this.adjacencyMatrix[j, i])
                             counter++;
@@ -164,11 +164,11 @@ namespace ServiceSiteScheduling.Matching
 
                     if (counter == 1)
                     {
-                        for (int j = 0; j < arrivalCount; j++)
+                        for (int j = 0; j < matchCount; j++)
                             if (this.adjacencyMatrix[j, i])
                             {
                                 this.fixedMatches.Add(new Match(arrivals[i], departures[j]));
-                                for (int k = 0; k < arrivalCount; k++)
+                                for (int k = 0; k < matchCount; k++)
                                     this.adjacencyMatrix[j, k] = false;
                                 break;
                             }
@@ -179,10 +179,10 @@ namespace ServiceSiteScheduling.Matching
 
             // construct a (kind of) adjacency list
             List<ArrivalVertex> vertices = [];
-            for (int i = 0; i < arrivalCount; i++)
+            for (int i = 0; i < matchCount; i++)
             {
                 var arrival = Arrivals[i];
-                for (int j = 0; j < arrivalCount; j++)
+                for (int j = 0; j < matchCount; j++)
                     if (this.adjacencyMatrix[i, j])
                         arrival.Adjacent.Add(this.Departures[j]);
                 if (arrival.Adjacent.Count > 0)
