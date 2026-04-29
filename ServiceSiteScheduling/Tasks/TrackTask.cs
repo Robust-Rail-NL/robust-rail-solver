@@ -40,7 +40,7 @@ namespace ServiceSiteScheduling.Tasks
 
         public override string ToString()
         {
-            return $"{this.Start} - {this.End} : {this.Train} at {this.Track.ID}";
+            return $"{this.Start} - {this.End} : {this.Train} at {this.Track?.ID.ToString() ?? "null"}";
         }
 
         public void Arrive(Parking.TrackOccupation track)

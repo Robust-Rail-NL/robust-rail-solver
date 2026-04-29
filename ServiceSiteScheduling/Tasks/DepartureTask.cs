@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿#nullable enable
+
+using System.Diagnostics;
 
 namespace ServiceSiteScheduling.Tasks
 {
@@ -6,6 +8,11 @@ namespace ServiceSiteScheduling.Tasks
     {
         public Utilities.Time ScheduledTime { get; set; }
         public Side DepartureSide { get; private set; }
+        public new TrackParts.Track Track
+        {
+            get => base.Track ?? throw new InvalidOperationException("Track is null");
+            set => base.Track = value;
+        }
 
         public DepartureTask(
             Trains.ShuntTrain train,

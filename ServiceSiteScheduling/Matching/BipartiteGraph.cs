@@ -35,7 +35,7 @@ namespace ServiceSiteScheduling.Matching
                 for (int j = 0; j < departure.Units.Length; j++)
                 {
                     Trains.DepartureTrainUnit departuretrainunit = departure.Units[j];
-                    var unit = new Unit(departuretrainunit);
+                    var unit = new Unit(departuretrainunit, null!);
                     units[j] = unit;
                 }
                 this.departuretrains[i] = new Train(departure, units);

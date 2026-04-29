@@ -1,4 +1,8 @@
-﻿using Google.Protobuf;
+﻿#nullable enable
+
+using System.Collections.Immutable;
+using System.Diagnostics;
+using Google.Protobuf;
 using Microsoft.Extensions.Logging;
 using ServiceSiteScheduling.Matching;
 using ServiceSiteScheduling.Parking;
@@ -16,13 +20,13 @@ namespace ServiceSiteScheduling.Solutions
 
         public ShuntTrainUnit[] ShuntUnits { get; private set; }
 
-        TrackOccupation[] TrackOccupations;
+        ImmutableArray<TrackOccupation> TrackOccupations { get; init; }
         bool[] outsidetrack;
 
         public RoutingGraph RoutingGraph;
 
-        public ArrivalTask[] ArrivalTasks { get; private set; }
-        DepartureTask[] DepartureTasks;
+        public ImmutableArray<ArrivalTask> ArrivalTasks { get; init; }
+        public ImmutableArray<DepartureTask> DepartureTasks { get; init; }
 
         public TrainMatching Matching { get; private set; }
 
@@ -31,14 +35,14 @@ namespace ServiceSiteScheduling.Solutions
             get { return this.ArrivalTasks.First(arrival => arrival.Next.PreviousMove == null); }
         }
 
-        public MoveTask First { get; set; }
-        public MoveTask Last { get; set; }
+        public MoveTask First { get; set; } = null!;
+        public MoveTask Last { get; set; } = null!;
 
-        public SolutionCost Cost;
+        public SolutionCost? Cost;
 
         private bool[][] FreeServiceTaskFinished;
 
-        public PartialOrderSchedule POS { get; set; }
+        public PartialOrderSchedule? POS { get; set; }
 
         public int testIndex { get; set; }
 
@@ -53,19 +57,21 @@ namespace ServiceSiteScheduling.Solutions
             this.RoutingGraph = graph;
             this.Matching = matching;
             this.ShuntUnits = shuntunits;
-            this.ArrivalTasks = arrivals;
-            this.DepartureTasks = departures;
+            this.ArrivalTasks = ImmutableArray.ToImmutableArray(arrivals);
+            this.DepartureTasks = ImmutableArray.ToImmutableArray(departures);
 
-            this.TrackOccupations = new TrackOccupation[ProblemInstance.Current.Tracks.Length];
+            TrackOccupation[] occupations = new TrackOccupation[
+                ProblemInstance.Current.Tracks.Length
+            ];
             this.outsidetrack = new bool[ProblemInstance.Current.Tracks.Length];
-            for (int i = 0; i < this.TrackOccupations.Length; i++)
+            for (int i = 0; i < occupations.Length; i++)
             {
                 var track = ProblemInstance.Current.Tracks[i];
                 if (!track.IsActive)
                     continue;
 
                 TrackOccupation occupation = new SimpleTrackOccupation(track);
-                this.TrackOccupations[i] = occupation;
+                occupations[i] = occupation;
                 this.RoutingGraph.SuperVertices[track.Index].TrackOccupation = occupation;
 
                 if (ProblemInstance.Current.ArrivalsOrdered.Select(t => t.Track).Contains(track))
@@ -79,12 +85,13 @@ namespace ServiceSiteScheduling.Solutions
                     ProblemInstance.Current.FreeServices[i].Length
                 ];
             this.testIndex = 0;
+            this.TrackOccupations = ImmutableArray.ToImmutableArray(occupations);
         }
 
         public void GetShortPlanStatistics()
         {
             int number_moves = 0;
-            MoveTask count_move = this.First;
+            MoveTask? count_move = this.First;
             while (count_move != null)
             {
                 number_moves++;
@@ -101,7 +108,7 @@ namespace ServiceSiteScheduling.Solutions
 
         public void UpdateRoutingOrder()
         {
-            MoveTask move = this.First;
+            MoveTask? move = this.First;
             int order = 1;
             while (move != null)
             {
@@ -120,21 +127,21 @@ namespace ServiceSiteScheduling.Solutions
                 this.TrackOccupations[i]?.Reset();
 
             this.ComputeLocation(this.First, recomputestart, recomputeend);
-            ComputeTime(recomputestart, recomputestart.PreviousMove?.End ?? 0);
+            ComputeTime(recomputestart, recomputestart?.PreviousMove?.End ?? 0);
             return this.ComputeCost();
         }
 
         public SolutionCost ComputeModel()
         {
             foreach (var departure in this.DepartureTasks)
-                (departure.Previous as DepartureRoutingTask).UpdatePreviousTaskOrder();
+                ((DepartureRoutingTask)departure.Previous).UpdatePreviousTaskOrder();
 
             return this.ComputeModel(this.First, this.Last);
         }
 
-        public void ComputeLocation(MoveTask start, MoveTask recomputestart, MoveTask recomputeend)
+        public void ComputeLocation(MoveTask? start, MoveTask recomputestart, MoveTask recomputeend)
         {
-            MoveTask move = start;
+            MoveTask? move = start;
             while (move != null)
             {
                 if (move.TaskType == MoveTaskType.Standard)
@@ -211,9 +218,9 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public static void ComputeTime(MoveTask start, Time time)
+        public static void ComputeTime(MoveTask? start, Time time)
         {
-            MoveTask move = start;
+            MoveTask? move = start;
             while (move != null)
             {
                 if (move.TaskType == MoveTaskType.Standard)
@@ -322,7 +329,7 @@ namespace ServiceSiteScheduling.Solutions
 
         public void OutputMovementSchedule()
         {
-            MoveTask move = this.First;
+            MoveTask? move = this.First;
             while (move != null)
             {
                 if (move is RoutingTask routing)
@@ -430,7 +437,7 @@ namespace ServiceSiteScheduling.Solutions
         {
             Track fromtrack = routing.FromTrack,
                 totrack = routing.ToTrack;
-            Side toside = routing.ToSide;
+            Side? toside = routing.ToSide;
 
             if (fromtrack.Access == Side.Both)
             {
@@ -490,7 +497,7 @@ namespace ServiceSiteScheduling.Solutions
             ShuntTrain train,
             Track fromtrack,
             Track totrack,
-            Side toside,
+            Side? toside,
             int departurecrossingsA,
             int departurecrossingsB
         )
@@ -550,7 +557,7 @@ namespace ServiceSiteScheduling.Solutions
 
         public string RoutingOrdering()
         {
-            MoveTask move = this.First;
+            MoveTask? move = this.First;
             string result = string.Empty;
             while (move != null)
             {
@@ -610,7 +617,7 @@ namespace ServiceSiteScheduling.Solutions
                     cost.ProblemTrains |= departure.Train.UnitBits;
                 }
 
-            MoveTask move = this.First;
+            MoveTask? move = this.First;
             while (move != null)
             {
                 cost.ShuntMoves += move.NumberOfRoutes;
@@ -703,11 +710,11 @@ namespace ServiceSiteScheduling.Solutions
         {
             task.ClearRoutes();
 
-            TrackTask previous = null;
-            ShuntTrain train = null;
-            TrackTask first = null,
+            TrackTask? previous = null;
+            ShuntTrain? train = null;
+            TrackTask? first = null,
                 last = null;
-            State next = null;
+            State? next = null;
             bool newShuntTrainConstructed = false;
             for (int i = 0; i < task.Previous.Count; i++)
             {
@@ -727,7 +734,10 @@ namespace ServiceSiteScheduling.Solutions
                 if (tracktask.Track != previous?.Track || (next != tracktask.State))
                 {
                     if (train != null)
+                    {
+                        Debug.Assert(previous != null && first != null && last != null);
                         this.computeDepartureRoute(task, train, previous.Track, first, last);
+                    }
                     train = null;
                 }
                 if (train == null)
@@ -760,7 +770,10 @@ namespace ServiceSiteScheduling.Solutions
                 next = currentnext;
             }
             if (train != null)
+            {
+                Debug.Assert(previous != null && first != null && last != null);
                 this.computeDepartureRoute(task, train, previous.Track, first, last);
+            }
         }
 
         protected void computeDepartureRoute(
@@ -802,7 +815,7 @@ namespace ServiceSiteScheduling.Solutions
         public void CheckCorrectness()
         {
             // Routing order
-            MoveTask move = this.First;
+            MoveTask? move = this.First;
             List<TrackTask> tasks = [];
             while (move != null)
             {
@@ -830,7 +843,7 @@ namespace ServiceSiteScheduling.Solutions
                     if (task is ServiceTask service)
                     {
                         for (
-                            ServiceTask s = service.NextServiceTask;
+                            ServiceTask? s = service.NextServiceTask;
                             s != null;
                             s = s.NextServiceTask
                         )
@@ -846,7 +859,7 @@ namespace ServiceSiteScheduling.Solutions
                                 throw new InvalidOperationException("resource conflict");
                         }
                         for (
-                            ServiceTask s = service.PreviousServiceTask;
+                            ServiceTask? s = service.PreviousServiceTask;
                             s != null;
                             s = s.PreviousServiceTask
                         )
@@ -891,10 +904,10 @@ namespace ServiceSiteScheduling.Solutions
                 if (move.PreviousMove != null && move.PreviousMove.NextMove != move)
                     throw new InvalidOperationException("move-move linkage failure");
 
-                for (MoveTask other = move.NextMove; other != null; other = other.NextMove)
+                for (MoveTask? other = move.NextMove; other != null; other = other.NextMove)
                     if (other == move)
                         throw new InvalidOperationException("circular move-move references");
-                for (MoveTask other = move.PreviousMove; other != null; other = other.PreviousMove)
+                for (MoveTask? other = move.PreviousMove; other != null; other = other.PreviousMove)
                     if (other == move)
                         throw new InvalidOperationException("circular move-move references");
 
@@ -917,7 +930,7 @@ namespace ServiceSiteScheduling.Solutions
         {
             using (System.IO.StreamWriter sw = new("demian.txt"))
             {
-                MoveTask move = this.First;
+                MoveTask? move = this.First;
                 while (move != null)
                 {
                     if (move is RoutingTask routing)
@@ -999,7 +1012,7 @@ namespace ServiceSiteScheduling.Solutions
 
         public void WriteJSONFile(string filePath)
         {
-            AlgoIface.Plan plan = this.ToProtobuf();
+            AlgoIface.Plan? plan = this.ToProtobuf();
             var formatter = new JsonFormatter(
                 JsonFormatter.Settings.Default.WithIndentation("\t").WithFormatDefaultValues(true)
             );
@@ -1007,7 +1020,7 @@ namespace ServiceSiteScheduling.Solutions
             File.WriteAllText(filePath, jsonPlan);
         }
 
-        public AlgoIface.Plan ToProtobuf()
+        public AlgoIface.Plan? ToProtobuf()
         {
             if (
                 ProblemInstance.Current.InterfaceLocation == null
@@ -1019,7 +1032,7 @@ namespace ServiceSiteScheduling.Solutions
 
             Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion = [];
 
-            MoveTask move = this.First;
+            MoveTask? move = this.First;
             while (move != null)
             {
                 // Console.WriteLine($"Now processing move {move.TaskType} of train {move.Train} at {(int)move.Start}--{(int)move.End} from {move.FromTrack} to {move.ToTrack}");
@@ -1063,7 +1076,7 @@ namespace ServiceSiteScheduling.Solutions
                         moveaction.EndTime = endtime;
                         moveaction.ShuntingUnit = GetShuntUnit(move.Train, trainconversion);
 
-                        Infrastructure previous = null;
+                        Infrastructure? previous = null;
                         foreach (var arc in routing.Route.Arcs)
                         {
                             foreach (var infra in arc.Path.Path)
@@ -1145,7 +1158,7 @@ namespace ServiceSiteScheduling.Solutions
                         moveaction.EndTime = (ulong)(starttime + route.Duration);
                         moveaction.ShuntingUnit = shuntingunit;
                         // add path
-                        Infrastructure previous = null;
+                        Infrastructure? previous = null;
                         foreach (var arc in route.Arcs)
                         {
                             foreach (var infra in arc.Path.Path)
@@ -1226,7 +1239,7 @@ namespace ServiceSiteScheduling.Solutions
 
         public void DisplayMovements()
         {
-            MoveTask move = this.First;
+            MoveTask? move = this.First;
             int i = 0;
             while (move != null)
             {
@@ -1376,7 +1389,7 @@ namespace ServiceSiteScheduling.Solutions
                             task.Track.ID
                         ];
                         trackaction.Location = gatewayconnection.Path[0].ID;
-                        Infrastructure previous = null;
+                        Infrastructure? previous = null;
                         foreach (var infra in gatewayconnection.Path)
                             if (infra != previous)
                             {
@@ -1464,7 +1477,7 @@ namespace ServiceSiteScheduling.Solutions
                         var gatewayconnection = ProblemInstance.Current.GatewayConversion[
                             task.Track.ID
                         ];
-                        Infrastructure previous = null;
+                        Infrastructure? previous = null;
                         for (int i = gatewayconnection.Path.Length - 1; i >= 0; i--)
                         {
                             var infra = gatewayconnection.Path[i];
@@ -1503,8 +1516,7 @@ namespace ServiceSiteScheduling.Solutions
             string _standingType = ""
         )
         {
-            AlgoIface.ShuntingUnit shuntingunit = null;
-            if (!trainconversion.TryGetValue(train, out shuntingunit))
+            if (!trainconversion.TryGetValue(train, out AlgoIface.ShuntingUnit? shuntingunit))
             {
                 shuntingunit = new AlgoIface.ShuntingUnit();
                 foreach (var unit in train.Units)
@@ -1546,6 +1558,135 @@ namespace ServiceSiteScheduling.Solutions
                 return _shuntingunit;
             }
             return shuntingunit;
+        }
+
+        /// <summary>
+        /// Run assertions for the well-formedness of the data structures. Meant to be called as <code>Debug.Assert(IsWellFormed())</code>.
+        /// </summary>
+        /// <returns>True, unless an assertion fails.</returns>
+        internal bool IsWellFormed()
+        {
+            HashSet<TrackTask> seen_tt = [];
+            Dictionary<MoveTask, int> seen_mt = [];
+
+            Debug.Assert(CheckGraphStructure(seen_mt, seen_tt));
+
+            // Check other well-formedness criteria
+            foreach (var tt in seen_tt)
+            {
+                Debug.Assert(tt.Track != null);
+            }
+
+            // Check the linked list of MoveTask_s
+            Debug.Assert(this.First != null && this.Last != null, "First and Last must be set");
+
+            int count = 0;
+            for (MoveTask? mt = this.First; mt != null; mt = mt.NextMove)
+            {
+                Debug.Assert(seen_mt.ContainsKey(mt), "MoveTask not in task graph");
+                Debug.Assert(mt.Graph == this, "MoveTask.Graph not correctly set");
+                Debug.Assert(
+                    mt.FromTrack != null && mt.ToTrack != null,
+                    "MoveTask.{FromTrack,ToTrack} must be non-null"
+                );
+                count++;
+            }
+
+            Debug.Assert(
+                count == seen_mt.Count,
+                "Mismatch between task graph and linked list of MoveTasks"
+            );
+
+            return true;
+        }
+
+        /// <summary>
+        /// Verify graph data structure: start with arrival tasks, then alternating MoveTask_s and TrackTask_s, to end up in a Departure (preceded by a DepartureMove).
+        /// Check that all links are correct and that there are no cycles.
+        /// </summary>
+        /// <returns>True, unless an assertion fails.</returns>
+        private bool CheckGraphStructure(
+            Dictionary<MoveTask, int> seen_mt,
+            HashSet<TrackTask> seen_tt
+        )
+        {
+            Queue<MoveTask> queue_mt = [];
+            Queue<TrackTask> queue_tt = [];
+            foreach (ArrivalTask at in this.ArrivalTasks)
+            {
+                Debug.Assert(at != null, "ArrivalTask must not be null");
+                Debug.Assert(!seen_tt.Contains(at), "Duplicate ArrivalTask");
+                seen_tt.Add(at);
+                Debug.Assert(at.Track != null, "Track must be set");
+                Debug.Assert(at.Previous == null, "ArrivalTask must not have Previous task");
+                Debug.Assert(at.Next != null, "ArrivalTask must have a Next task");
+                queue_mt.Enqueue(at.Next);
+            }
+            while (queue_mt.Count != 0 || queue_tt.Count != 0)
+            {
+                while (queue_mt.Count != 0)
+                {
+                    MoveTask mt = queue_mt.Dequeue();
+                    Debug.Assert(mt != null);
+                    if (seen_mt.TryGetValue(mt, out int value))
+                    {
+                        value++;
+                    }
+                    else
+                    {
+                        value = 1;
+                        Debug.Assert(mt.AllNext.Count > 0 && mt.AllPrevious.Count > 0);
+                        foreach (TrackTask tt in mt.AllPrevious)
+                        {
+                            Debug.Assert(tt != null && seen_tt.Contains(tt) && tt.Next == mt);
+                        }
+                        foreach (TrackTask tt in mt.AllNext)
+                        {
+                            Debug.Assert(tt != null && tt.Previous == mt);
+                            queue_tt.Enqueue(tt);
+                        }
+                    }
+                    seen_mt[mt] = value;
+                }
+                while (queue_tt.Count != 0)
+                {
+                    TrackTask tt = queue_tt.Dequeue();
+                    Debug.Assert(!seen_tt.Contains(tt));
+                    seen_tt.Add(tt);
+                    Debug.Assert(tt.Previous != null); // this was actually already asserted when enqueueing `tt`
+                    if (tt.Next == null)
+                    {
+                        Debug.Assert(
+                            tt.TaskType == TrackTaskType.Departure,
+                            "Only DepartureTask may have Next unset"
+                        );
+                        Debug.Assert(
+                            tt.Previous.TaskType == MoveTaskType.Departure,
+                            "Departure preceded by regular MoveTask"
+                        );
+                    }
+                    else
+                    {
+                        Debug.Assert(
+                            tt.TaskType != TrackTaskType.Departure,
+                            "DepartureTask must not have Next set"
+                        );
+                        Debug.Assert(
+                            tt.Previous.TaskType != MoveTaskType.Departure,
+                            "DepartureMove followed by non-Departure"
+                        );
+                        queue_mt.Enqueue(tt.Next);
+                    }
+                }
+            }
+
+            // Check that the counts are correct
+            foreach (var kvp in seen_mt)
+            {
+                Debug.Assert(kvp.Key.AllPrevious.Count == kvp.Value);
+            }
+
+            return true;
         }
     }
 }

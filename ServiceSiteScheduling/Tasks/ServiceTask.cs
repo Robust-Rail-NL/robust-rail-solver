@@ -18,7 +18,7 @@ namespace ServiceSiteScheduling.Tasks
         }
         public ServiceTask? PreviousServiceTask { get; set; }
         public ServiceTask? NextServiceTask { get; set; }
-        public Servicing.ServiceResource Resource { get; set; }
+        public Servicing.ServiceResource? Resource { get; set; }
         public bool IsRemoved { get; private set; } = false;
 
         private Utilities.Time minimumDuration = -1;
@@ -27,7 +27,7 @@ namespace ServiceSiteScheduling.Tasks
             Trains.ShuntTrain train,
             TrackParts.Track track,
             Servicing.ServiceType type,
-            Servicing.ServiceResource resource
+            Servicing.ServiceResource? resource
         )
             : base(train, track, TrackTaskType.Service)
         {
@@ -129,12 +129,22 @@ namespace ServiceSiteScheduling.Tasks
             this.IsRemoved = true;
 
             if (this.PreviousServiceTask == null)
-                this.Resource.First = this.NextServiceTask;
+            {
+                if (this.Resource != null)
+                {
+                    this.Resource.First = this.NextServiceTask;
+                }
+            }
             else
                 this.PreviousServiceTask.NextServiceTask = this.NextServiceTask;
 
             if (this.NextServiceTask == null)
-                this.Resource.Last = this.PreviousServiceTask;
+            {
+                if (this.Resource != null)
+                {
+                    this.Resource.Last = this.PreviousServiceTask;
+                }
+            }
             else
                 this.NextServiceTask.PreviousServiceTask = this.PreviousServiceTask;
 

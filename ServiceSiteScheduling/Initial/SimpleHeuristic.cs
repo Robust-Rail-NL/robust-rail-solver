@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿#nullable enable
+
+using System.Diagnostics;
 using ServiceSiteScheduling.Matching;
 using ServiceSiteScheduling.Servicing;
 using ServiceSiteScheduling.Solutions;
@@ -179,7 +181,7 @@ namespace ServiceSiteScheduling.Initial
                 );
                 Time releasedate = previousroute.Start;
                 Time duedate = departuretime - partial_shunttrain.ServiceDuration;
-                ServiceTask first = null;
+                ServiceTask? first = null;
 
                 var trainservicetypes = partial_shunttrain
                     .Units.Aggregate(
@@ -193,7 +195,8 @@ namespace ServiceSiteScheduling.Initial
                 Shuffle(trainservicetypes, random);
                 foreach (ServiceType type in trainservicetypes)
                 {
-                    ServiceTask service = new(new ShuntTrain(partial_shunttrain), null, type, null)
+                    // ServiceTask initialized with <null> track (check full initialization at end of this method)
+                    ServiceTask service = new(new ShuntTrain(partial_shunttrain), null!, type, null)
                     {
                         Start = releasedate,
                     };
@@ -215,8 +218,8 @@ namespace ServiceSiteScheduling.Initial
                     service.Previous = to;
                     routings.Add(to);
 
-                    // Add parking before service
-                    var parking = new ParkingTask(new ShuntTrain(partial_shunttrain), null);
+                    // Add parking before service: initialized with parking at <null> track (check full initialization at end of this method)
+                    var parking = new ParkingTask(new ShuntTrain(partial_shunttrain), null!);
                     parking.Previous = previousroute;
                     previousroute.Next.Add(parking);
                     parking.Next = to;
@@ -239,8 +242,8 @@ namespace ServiceSiteScheduling.Initial
 
                 departure.Start = departure.End = Math.Max(previousroute.End, departure.End);
 
-                // Add parking before departure: initialized with parking at <null> track
-                var departureparking = new ParkingTask(new ShuntTrain(partial_shunttrain), null);
+                // Add parking before departure: initialized with parking at <null> track (check full initialization at end of this method)
+                var departureparking = new ParkingTask(new ShuntTrain(partial_shunttrain), null!);
                 departureparking.Previous = previousroute;
                 previousroute.Next.Add(departureparking);
                 departureparking.Next = departure;
@@ -294,7 +297,7 @@ namespace ServiceSiteScheduling.Initial
                     selectedindex--;
                     selected = candidates[selectedindex];
                 }
-                ServiceResource resource = null;
+                ServiceResource resource = null!;
                 Time t = int.MaxValue;
 
                 // Find the machine with earliest completion time
@@ -339,14 +342,14 @@ namespace ServiceSiteScheduling.Initial
                     earlieststart[task.Train] = selected.End + Time.Minute;
 
                 // Update route to service
-                RoutingTask to = selected.Previous as RoutingTask;
+                RoutingTask to = (RoutingTask)selected.Previous;
                 to.Start = to.End = selected.Start;
                 to.ToTrack = selected.Track;
                 to.ToSide = selected.ArrivalSide;
                 moveheap.Insert(to);
 
                 // Update route from service
-                RoutingTask from = selected.Next as RoutingTask;
+                RoutingTask from = (RoutingTask)selected.Next;
                 from.Start = from.End = selected.End;
                 from.FromTrack = selected.Track;
                 moveheap.Insert(from);
@@ -354,7 +357,7 @@ namespace ServiceSiteScheduling.Initial
                 // Add new candidate if available
                 orderedservices[selected.Train].RemoveFirst();
                 if (orderedservices[selected.Train].Count > 0)
-                    candidates[selectedindex] = orderedservices[selected.Train].First.Value;
+                    candidates[selectedindex] = orderedservices[selected.Train].First!.Value;
                 else // Remove from candidate list
                     candidates.RemoveAt(selectedindex);
             }
@@ -377,7 +380,7 @@ namespace ServiceSiteScheduling.Initial
             );
 
             // Connect movetasks
-            MoveTask prev = null;
+            MoveTask? prev = null;
             int order = 1;
             while (!moveheap.IsEmpty)
             {
@@ -396,6 +399,7 @@ namespace ServiceSiteScheduling.Initial
                     graph.First = current;
                 prev = current;
             }
+            Debug.Assert(prev != null);
             graph.Last = prev;
 
             routings.Sort((a, b) => a.MoveOrder.CompareTo(b.MoveOrder));
@@ -419,7 +423,7 @@ namespace ServiceSiteScheduling.Initial
                 )
                     continue;
 
-                Track parkingtrack = null;
+                Track parkingtrack;
                 if (
                     routing.Next.Count == 1
                     && routing.Next[0].Next.TaskType == MoveTaskType.Departure
@@ -551,8 +555,7 @@ namespace ServiceSiteScheduling.Initial
                 foreach (TrackTask task in routing.Next)
                 {
                     task.Track = parkingtrack;
-                    if (task.Next is RoutingTask next)
-                        next.FromTrack = parkingtrack;
+                    task.Next.FromTrack = parkingtrack;
                     task.ArrivalSide = side;
                 }
                 space[parkingtrack] -= routing.Train.Length;
@@ -595,6 +598,7 @@ namespace ServiceSiteScheduling.Initial
                         $"Set parking track on routing {routing} to parking track {parkingtrack}"
                     );
             }
+            Debug.Assert(graph.IsWellFormed());
             return graph;
 
             static void GenerateMatching(

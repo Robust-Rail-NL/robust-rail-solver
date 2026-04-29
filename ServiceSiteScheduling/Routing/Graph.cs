@@ -251,7 +251,7 @@ namespace ServiceSiteScheduling.Routing
         }
 
         public Route ComputeRoute(
-            Parking.TrackOccupation[] occupations,
+            IEnumerable<Parking.TrackOccupation> occupations,
             ShuntTrain train,
             Track departureTrack,
             Side departureSide,
@@ -284,7 +284,7 @@ namespace ServiceSiteScheduling.Routing
         }
 
         public Route ComputeRoute(
-            Parking.TrackOccupation[] occupations,
+            IEnumerable<Parking.TrackOccupation> occupations,
             ShuntTrain train,
             Track departureTrack,
             Side departureSide,
