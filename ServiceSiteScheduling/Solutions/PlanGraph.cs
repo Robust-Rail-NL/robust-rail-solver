@@ -820,9 +820,9 @@ namespace ServiceSiteScheduling.Solutions
             while (move != null)
             {
                 if (
-                    !move.AllPreviousSatisfy(t => t is ParkingTask)
+                    !move.SkipsParking
+                    && !move.AllPreviousSatisfy(t => t is ParkingTask)
                     && !move.AllNextSatisfy(t => t is ParkingTask)
-                    && !move.SkipsParking
                 )
                     throw new InvalidOperationException("move failed to mention parking skipping");
 
@@ -830,6 +830,7 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     if (task.Next != move)
                         throw new InvalidOperationException("track-route linkage failure");
+                    // FIXME: in case of a circular reference, the following will never return but recurse infinitely:
                     task.Next.FindAllNext(t => t == task, tasks);
                     if (tasks.Count > 0)
                         throw new InvalidOperationException("track-route circular reference");
