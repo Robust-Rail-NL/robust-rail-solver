@@ -6,8 +6,7 @@
         public Solutions.SolutionCost Cost { get; set; }
         public Utilities.BitSet AffectedTracks { get; protected set; }
 
-        protected string routingordering,
-            newroutingordering;
+        protected string routingordering;
         protected Tasks.MoveTask executestart,
             executeend,
             revertstart,
@@ -35,7 +34,6 @@
                 this.executeend ?? this.Graph.Last
             );
 #if DEBUG
-            this.newroutingordering = this.Graph.RoutingOrdering();
             this.Graph.CheckCorrectness();
 #endif
             return this.Cost;

@@ -54,11 +54,5 @@ namespace ServiceSiteScheduling.Trains
         {
             return $"{string.Join(",", this.Units.Select(unit => unit.ToString()))} at {this.Time}";
         }
-
-        // Returns if the arrival train is an instanding one which was already in the shunting yard before the scenario started
-        public bool IsItInStanding()
-        {
-            return this.InStanding;
-        }
     }
 }

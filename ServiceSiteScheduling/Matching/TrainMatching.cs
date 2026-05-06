@@ -47,7 +47,7 @@ namespace ServiceSiteScheduling.Matching
         {
             return new ShuntTrain(
                 departure.Units.Select(departureunit => this.shuntUnits[departureunit.Index]),
-                departure.Departure.IsItOutStanding()
+                departure.Departure.OutStanding
             );
         }
     }

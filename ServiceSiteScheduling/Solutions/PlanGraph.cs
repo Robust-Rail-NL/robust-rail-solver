@@ -1361,7 +1361,7 @@ namespace ServiceSiteScheduling.Solutions
             {
                 case TrackTaskType.Arrival:
                     var arrival = (ArrivalTask)task;
-                    if (task.Train.IsItInStanding())
+                    if (task.Train.InStanding)
                     {
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Arrive;
                         trackaction.ShuntingUnit = GetShuntUnit(
@@ -1458,7 +1458,7 @@ namespace ServiceSiteScheduling.Solutions
                     trackaction.Resources.Add(facilityresource);
                     break;
                 case TrackTaskType.Departure:
-                    if (task.Train.IsItInStanding())
+                    if (task.Train.InStanding)
                     {
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Exit;
                         trackaction.ShuntingUnit = GetShuntUnit(
@@ -1472,7 +1472,7 @@ namespace ServiceSiteScheduling.Solutions
                         trackaction.TaskType.Predefined = AlgoIface.PredefinedTaskType.Exit;
                     }
                     trackaction.StartTime = trackaction.EndTime = (ulong)task.End;
-                    if (!task.Train.IsItInStanding())
+                    if (!task.Train.InStanding)
                     {
                         var gatewayconnection = ProblemInstance.Current.GatewayConversion[
                             task.Track.ID

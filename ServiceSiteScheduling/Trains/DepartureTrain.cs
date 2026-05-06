@@ -40,11 +40,5 @@
         {
             return $"{string.Join(",", this.Units.Select(unit => unit.ToString()))} at {this.Time}";
         }
-
-        // Returns if the departure train is an outstanding one which stays in the shunting yard after the scenario ends
-        public bool IsItOutStanding()
-        {
-            return this.OutStanding;
-        }
     }
 }

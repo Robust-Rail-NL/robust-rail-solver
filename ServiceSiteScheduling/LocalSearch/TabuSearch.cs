@@ -24,12 +24,6 @@ namespace ServiceSiteScheduling.LocalSearch
             this.random = random;
         }
 
-        public TabuSearch(Random random, PlanGraph graph)
-        {
-            this.Graph = graph;
-            this.random = random;
-        }
-
         //@iterations: maximum iterations in the searching algorithm if it is achieved the search ends
         //@iterationsUntilReset: the current solution should be improved until that number of iteration if this number is hit, the current solution  cannot be improved -> the current solution is reverted to the original solution
         //@tabuListLength: lenght of tabu list conaining LocalSerachMoves -> solution graphs (e.g., 16)
