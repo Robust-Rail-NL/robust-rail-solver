@@ -246,22 +246,20 @@ namespace ServiceSiteScheduling.Initial
                 departureparking.Next = departure;
                 departure.Previous.Add(departureparking);
             }
-            Comparison<ServiceTask> comparison = (a, b) =>
+            int comparison(ServiceTask a, ServiceTask b)
             {
                 Time aStart = Math.Max(
                     a.Previous.Start,
                     schedule
                         .Where(kvp => a.Type.Resources.Contains(kvp.Key))
-                        .Select(kvp => kvp.Value?.Last?.Value?.End ?? 0)
-                        .Min()
+                        .Min(kvp => kvp.Value?.Last?.Value?.End ?? 0)
                 );
                 Time aEnd = aStart + a.MinimumDuration;
                 Time bStart = Math.Max(
                     b.Previous.Start,
                     schedule
                         .Where(kvp => b.Type.Resources.Contains(kvp.Key))
-                        .Select(kvp => kvp.Value?.Last?.Value?.End ?? 0)
-                        .Min()
+                        .Min(kvp => kvp.Value?.Last?.Value?.End ?? 0)
                 );
                 Time bEnd = bStart + b.MinimumDuration;
 
@@ -273,7 +271,7 @@ namespace ServiceSiteScheduling.Initial
                 Time aDue = Math.Max(aEnd, a.End);
                 Time bDue = Math.Max(bEnd, b.End);
                 return bDue.CompareTo(aDue);
-            };
+            }
 
             // Apply modified due date rule
             while (candidates.Count > 0)

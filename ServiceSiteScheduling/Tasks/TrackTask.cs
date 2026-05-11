@@ -22,7 +22,7 @@ namespace ServiceSiteScheduling.Tasks
         public Side? ArrivalSide { get; set; }
         public TrackTaskType TaskType
         {
-            get { return this.tasktype; }
+            get => this.tasktype;
         }
         protected readonly TrackTaskType tasktype;
 

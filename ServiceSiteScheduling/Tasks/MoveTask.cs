@@ -42,7 +42,7 @@ namespace ServiceSiteScheduling.Tasks
 
         public MoveTaskType TaskType
         {
-            get { return this.tasktype; }
+            get => this.tasktype;
         }
         protected readonly MoveTaskType tasktype;
 

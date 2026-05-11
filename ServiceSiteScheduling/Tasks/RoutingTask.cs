@@ -9,46 +9,42 @@ namespace ServiceSiteScheduling.Tasks
 
         public override IList<TrackTask> AllPrevious
         {
-            get { return new TrackTask[1] { this.Previous }; }
+            get => [this.Previous];
         }
         public override IList<TrackTask> AllNext
         {
-            get { return this.Next; }
+            get => this.Next;
         }
 
         public override Time Duration
         {
-            get
-            {
-                return (this.route?.Duration ?? 0)
-                    + (this.Next.Count - 1) * this.Train.Units[0].Type.SplitDuration;
-            }
+            get =>
+                (this.route?.Duration ?? 0)
+                + (this.Next.Count - 1) * this.Train.Units[0].Type.SplitDuration;
         }
         public override int Crossings
         {
-            get { return this.route?.Crossings ?? 0; }
+            get => this.route?.Crossings ?? 0;
         }
         public override int DepartureCrossings
         {
-            get { return this.route?.DepartureCrossings ?? 0; }
+            get => this.route?.DepartureCrossings ?? 0;
         }
         public override int NumberOfRoutes
         {
-            get { return (this.route?.Duration ?? 0) > 0 ? 1 : 0; }
+            get => (this.route?.Duration ?? 0) > 0 ? 1 : 0;
         }
 
         public override Side FromSide
         {
-            get { return this.route?.DepartureSide ?? null; }
+            get => this.route?.DepartureSide ?? null;
         }
 
         public override bool SkipsParking
         {
-            get
-            {
-                return this.Previous.TaskType != TrackTaskType.Parking
-                    && this.Next.Any(task => task.TaskType != TrackTaskType.Parking);
-            }
+            get =>
+                this.Previous.TaskType != TrackTaskType.Parking
+                && this.Next.Any(task => task.TaskType != TrackTaskType.Parking);
         }
 
         public Stack<RoutingTask> RouteToSkippedParking { get; set; }
@@ -56,31 +52,25 @@ namespace ServiceSiteScheduling.Tasks
 
         public bool IsSplit
         {
-            get { return this.Next.Count > 1; }
+            get => this.Next.Count > 1;
         }
 
         public Routing.Route Route
         {
-            get { return this.route; }
+            get => this.route;
         }
 
         public override BitSet CrossingTracks
         {
-            get
-            {
-                return this.route?.CrossingTracks
-                    ?? new BitSet(ProblemInstance.Current.Tracks.Length);
-            }
+            get => this.route?.CrossingTracks ?? new BitSet(ProblemInstance.Current.Tracks.Length);
         }
 
         public override BitSet DepartureCrossingTracks
         {
-            get
-            {
-                return (this.route?.DepartureCrossings ?? 0) > 0
+            get =>
+                this.route?.DepartureCrossings > 0
                     ? new BitSet(ProblemInstance.Current.Tracks.Length, this.FromTrack.Index)
                     : new BitSet(ProblemInstance.Current.Tracks.Length);
-            }
         }
 
         private Routing.Route route;
