@@ -1208,6 +1208,50 @@ namespace ServiceSiteScheduling.Solutions
                 move = move.NextMove;
             }
 
+            return ActionsToPlan(actions);
+        }
+
+        /// <summary>
+        /// Clean up and sort protobuf actions, then return a protobuf plan.
+        /// </summary>
+        static AlgoIface.Plan ActionsToPlan(IList<AlgoIface.Action> actions)
+        {
+            AlgoIface.ShuntingUnit? lastShuntingUnit = null;
+            AlgoIface.Action? waitAction = null;
+            ulong lastEndTime = ulong.MinValue;
+            HashSet<AlgoIface.Action> toDelete = [];
+
+            foreach (
+                AlgoIface.Action a in actions
+                    .Where(a =>
+                        a.TaskType.TaskTypeCase == AlgoIface.TaskType.TaskTypeOneofCase.Predefined
+                        && a.TaskType.Predefined == AlgoIface.PredefinedTaskType.Wait
+                    )
+                    .OrderBy(a => a.ShuntingUnit.Id)
+                    .ThenBy(a => a.StartTime)
+                    .ThenBy(a => a.EndTime)
+            )
+            {
+                if (a.ShuntingUnit.Equals(lastShuntingUnit) && a.StartTime == lastEndTime)
+                {
+                    logger.LogWarning(
+                        "ShuntingUnit {ShuntingUnit}: start of wait {StartTime}-{EndTime} coincides with end of previous wait. Merging.",
+                        a.ShuntingUnit,
+                        a.StartTime,
+                        a.EndTime
+                    );
+                    Debug.Assert(waitAction != null);
+                    waitAction.EndTime = a.EndTime;
+                    toDelete.Add(a);
+                }
+                else
+                {
+                    waitAction = a;
+                    lastShuntingUnit = a.ShuntingUnit;
+                    lastEndTime = a.EndTime;
+                }
+            }
+
             // Sort the actions in the plan
             Dictionary<AlgoIface.PredefinedTaskType, int> taskTypeOrder = [];
             int idx = 0;
@@ -1232,7 +1276,10 @@ namespace ServiceSiteScheduling.Solutions
                     .ThenBy(a => a.TaskType.Other)
             )
             {
-                plan_pb.Actions.Add(a);
+                if (!toDelete.Contains(a))
+                {
+                    plan_pb.Actions.Add(a);
+                }
             }
 
             return plan_pb;
