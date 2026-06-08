@@ -9,7 +9,7 @@ namespace ServiceSiteScheduling.Matching
         public Unit[] Units { get; private set; } = units;
         public Part[] Parts { get; set; } = null!;
         public Trains.DepartureTrain Departure { get; private set; } = train;
-        public Tasks.DepartureTask? Task { get; set; }
+        public Tasks.TrackTask? Task { get; set; }
         public Tasks.DepartureRoutingTask? Routing { get; set; }
 
         IEnumerator IEnumerable.GetEnumerator()

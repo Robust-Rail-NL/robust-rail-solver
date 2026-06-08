@@ -6,8 +6,8 @@ namespace ServiceSiteScheduling.Trains
     {
         public TrainUnit Base { get; private set; }
 
-        public ArrivalTask Arrival { get; set; }
-        public DepartureTask Departure { get; set; }
+        public TrackTask Arrival { get; set; }
+        public TrackTask Departure { get; set; }
 
         public RoutingTask Split { get; set; }
         public RoutingTask Combine { get; set; }

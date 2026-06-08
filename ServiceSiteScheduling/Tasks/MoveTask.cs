@@ -282,7 +282,7 @@ namespace ServiceSiteScheduling.Tasks
             {
                 if (predicate(task))
                     output.Add(task);
-                if (task is not DepartureTask)
+                if (task is not DepartureTask && task.Next != null)
                     task.Next.FindAllNext(predicate, output);
             }
         }
@@ -293,7 +293,7 @@ namespace ServiceSiteScheduling.Tasks
             {
                 if (predicate(task))
                     output.Add(task);
-                if (task is not ArrivalTask)
+                if (task is not ArrivalTask && task.Previous != null)
                     task.Previous.FindAllPrevious(predicate, output);
             }
         }

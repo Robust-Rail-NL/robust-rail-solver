@@ -11,7 +11,7 @@ namespace ServiceSiteScheduling.Tasks
         private Dictionary<Trains.ShuntTrain, Stack<ParkingTask>> skippedparkings;
 
         public List<TrackTask> Previous { get; set; }
-        public DepartureTask Next { get; set; }
+        public TrackTask Next { get; set; }
 
         public override bool SkipsParking
         {
@@ -200,7 +200,7 @@ namespace ServiceSiteScheduling.Tasks
 
         public override void ReplaceNextTask(TrackTask task)
         {
-            this.Next = (DepartureTask)task;
+            this.Next = task;
         }
 
         public override IEnumerable<TrackTask> GetPrevious(Func<TrackTask, bool> selector)

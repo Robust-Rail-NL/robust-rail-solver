@@ -104,23 +104,36 @@ namespace ServiceSiteScheduling.Initial
                     reversematching[u].Train.Departure.Time
                 );
 
-                // Add arrival operation
-                ArrivalTask arrival = new(shunttrain, train.Track, train.Side, train.Time);
-                arrivals.Add(arrival);
-                foreach (ShuntTrainUnit stu in shunttrain)
-                    stu.Arrival = arrival;
+                TrackTask firstTask;
+                if (train.InStanding)
+                {
+                    // Instanding: already parked in the yard, start with a parking action
+                    var initialParking = new ParkingTask(new ShuntTrain(shunttrain), train.Track);
+                    initialParking.Start = initialParking.End = train.Time;
+                    initialParking.ArrivalSide = train.Side;
+                    firstTask = initialParking;
+                }
+                else
+                {
+                    var arrival = new ArrivalTask(shunttrain, train.Track, train.Side, train.Time);
+                    arrivals.Add(arrival);
+                    firstTask = arrival;
+                }
 
-                // Add route from arrival
+                foreach (ShuntTrainUnit stu in shunttrain)
+                    stu.Arrival = firstTask;
+
+                // Add route from first task
                 RoutingTask routing = new(new ShuntTrain(shunttrain));
-                routing.Start = routing.End = arrival.ScheduledTime;
-                routing.Previous = arrival;
-                routing.FromTrack = arrival.Track;
-                arrival.Next = routing;
+                routing.Start = routing.End = train.Time;
+                routing.Previous = firstTask;
+                routing.FromTrack = firstTask.Track;
+                firstTask.Next = routing;
                 moveheap.Insert(routing);
                 routings.Add(routing);
                 if (debugLevel > 1)
                     Console.WriteLine(
-                        $"Add routing task {routing} from arrival on track {arrival.Track} at time {routing.Start}--{routing.End}"
+                        $"Add routing task {routing} from {(train.InStanding ? "initial parking" : "arrival")} on track {firstTask.Track} at time {routing.Start}--{routing.End}"
                     );
 
                 foreach (ShuntTrain part in splitparts[shunttrain])
@@ -132,27 +145,46 @@ namespace ServiceSiteScheduling.Initial
             foreach (Matching.Train dt in matching.DepartureTrains)
             {
                 var shunttrain = matching.GetShuntTrain(dt);
-                DepartureTask departure = new(
-                    shunttrain,
-                    dt.Departure.Track,
-                    dt.Departure.Side,
-                    dt.Departure.Time
-                );
-                dt.Task = departure;
-                departures.Add(departure);
 
-                // add route to departure
+                TrackTask finalTask;
+                if (dt.Departure.OutStanding)
+                {
+                    // Outstanding: stays in the yard, end with a parking action
+                    var finalParking = new ParkingTask(
+                        new ShuntTrain(shunttrain),
+                        dt.Departure.Track
+                    );
+                    finalParking.Start = finalParking.End = dt.Departure.Time;
+                    finalParking.ArrivalSide =
+                        dt.Departure.Track.Access == Side.Both ? Side.A : dt.Departure.Track.Access;
+                    dt.Task = finalParking;
+                    finalTask = finalParking;
+                }
+                else
+                {
+                    var departure = new DepartureTask(
+                        shunttrain,
+                        dt.Departure.Track,
+                        dt.Departure.Side,
+                        dt.Departure.Time
+                    );
+                    dt.Task = departure;
+                    departures.Add(departure);
+                    finalTask = departure;
+                }
+
+                // add route to final task
                 var todeparture = new DepartureRoutingTask(
                     new ShuntTrain(shunttrain, shunttrain.InStanding)
                 );
-                todeparture.Start = todeparture.End = departure.Start;
-                todeparture.Next = departure;
-                departure.Previous = todeparture;
+                todeparture.Start = todeparture.End = finalTask.Start;
+                todeparture.Next = finalTask;
+                finalTask.Previous = todeparture;
 
-                departure.ArrivalSide =
-                    departure.Track.Access == Side.Both ? Side.A : departure.Track.Access;
-                todeparture.ToSide = departure.ArrivalSide;
-                todeparture.ToTrack = departure.Track;
+                finalTask.ArrivalSide =
+                    finalTask.Track.Access == Side.Both ? Side.A : finalTask.Track.Access;
+                todeparture.ToSide = finalTask.ArrivalSide;
+                todeparture.ToTrack = finalTask.Track;
                 dt.Routing = todeparture;
 
                 foreach (ShuntTrainUnit unit in shunttrain)
@@ -356,10 +388,10 @@ namespace ServiceSiteScheduling.Initial
                     candidates.RemoveAt(selectedindex);
             }
 
-            // Add routing task before departure (from null track)
-            foreach (DepartureTask departure in departures)
+            // Add routing task before departure/final-parking (from null track)
+            foreach (Matching.Train dt in matching.DepartureTrains)
             {
-                DepartureRoutingTask routing = departure.GetDepartureRoutingTask();
+                DepartureRoutingTask routing = dt.Routing;
                 foreach (TrackTask previous in routing.Previous)
                     routing.Start = routing.End = Math.Max(routing.End, previous.Previous.End);
                 moveheap.Insert(routing);
