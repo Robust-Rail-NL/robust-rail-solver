@@ -1555,8 +1555,7 @@ namespace ServiceSiteScheduling.Solutions
 
         private static AlgoIface.ShuntingUnit GetShuntUnit(
             ShuntTrain train,
-            Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion,
-            string _standingType = ""
+            Dictionary<ShuntTrain, AlgoIface.ShuntingUnit> trainconversion
         )
         {
             if (!trainconversion.TryGetValue(train, out AlgoIface.ShuntingUnit? shuntingunit))
@@ -1573,14 +1572,6 @@ namespace ServiceSiteScheduling.Solutions
                             : -1
                     ) + 1
                 ).ToString();
-                if (string.IsNullOrEmpty(_standingType))
-                {
-                    shuntingunit.StandingType = "";
-                }
-                else
-                {
-                    shuntingunit.StandingType = _standingType;
-                }
                 trainconversion[train] = shuntingunit;
             }
             else
@@ -1588,16 +1579,7 @@ namespace ServiceSiteScheduling.Solutions
                 var _shuntingunit = new AlgoIface.ShuntingUnit();
                 _shuntingunit.MergeFrom(shuntingunit);
 
-                if (string.IsNullOrEmpty(_standingType))
-                {
-                    _shuntingunit.StandingType = "";
-                    trainconversion[train] = _shuntingunit;
-                }
-                else
-                {
-                    _shuntingunit.StandingType = _standingType;
-                    trainconversion[train] = _shuntingunit;
-                }
+                trainconversion[train] = _shuntingunit;
                 return _shuntingunit;
             }
             return shuntingunit;
@@ -1700,8 +1682,8 @@ namespace ServiceSiteScheduling.Solutions
                     if (tt.Next == null)
                     {
                         Debug.Assert(
-                            tt.TaskType == TrackTaskType.Departure,
-                            "Only DepartureTask may have Next unset"
+                            tt.TaskType == TrackTaskType.Departure || tt.TaskType == TrackTaskType.Parking,
+                            "Only DepartureTask or ParkingTask may have Next unset"
                         );
                         Debug.Assert(
                             tt.Previous.TaskType == MoveTaskType.Departure,
