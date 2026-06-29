@@ -1682,7 +1682,8 @@ namespace ServiceSiteScheduling.Solutions
                     if (tt.Next == null)
                     {
                         Debug.Assert(
-                            tt.TaskType == TrackTaskType.Departure || tt.TaskType == TrackTaskType.Parking,
+                            tt.TaskType == TrackTaskType.Departure
+                                || tt.TaskType == TrackTaskType.Parking,
                             "Only DepartureTask or ParkingTask may have Next unset"
                         );
                         Debug.Assert(
