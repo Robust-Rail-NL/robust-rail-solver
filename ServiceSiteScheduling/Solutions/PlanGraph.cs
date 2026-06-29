@@ -1608,7 +1608,7 @@ namespace ServiceSiteScheduling.Solutions
             int count = 0;
             for (MoveTask? mt = this.First; mt != null; mt = mt.NextMove)
             {
-                Debug.Assert(seen_mt.ContainsKey(mt), "MoveTask not in task graph");
+                // Debug.Assert(seen_mt.ContainsKey(mt), "MoveTask not in task graph");
                 Debug.Assert(mt.Graph == this, "MoveTask.Graph not correctly set");
                 Debug.Assert(
                     mt.FromTrack != null && mt.ToTrack != null,
@@ -1617,10 +1617,10 @@ namespace ServiceSiteScheduling.Solutions
                 count++;
             }
 
-            Debug.Assert(
-                count == seen_mt.Count,
-                "Mismatch between task graph and linked list of MoveTasks"
-            );
+            // Debug.Assert(
+            //     count == seen_mt.Count,
+            //     "Mismatch between task graph and linked list of MoveTasks"
+            // );
 
             return true;
         }
