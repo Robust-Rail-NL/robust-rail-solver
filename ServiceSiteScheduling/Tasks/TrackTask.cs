@@ -8,6 +8,8 @@ namespace ServiceSiteScheduling.Tasks
         Departure,
         Service,
         Parking,
+        StandIn,
+        StandOut,
     }
 
     abstract class TrackTask
