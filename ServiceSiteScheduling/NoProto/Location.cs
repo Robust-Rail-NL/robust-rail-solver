@@ -61,7 +61,7 @@ namespace ServiceSiteScheduling.NoProto
 
     public record TaskType
     {
-        public PredefinedTaskType? Predefined { get; init; }
+        public PredefinedTaskType? Predefined { get; set; }
         public string? Other { get; init; }
 
         public TaskType(PredefinedTaskType? predefined, string? other)

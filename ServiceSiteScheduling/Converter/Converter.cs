@@ -164,12 +164,14 @@ namespace ServiceSiteScheduling
                 {
                     foreach (var member in arrivalTrain.Members)
                     {
-                        NoProto.TrainUnit trainUnit = new();
-                        trainUnit.Id = member.TrainUnit.Id;
-                        trainUnit.TypeDisplayName =
-                            member.TrainUnit.Type.DisplayName
-                            + "-"
-                            + member.TrainUnit.Type.Carriages;
+                        NoProto.TrainUnit trainUnit = new()
+                        {
+                            Id = member.TrainUnit.Id,
+                            TypeDisplayName =
+                                member.TrainUnit.Type.DisplayName
+                                + "-"
+                                + member.TrainUnit.Type.Carriages,
+                        };
 
                         if (member.Tasks.Count > 0)
                         {
@@ -230,12 +232,14 @@ namespace ServiceSiteScheduling
                     {
                         foreach (var member in arrivalTrain.Members)
                         {
-                            NoProto.TrainUnit trainUnit = new();
-                            trainUnit.Id = member.TrainUnit.Id;
-                            trainUnit.TypeDisplayName =
-                                member.TrainUnit.Type.DisplayName
-                                + "-"
-                                + member.TrainUnit.Type.Carriages;
+                            NoProto.TrainUnit trainUnit = new()
+                            {
+                                Id = member.TrainUnit.Id,
+                                TypeDisplayName =
+                                    member.TrainUnit.Type.DisplayName
+                                    + "-"
+                                    + member.TrainUnit.Type.Carriages,
+                            };
 
                             if (member.Tasks.Count > 0)
                             {
@@ -295,10 +299,11 @@ namespace ServiceSiteScheduling
                 {
                     foreach (var member in departureTrain.TrainUnits)
                     {
-                        NoProto.TrainUnit trainUnit = new();
-                        trainUnit.Id = "****";
-                        trainUnit.TypeDisplayName =
-                            member.Type.DisplayName + "-" + member.Type.Carriages;
+                        NoProto.TrainUnit trainUnit = new()
+                        {
+                            Id = "****",
+                            TypeDisplayName = member.Type.DisplayName + "-" + member.Type.Carriages,
+                        };
                         train.Members.Add(trainUnit);
                     }
                 }
@@ -332,10 +337,12 @@ namespace ServiceSiteScheduling
                     {
                         foreach (var member in outStandingTrain.TrainUnits)
                         {
-                            NoProto.TrainUnit trainUnit = new();
-                            trainUnit.Id = "****";
-                            trainUnit.TypeDisplayName =
-                                member.Type.DisplayName + "-" + member.Type.Carriages;
+                            NoProto.TrainUnit trainUnit = new()
+                            {
+                                Id = "****",
+                                TypeDisplayName =
+                                    member.Type.DisplayName + "-" + member.Type.Carriages,
+                            };
                             train.Members.Add(trainUnit);
                         }
                     }

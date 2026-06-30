@@ -28,10 +28,10 @@ namespace ServiceSiteScheduling.NoProto
         public ulong? EndTime { get; set; }
 
         // The type of this action (e.g. cleaning, moving, waiting)
-        public TaskType? TaskType { get; set; }
+        public required TaskType TaskType { get; set; }
 
         // The ShuntingUnit to which this Action applies
-        public ShuntingUnit? ShuntingUnit { get; set; }
+        public required ShuntingUnit ShuntingUnit { get; set; }
 
         // The TrackPart ID on which this Action occurs.
         // If taskType = Move, then trackPart specifies the move destination,

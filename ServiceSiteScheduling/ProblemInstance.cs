@@ -767,7 +767,7 @@ namespace ServiceSiteScheduling
             /// <summary>
             /// Extracts the train unit types in the arrival train and returns the train units.
             /// </summary>
-            List<TrainUnit> GetTrainTypesAndUnits(AlgoIface.IncomingTrain arrivaltrain)
+            List<TrainUnit> GetTrainTypesAndUnits(NoProto.IncomingTrain arrivaltrain)
             {
                 var currenttrainunits = new List<TrainUnit>();
                 foreach (var unit in arrivaltrain.Members)
