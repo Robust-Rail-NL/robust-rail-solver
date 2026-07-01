@@ -149,7 +149,7 @@ namespace ServiceSiteScheduling
             // Convert all the Solver format arrivals to Evaluator format
             var inComingTrains = InterfaceScenarioEvaluator.In;
 
-            foreach (var arrivalTrain in ProblemInstanceSolver.InterfaceScenario.In.Trains)
+            foreach (var arrivalTrain in ProblemInstanceSolver.InterfaceScenario.In)
             {
                 Train train = new();
 
@@ -166,11 +166,8 @@ namespace ServiceSiteScheduling
                     {
                         NoProto.TrainUnit trainUnit = new()
                         {
-                            Id = member.TrainUnit.Id,
-                            TypeDisplayName =
-                                member.TrainUnit.Type.DisplayName
-                                + "-"
-                                + member.TrainUnit.Type.Carriages,
+                            Id = member.Id,
+                            TypeDisplayName = member.TypeDisplayName,
                         };
 
                         if (member.Tasks.Count > 0)
@@ -214,9 +211,7 @@ namespace ServiceSiteScheduling
             {
                 var inStandingTrains = InterfaceScenarioEvaluator.InStanding;
 
-                foreach (
-                    var arrivalTrain in ProblemInstanceSolver.InterfaceScenario.InStanding.Trains
-                )
+                foreach (var arrivalTrain in ProblemInstanceSolver.InterfaceScenario.InStanding)
                 {
                     Train train = new();
 
@@ -234,11 +229,8 @@ namespace ServiceSiteScheduling
                         {
                             NoProto.TrainUnit trainUnit = new()
                             {
-                                Id = member.TrainUnit.Id,
-                                TypeDisplayName =
-                                    member.TrainUnit.Type.DisplayName
-                                    + "-"
-                                    + member.TrainUnit.Type.Carriages,
+                                Id = member.Id,
+                                TypeDisplayName = member.TypeDisplayName,
                             };
 
                             if (member.Tasks.Count > 0)
@@ -282,9 +274,7 @@ namespace ServiceSiteScheduling
 
             // Convert all the Solver format departure trains to Evaluator format
             var outgoingTrains = InterfaceScenarioEvaluator.Out;
-            foreach (
-                var departureTrain in ProblemInstanceSolver.InterfaceScenario.Out.TrainRequests
-            )
+            foreach (var departureTrain in ProblemInstanceSolver.InterfaceScenario.Out)
             {
                 Train train = new();
 
@@ -301,8 +291,8 @@ namespace ServiceSiteScheduling
                     {
                         NoProto.TrainUnit trainUnit = new()
                         {
-                            Id = "****",
-                            TypeDisplayName = member.Type.DisplayName + "-" + member.Type.Carriages,
+                            Id = null,
+                            TypeDisplayName = member.TypeDisplayName,
                         };
                         train.Members.Add(trainUnit);
                     }
@@ -317,10 +307,7 @@ namespace ServiceSiteScheduling
             {
                 var outStandingTrains = InterfaceScenarioEvaluator.OutStanding;
                 foreach (
-                    var outStandingTrain in ProblemInstanceSolver
-                        .InterfaceScenario
-                        .OutStanding
-                        .TrainRequests
+                    var outStandingTrain in ProblemInstanceSolver.InterfaceScenario.OutStanding
                 )
                 {
                     Train train = new();
@@ -339,9 +326,8 @@ namespace ServiceSiteScheduling
                         {
                             NoProto.TrainUnit trainUnit = new()
                             {
-                                Id = "****",
-                                TypeDisplayName =
-                                    member.Type.DisplayName + "-" + member.Type.Carriages,
+                                Id = null,
+                                TypeDisplayName = member.TypeDisplayName,
                             };
                             train.Members.Add(trainUnit);
                         }

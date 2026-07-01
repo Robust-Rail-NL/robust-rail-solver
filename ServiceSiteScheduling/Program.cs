@@ -459,7 +459,6 @@ namespace ServiceSiteScheduling
                                             .Current
                                             .InterfaceScenario
                                             .In
-                                            .Trains
                                     )
                                     {
                                         arrivalTrain.Arrival =
@@ -480,7 +479,6 @@ namespace ServiceSiteScheduling
                                             .Current
                                             .InterfaceScenario
                                             .Out
-                                            .TrainRequests
                                     )
                                     {
                                         departureTrain.Arrival =
@@ -502,7 +500,6 @@ namespace ServiceSiteScheduling
                                             .Current
                                             .InterfaceScenario
                                             .In
-                                            .Trains
                                     )
                                     {
                                         arrivalTrain.Arrival =
@@ -516,7 +513,6 @@ namespace ServiceSiteScheduling
                                             .Current
                                             .InterfaceScenario
                                             .Out
-                                            .TrainRequests
                                     )
                                     {
                                         departureTrain.Arrival =
@@ -538,7 +534,6 @@ namespace ServiceSiteScheduling
                                             .Current
                                             .InterfaceScenario
                                             .OutStanding
-                                            .TrainRequests
                                     )
                                     {
                                         outStandingTrain.Arrival =
@@ -1008,7 +1003,7 @@ namespace ServiceSiteScheduling
                     {
                         Console.WriteLine("The Scenario file parsing was successful");
                         Console.WriteLine(
-                            $"    Scenario with {scenario_in.Trains.Count} incoming trains {scenario_out.TrainRequests.Count} outgoing trains, {ProblemInstance.Current.InterfaceScenario.InStanding.Trains.Count} instanding trains {ProblemInstance.Current.InterfaceScenario.OutStanding.TrainRequests.Count} outstanding trains."
+                            $"    Scenario with {scenario_in.Count} incoming trains {scenario_out.Count} outgoing trains, {ProblemInstance.Current.InterfaceScenario.InStanding.Count} instanding trains {ProblemInstance.Current.InterfaceScenario.OutStanding.Count} outstanding trains."
                         );
                         Console.WriteLine(
                             $"    Number of train units {ProblemInstance.Current.TrainUnits.Length} of different train unit types {ProblemInstance.Current.TrainUnitsByType.Count}: "
@@ -1026,7 +1021,7 @@ namespace ServiceSiteScheduling
                     Console.WriteLine("***The Scenario file parsing was not successful***");
                 }
 
-                List<NoProto.IncomingTrain> incomingTrains = new(scenario_in.Trains);
+                List<NoProto.IncomingTrain> incomingTrains = new(scenario_in);
                 if (debugLevel > 1)
                 {
                     Console.WriteLine("Scenario details: ");
@@ -1044,7 +1039,7 @@ namespace ServiceSiteScheduling
                     }
                 }
 
-                List<NoProto.TrainRequest> outgoingTrains = new(scenario_out.TrainRequests);
+                List<NoProto.TrainRequest> outgoingTrains = new(scenario_out);
                 if (debugLevel > 1)
                 {
                     Console.WriteLine("---- Outgoing Trains ----");

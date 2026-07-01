@@ -31,7 +31,7 @@ namespace ServiceSiteScheduling
 
         public NoProto.Location InterfaceLocation;
         public NoProto.Scenario InterfaceScenario;
-        public Dictionary<TrainUnit, NoProto.TrainUnit> TrainUnitConversion;
+        public Dictionary<TrainUnit, NoProto.IncomingTrainUnit> TrainUnitConversion;
         public Dictionary<ServiceType, NoProto.Facility> FacilityConversion;
         public Dictionary<ulong, TrackSwitchContainer> GatewayConversion;
 
@@ -336,7 +336,7 @@ namespace ServiceSiteScheduling
             // LP FIXME shouldn't we also iterate over InStanding here?
             Dictionary<NoProto.TaskType, ServiceType> taskmap = [];
             var tasktypes = scenario
-                .In.Trains.Aggregate(
+                .In.Aggregate(
                     new List<NoProto.TaskType>(),
                     (list, train) =>
                     {
@@ -455,15 +455,32 @@ namespace ServiceSiteScheduling
             List<TrainType> traintypes = [];
             List<TrainUnit> trainunits = [];
             List<ArrivalTrain> arrivals = [];
-            Dictionary<NoProto.TrainUnitType, TrainType> traintypemap = [];
+            Dictionary<string, TrainType> traintypemap = [];
             Dictionary<string, TrainUnit> trainunitmap = [];
             instance.TrainUnitConversion = [];
             instance.GatewayConversion = [];
             var freeservicelists = new List<Service[]>();
 
-            foreach (var arrivaltrain in scenario.In.Trains)
+            foreach (var tut in scenario.TrainUnitTypes)
             {
-                var currenttrainunits = GetTrainTypesAndUnits(arrivaltrain);
+                var name = $"{tut.TypePrefix}-{tut.Carriages}";
+                TrainType type = new(
+                    traintypes.Count,
+                    name,
+                    (int)tut.Length,
+                    instance.Tracks.Where(t => t.CanPark).ToArray(),
+                    (int)tut.BackNormTime,
+                    (int)tut.BackAdditionTime * (int)tut.Carriages,
+                    (int)tut.CombineDuration,
+                    (int)tut.SplitDuration
+                );
+                traintypes.Add(type);
+                traintypemap[name] = type;
+            }
+
+            foreach (var arrivaltrain in scenario.In)
+            {
+                var currenttrainunits = GetTrainUnits(arrivaltrain);
 
                 if (debugLevel > 1)
                 {
@@ -509,9 +526,9 @@ namespace ServiceSiteScheduling
             // TODO: check scenario of two instanding trains maybe conflict will happen
             // because of the same arrival times ?
 
-            foreach (var arrivaltrain in scenario.InStanding?.Trains ?? [])
+            foreach (var arrivaltrain in scenario.InStanding ?? [])
             {
-                var currenttrainunits = GetTrainTypesAndUnits(arrivaltrain);
+                var currenttrainunits = GetTrainUnits(arrivaltrain);
 
                 if (debugLevel > 1)
                 {
@@ -652,11 +669,11 @@ namespace ServiceSiteScheduling
             instance.FreeServices = freeservicelists.ToArray();
 
             var departures = new List<DepartureTrain>();
-            foreach (var departuretrain in scenario.Out.TrainRequests)
+            foreach (var departuretrain in scenario.Out)
             {
                 var units = departuretrain.TrainUnits.Select(unit =>
                     string.IsNullOrEmpty(unit.Id)
-                        ? new DepartureTrainUnit(traintypemap[unit.Type])
+                        ? new DepartureTrainUnit(traintypemap[unit.TypeDisplayName])
                         : new DepartureTrainUnit(trainunitmap[unit.Id])
                 );
 
@@ -687,13 +704,14 @@ namespace ServiceSiteScheduling
             // the time of departure of these trains is set to the end time of the scenario
             // TODO: check scenario of two outstanding trains maybe conflict will happen
             // because of the same departure times ?
+            // FIXME LP: the below code sometimes does a lookup by unit.Id, but I believe this is always (and should be) null for outstanding trains.
             if (scenario.OutStanding != null)
             {
-                foreach (var departuretrain in scenario.OutStanding.TrainRequests)
+                foreach (var departuretrain in scenario.OutStanding ?? [])
                 {
                     var units = departuretrain.TrainUnits.Select(unit =>
-                        unit.Id == string.Empty
-                            ? new DepartureTrainUnit(traintypemap[unit.Type])
+                        string.IsNullOrEmpty(unit.Id)
+                            ? new DepartureTrainUnit(traintypemap[unit.TypeDisplayName])
                             : new DepartureTrainUnit(trainunitmap[unit.Id])
                     );
 
@@ -767,33 +785,15 @@ namespace ServiceSiteScheduling
             /// <summary>
             /// Extracts the train unit types in the arrival train and returns the train units.
             /// </summary>
-            List<TrainUnit> GetTrainTypesAndUnits(NoProto.IncomingTrain arrivaltrain)
+            List<TrainUnit> GetTrainUnits(NoProto.IncomingTrain arrivaltrain)
             {
                 var currenttrainunits = new List<TrainUnit>();
                 foreach (var unit in arrivaltrain.Members)
                 {
-                    if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType type))
-                    {
-                        var name =
-                            $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
-                        type = new(
-                            traintypes.Count,
-                            name,
-                            (int)unit.TrainUnit.Type.Length,
-                            instance.Tracks.Where(t => t.CanPark).ToArray(),
-                            (int)unit.TrainUnit.Type.BackNormTime,
-                            (int)unit.TrainUnit.Type.BackAdditionTime
-                                * (int)unit.TrainUnit.Type.Carriages,
-                            (int)unit.TrainUnit.Type.CombineDuration,
-                            (int)unit.TrainUnit.Type.SplitDuration
-                        );
-                        traintypes.Add(type);
-                        traintypemap[unit.TrainUnit.Type] = type;
-                    }
                     TrainUnit trainunit = new(
-                        unit.TrainUnit.Id,
+                        unit.Id,
                         trainunits.Count,
-                        type,
+                        traintypemap[unit.TypeDisplayName],
                         unit.Tasks.Where(task =>
                                 taskmap[task.Type].LocationType == ServiceLocationType.Fixed
                             )
@@ -803,8 +803,8 @@ namespace ServiceSiteScheduling
                     );
                     trainunits.Add(trainunit);
                     currenttrainunits.Add(trainunit);
-                    trainunitmap[unit.TrainUnit.Id] = trainunit;
-                    instance.TrainUnitConversion[trainunit] = unit.TrainUnit;
+                    trainunitmap[unit.Id] = trainunit;
+                    instance.TrainUnitConversion[trainunit] = unit;
                     freeservicelists.Add(
                         unit.Tasks.Where(task =>
                                 taskmap[task.Type].LocationType == ServiceLocationType.Free

@@ -8,13 +8,15 @@ namespace ServiceSiteScheduling.NoProto
     // that is the trains which come in and go out of the shunting area.
     public record Scenario
     {
-        public required ScenarioIn In { get; set; }
-        public required ScenarioOut Out { get; set; }
+        public required IList<TrainUnitType> TrainUnitTypes { get; init; }
 
-        public ScenarioInStanding? InStanding { get; set; }
-        public ScenarioOutStanding? OutStanding { get; set; }
+        public required IList<IncomingTrain> In { get; init; }
+        public required IList<TrainRequest> Out { get; init; }
 
-        public required ulong StartTime { get; set; }
+        public IList<IncomingTrain>? InStanding { get; init; }
+        public IList<TrainRequest>? OutStanding { get; init; }
+
+        public required ulong StartTime { get; init; }
         public required ulong EndTime { get; set; }
     }
 
@@ -63,14 +65,6 @@ namespace ServiceSiteScheduling.NoProto
         // The index of the train unit when in- or outstanding, with lower indices
         // at the A-side of the track
         public double? StandingIndex { get; set; }
-    }
-
-    public record IncomingTrainUnit
-    {
-        public required TrainUnit TrainUnit { get; set; }
-
-        // Tasks for this train unit
-        public IList<TaskSpec> Tasks { get; init; } = [];
     }
 
     // A request for a train to leave the shunting area
@@ -175,10 +169,18 @@ namespace ServiceSiteScheduling.NoProto
         // A unique identifier of the unit
         public string? Id { get; set; }
 
-        public TrainUnitType? Type { get; set; }
-
         public string? TypeDisplayName { get; set; }
 
+        public IList<TaskSpec> Tasks { get; init; } = [];
+    }
+
+    public record IncomingTrainUnit
+    {
+        public required string Id { get; set; }
+
+        public required string TypeDisplayName { get; set; }
+
+        // Tasks for this train unit
         public IList<TaskSpec> Tasks { get; init; } = [];
     }
 
@@ -241,7 +243,7 @@ namespace ServiceSiteScheduling.NoProto
 
         // Prefix of train IDs of this type (i.e., the last two digits are removed)
         // For example, for SLT4 this is 24
-        public int IdPrefix { get; set; }
+        public int? IdPrefix { get; set; }
     }
 
     // A ShuntingUnit is a combination of TrainUnits,
