@@ -463,7 +463,7 @@ namespace ServiceSiteScheduling
 
             foreach (var tut in scenario.TrainUnitTypes)
             {
-                var name = $"{tut.TypePrefix}-{tut.Carriages}";
+                var name = tut.DisplayName;
                 TrainType type = new(
                     traintypes.Count,
                     name,
