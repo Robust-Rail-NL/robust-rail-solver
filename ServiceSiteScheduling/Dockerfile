@@ -13,5 +13,6 @@ LABEL org.opencontainers.image.source="https://github.com/Robust-Rail-NL/robust-
       org.opencontainers.image.licenses="MIT"
 
 WORKDIR /app
+RUN mkdir -p /app/tmp_plans && chmod 777 /app/tmp_plans
 COPY --from=build /publish .
 ENTRYPOINT ["dotnet", "ServiceSiteScheduling.dll"]
