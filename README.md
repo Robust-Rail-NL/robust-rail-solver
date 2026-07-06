@@ -16,6 +16,7 @@ Table of contents
     - [Build as `.devcontainer`](#building-process---dev-container)
     - [Build in Linux](#building-process---native-support-linux)
     - [Known issues](#issues)
+    - [Publishing the HIP image](#publishing-the-hip-image)
 
 
 # Description 
@@ -459,3 +460,34 @@ source ~/.bashrc
 conda activate my_proto_env 
 cd /workspace/robust-rail-solver/ServiceSiteScheduling
 ```
+
+## Publishing the HIP image
+`HIP.csproj`'s `<Version>` element is the single source of truth for the image version — it is baked into the Docker image (via build-arg) as the `org.opencontainers.image.version` label, and used as the image tag, so it never needs updating in more than one place.
+
+To bump it, use [`bump-version.sh`](ServiceSiteScheduling/bump-version.sh):
+```bash
+cd ServiceSiteScheduling
+./bump-version.sh patch        # 1.4.1 -> 1.4.2
+./bump-version.sh minor        # 1.4.1 -> 1.5.0
+./bump-version.sh major        # 1.4.1 -> 2.0.0
+./bump-version.sh prerelease   # 2.0.0-alpha.1 -> 2.0.0-alpha.2
+./bump-version.sh 3.0.0-beta.2 # set an explicit version
+```
+
+Then [`docker-push.sh`](ServiceSiteScheduling/docker-push.sh) builds and pushes the multi-arch (`linux/amd64,linux/arm64`) HIP image to `ghcr.io/robust-rail-nl/hip`, tagged with the current `HIP.csproj` version:
+
+```bash
+./docker-push.sh
+```
+
+The `:latest` tag is only applied for final `1.x.y` releases — prerelease versions (including the `noproto` branch's `2.0.0-alpha.*` line) are pushed under their own tag only, so they never shadow the current stable image.
+
+The script creates a dedicated `buildx` builder (`robust-rail-builder`) using the `docker-container` driver with `network=host`. This is required on some machines: the default `docker-container` driver runs BuildKit in an isolated network namespace whose DNS resolution can fail to reach private/LAN DNS servers, causing errors like:
+
+```
+failed to resolve source metadata for mcr.microsoft.com/dotnet/sdk:8.0: ... dial tcp: lookup mcr.microsoft.com on <lan-ip>:53: i/o timeout
+```
+
+This typically shows up as `docker build` working fine while `docker buildx build` times out. `network=host` makes the builder container share the host's network stack, sidestepping the issue. If you already have a stale builder without this option, remove it first with `docker buildx rm robust-rail-builder`.
+
+The builder is shared across sibling `Robust-Rail-NL` projects that also need multi-arch/`network=host` builds (e.g. `robust-rail-evaluator`) — a `buildx` builder isn't tied to a specific repo, so there's no need for a separate one per project.
