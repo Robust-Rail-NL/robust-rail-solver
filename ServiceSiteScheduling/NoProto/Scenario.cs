@@ -8,6 +8,8 @@ namespace ServiceSiteScheduling.NoProto
     // that is the trains which come in and go out of the shunting area.
     public record Scenario
     {
+        public int? SchemaVersion { get; init; }
+
         public required IList<TrainUnitType> TrainUnitTypes { get; init; }
 
         public required IList<IncomingTrain> In { get; init; }

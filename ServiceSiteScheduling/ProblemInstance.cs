@@ -131,12 +131,42 @@ namespace ServiceSiteScheduling
             return Parse(location, scenario);
         }
 
+        // Warn-and-continue: a missing or unexpected schemaVersion is logged,
+        // never a hard reject.
+        private static void WarnOnSchemaVersionMismatch(string modelName, int? version)
+        {
+            if (version is null)
+            {
+                Logging
+                    .GetLogger()
+                    .LogWarning(
+                        "{ModelName}: schemaVersion is missing; assuming {Expected}.",
+                        modelName,
+                        NoProto.InterchangeSchema.ExpectedVersion
+                    );
+            }
+            else if (version != NoProto.InterchangeSchema.ExpectedVersion)
+            {
+                Logging
+                    .GetLogger()
+                    .LogWarning(
+                        "{ModelName}: schemaVersion {Actual} does not match expected {Expected}.",
+                        modelName,
+                        version,
+                        NoProto.InterchangeSchema.ExpectedVersion
+                    );
+            }
+        }
+
         public static ProblemInstance Parse(
             NoProto.Location location,
             NoProto.Scenario scenario,
             int debugLevel = 0
         )
         {
+            WarnOnSchemaVersionMismatch("Location", location.SchemaVersion);
+            WarnOnSchemaVersionMismatch("Scenario", scenario.SchemaVersion);
+
             //debugLevel = 2;
             ProblemInstance instance = new();
 

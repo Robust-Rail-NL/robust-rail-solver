@@ -13,6 +13,10 @@ namespace ServiceSiteScheduling.NoProto
     // This message contains the result of a shunting algorithm.
     public record Plan : UnhashableRecord
     {
+        // Always emitted on write; a freshly-constructed Plan defaults to the
+        // current interchange schema version without callers having to set it.
+        public int SchemaVersion { get; init; } = InterchangeSchema.ExpectedVersion;
+
         public IList<Action> Actions { get; init; } = [];
 
         // A list of all TrackParts. From this a rail graph can be constructed.

@@ -7,6 +7,8 @@ namespace ServiceSiteScheduling.NoProto
 {
     public record Location
     {
+        public int? SchemaVersion { get; init; }
+
         public ImmutableArray<TrackPart> TrackParts { get; init; } = [];
         public ImmutableArray<Facility> Facilities { get; init; } = [];
         public ImmutableArray<TaskType> TaskTypes { get; init; } = [];
