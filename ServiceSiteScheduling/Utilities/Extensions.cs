@@ -7,8 +7,10 @@ namespace ServiceSiteScheduling.Utilities
     {
         private static readonly JsonSerializerOptions serializerOptions = new()
         {
-            NumberHandling =
-                JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
+            // Numbers are written as plain JSON numbers, matching the
+            // generator's Pydantic output. Reading still tolerates the old
+            // protobuf-style quoted numbers for backward compatibility.
+            NumberHandling = JsonNumberHandling.AllowReadingFromString,
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             IndentCharacter = '\t',
