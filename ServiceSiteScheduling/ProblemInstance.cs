@@ -132,8 +132,9 @@ namespace ServiceSiteScheduling
         }
 
         // Warn-and-continue: a missing or unexpected schemaVersion is logged,
-        // never a hard reject.
-        private static void WarnOnSchemaVersionMismatch(string modelName, int? version)
+        // never a hard reject. Internal (rather than private) so tests can
+        // exercise it directly without going through a full Parse().
+        internal static void WarnOnSchemaVersionMismatch(string modelName, int? version)
         {
             if (version is null)
             {
