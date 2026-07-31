@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.Json;
 using ServiceSiteScheduling.Utilities;
 using YamlDotNet.Serialization;
@@ -10,6 +11,8 @@ namespace ServiceSiteScheduling
         // Method: Run the program from a config file. This is the entry point of the application
         static void Main(string[] args)
         {
+            Console.WriteLine($"HIP {Version}");
+
             if (args.Length != 0)
             {
                 string config_file = "";
@@ -102,6 +105,17 @@ namespace ServiceSiteScheduling
                 );
             }
         }
+
+        // The single source of truth is HIP.csproj's <Version> element; the SDK
+        // embeds it (including any prerelease suffix) as the assembly's
+        // AssemblyInformationalVersionAttribute. Source-linked builds append a
+        // "+<git-hash>" build-metadata suffix, which is stripped here.
+        internal static string Version =>
+            Assembly
+                .GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion.Split('+')[0]
+            ?? "unknown";
 
         // Input:   @location_path: path to the location (.json) file
         //          @scenario_path: path to the scenario (.json) file
