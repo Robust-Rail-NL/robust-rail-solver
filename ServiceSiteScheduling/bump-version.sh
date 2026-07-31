@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
 # Bump the HIP version in HIP.csproj's <Version> element — the single
 # source of truth used by docker-push.sh for the image tag and label.
+#
+# Also commits the change and creates a local, annotated git tag (vX.Y.Z),
+# the same convention as `npm version`. Nothing is pushed — push the commit
+# and tag yourself once you're happy with them, e.g.:
+#   git push --follow-tags
 set -euo pipefail
 
 CSPROJ="HIP.csproj"
+
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Working tree is not clean; commit or stash changes before bumping the version" >&2
+    exit 1
+fi
+
 CURRENT=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$CSPROJ")
 [[ -n "$CURRENT" ]] || { echo "Could not read <Version> from $CSPROJ" >&2; exit 1; }
 
@@ -39,4 +50,10 @@ case "$1" in
 esac
 
 sed -i "s#<Version>$CURRENT</Version>#<Version>$NEW</Version>#" "$CSPROJ"
+
+git add "$CSPROJ"
+git commit -m "Bump version to $NEW"
+git tag -a "v$NEW" -m "v$NEW"
+
 echo "Bumped version: $CURRENT -> $NEW"
+echo "Created commit and tag v$NEW (not pushed — run 'git push --follow-tags' when ready)"
