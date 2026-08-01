@@ -14,16 +14,16 @@ namespace ServiceSiteScheduling.NoProto
         public ImmutableArray<TaskType> TaskTypes { get; init; } = [];
     }
 
-    public record Resource(string? Name, ulong? FacilityId, ulong? TrackPartId)
+    public record Resource(string Kind, ulong Id)
     {
         internal static Resource FromFacility(Facility facility)
         {
-            return new Resource(facility.Id.ToString(), facility.Id, null);
+            return new Resource("facility", facility.Id!.Value);
         }
 
         internal static Resource FromInfra(Infrastructure infra)
         {
-            return new Resource(infra.ID.ToString(), null, infra.ID);
+            return new Resource("trackPart", infra.ID);
         }
     }
 
