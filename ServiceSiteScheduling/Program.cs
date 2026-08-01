@@ -346,7 +346,7 @@ namespace ServiceSiteScheduling
                     {
                         Console.WriteLine("The Scenario file parsing was successful");
                         Console.WriteLine(
-                            $"    Scenario with {scenario_in.Count} incoming trains {scenario_out.Count} outgoing trains, {ProblemInstance.Current.InterfaceScenario.InStanding.Count} instanding trains {ProblemInstance.Current.InterfaceScenario.OutStanding.Count} outstanding trains."
+                            $"    Scenario with {scenario_in.Count} incoming trains {scenario_out.Count} outgoing trains, {ProblemInstance.Current.InterfaceScenario.InStanding?.Count ?? 0} instanding trains {ProblemInstance.Current.InterfaceScenario.OutStanding?.Count ?? 0} outstanding trains."
                         );
                         Console.WriteLine(
                             $"    Number of train units {ProblemInstance.Current.TrainUnits.Length} of different train unit types {ProblemInstance.Current.TrainUnitsByType.Count}: "
