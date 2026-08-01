@@ -88,14 +88,14 @@ namespace ServiceSiteScheduling
                 string prefix =
                     "/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling";
                 Test_Location_Scenario_Parsing(
-                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
-                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json",
+                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/location.json",
+                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario.json",
                     2
                 );
                 Console.WriteLine("***************** CreatePlan() *****************");
                 CreatePlan(
-                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/location_solver.json",
-                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario_solver.json",
+                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/location.json",
+                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario.json",
                     $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/plan.json",
                     debugLevel: 0
                 );
