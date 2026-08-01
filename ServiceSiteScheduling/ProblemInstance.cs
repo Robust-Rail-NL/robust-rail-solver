@@ -94,7 +94,7 @@ namespace ServiceSiteScheduling
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 NumberHandling = JsonNumberHandling.AllowReadingFromString,
-                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+                Converters = { new JsonStringEnumConverter() },
             };
 
             Console.WriteLine($"Parsing JSON location from {locationpath}");

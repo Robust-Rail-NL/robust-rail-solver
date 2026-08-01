@@ -18,7 +18,7 @@ public class TestUnifiedSchema
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        Converters = { new JsonStringEnumConverter() },
     };
 
     [Theory]
@@ -91,5 +91,24 @@ public class TestUnifiedSchema
 
         Assert.NotNull(taskSpec);
         Assert.Equal(120ul, taskSpec.Duration);
+    }
+
+    [Theory]
+    [InlineData(PredefinedTaskType.Move, "Move")]
+    [InlineData(PredefinedTaskType.StandIn, "StandIn")]
+    [InlineData(PredefinedTaskType.NonService, "NonService")]
+    public void PredefinedTaskType_SerializesAsPascalCase(PredefinedTaskType value, string expected)
+    {
+        string json = JsonSerializer.Serialize(value, options);
+
+        Assert.Equal($"\"{expected}\"", json);
+    }
+
+    [Fact]
+    public void TrackPartType_SerializesAsPascalCase()
+    {
+        string json = JsonSerializer.Serialize(TrackPartType.RailRoad, options);
+
+        Assert.Equal("\"RailRoad\"", json);
     }
 }

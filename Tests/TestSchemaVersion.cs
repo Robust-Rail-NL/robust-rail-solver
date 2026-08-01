@@ -12,7 +12,7 @@ public class TestSchemaVersion
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        Converters = { new JsonStringEnumConverter() },
     };
 
     // WarnOnSchemaVersionMismatch logs via Microsoft.Extensions.Logging's

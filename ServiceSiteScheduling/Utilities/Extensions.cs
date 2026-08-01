@@ -15,7 +15,10 @@ namespace ServiceSiteScheduling.Utilities
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             IndentCharacter = '\t',
             IndentSize = 1,
-            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+            // Enum values are written using their raw PascalCase C# names
+            // ("Move", "StandIn"), not camelCased ("move", "standIn") — this
+            // is a schema requirement, not a style preference.
+            Converters = { new JsonStringEnumConverter() },
         };
 
         public static string SerializeJson<T>(this T obj)

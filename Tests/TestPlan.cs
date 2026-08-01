@@ -54,7 +54,7 @@ public class TestPlan(ITestOutputHelper output)
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        Converters = { new JsonStringEnumConverter() },
     };
 
     private bool JsonIsSorted(string json_file)
