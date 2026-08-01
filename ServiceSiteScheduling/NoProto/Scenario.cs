@@ -225,9 +225,6 @@ namespace ServiceSiteScheduling.NoProto
         // The type of the task
         public TaskType? Type { get; set; }
 
-        // The priority; higher values indicate that this task is more important.
-        public uint? Priority { get; set; } // TODO set deprecation? or remove wholesale?
-
         // Time this task takes, in seconds
         public ulong? Duration { get; set; }
 

@@ -104,8 +104,10 @@ namespace ServiceSiteScheduling.NoProto
         Wait,
         Arrive,
         Exit,
-
-        // StandOut = 6,
-        // StandIn = 7,
+        Walking,
+        Break,
+        NonService,
+        StandIn,
+        StandOut,
     }
 }
