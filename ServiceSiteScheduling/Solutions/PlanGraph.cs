@@ -1287,23 +1287,34 @@ namespace ServiceSiteScheduling.Solutions
                 }
             }
 
-            // Sort the actions in the plan
-            Dictionary<PredefinedTaskType, int> taskTypeOrder = [];
-            int idx = 0;
-            taskTypeOrder[Arrive] = idx++;
-            taskTypeOrder[Move] = idx++;
-            taskTypeOrder[Wait] = idx++;
-            taskTypeOrder[Split] = idx++;
-            taskTypeOrder[Combine] = idx++;
-            taskTypeOrder[Exit] = idx++;
-            taskTypeOrder[default] = idx++;
+            // Sort the actions in the plan. A Dictionary can't be used here:
+            // its keys can't be null, so a custom (Other) task type's `null`
+            // Predefined value has no representable fallback key. (An
+            // earlier version used `default` as that fallback, but
+            // `default(PredefinedTaskType)` equals Move — its first,
+            // zero-valued member — which silently overwrote Move's order and
+            // sorted it after Exit.) Any PredefinedTaskType not explicitly
+            // listed here (custom Other types, or newer values not yet
+            // produced by this code, e.g. StandIn/StandOut) falls into the
+            // trailing catch-all bucket.
+            static int TaskTypeOrder(PredefinedTaskType? t) =>
+                t switch
+                {
+                    Arrive => 0,
+                    Move => 1,
+                    Wait => 2,
+                    Split => 3,
+                    Combine => 4,
+                    Exit => 5,
+                    _ => 6,
+                };
 
             Plan plan_pb = new();
             foreach (
                 NoProto.Action a in actions
                     .OrderBy(a => a.StartTime)
                     .ThenBy(a => a.EndTime)
-                    .ThenBy(a => taskTypeOrder[a.TaskType.Predefined ?? default])
+                    .ThenBy(a => TaskTypeOrder(a.TaskType.Predefined))
                     .ThenBy(a => a.TaskType.Other)
             )
             {
