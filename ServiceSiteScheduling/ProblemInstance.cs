@@ -486,7 +486,7 @@ namespace ServiceSiteScheduling
             List<TrainType> traintypes = [];
             List<TrainUnit> trainunits = [];
             List<ArrivalTrain> arrivals = [];
-            Dictionary<string, TrainType> traintypemap = [];
+            Dictionary<(string TypePrefix, uint Carriages), TrainType> traintypemap = [];
             Dictionary<string, TrainUnit> trainunitmap = [];
             instance.TrainUnitConversion = [];
             instance.GatewayConversion = [];
@@ -494,7 +494,7 @@ namespace ServiceSiteScheduling
 
             foreach (var tut in scenario.TrainUnitTypes)
             {
-                var name = tut.DisplayName;
+                var name = tut.TypePrefix;
                 TrainType type = new(
                     traintypes.Count,
                     name,
@@ -506,7 +506,7 @@ namespace ServiceSiteScheduling
                     (int)tut.SplitDuration
                 );
                 traintypes.Add(type);
-                traintypemap[name] = type;
+                traintypemap[tut.TypeDisplayName()] = type;
             }
 
             foreach (var arrivaltrain in scenario.In)
@@ -704,7 +704,7 @@ namespace ServiceSiteScheduling
             {
                 var units = departuretrain.TrainUnits.Select(unit =>
                     string.IsNullOrEmpty(unit.Id)
-                        ? new DepartureTrainUnit(traintypemap[unit.TypeDisplayName])
+                        ? new DepartureTrainUnit(traintypemap[unit.TypeDisplayName()])
                         : new DepartureTrainUnit(trainunitmap[unit.Id])
                 );
 
@@ -742,7 +742,7 @@ namespace ServiceSiteScheduling
                 {
                     var units = departuretrain.TrainUnits.Select(unit =>
                         string.IsNullOrEmpty(unit.Id)
-                            ? new DepartureTrainUnit(traintypemap[unit.TypeDisplayName])
+                            ? new DepartureTrainUnit(traintypemap[unit.TypeDisplayName()])
                             : new DepartureTrainUnit(trainunitmap[unit.Id])
                     );
 
@@ -824,7 +824,7 @@ namespace ServiceSiteScheduling
                     TrainUnit trainunit = new(
                         unit.Id,
                         trainunits.Count,
-                        traintypemap[unit.TypeDisplayName],
+                        traintypemap[unit.TypeDisplayName()],
                         unit.Tasks.Where(task =>
                                 taskmap[task.Type].LocationType == ServiceLocationType.Fixed
                             )

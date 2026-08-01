@@ -100,7 +100,14 @@ namespace ServiceSiteScheduling.NoProto
         // A unique identifier of the unit
         public string? Id { get; set; }
 
-        public string? TypeDisplayName { get; set; }
+        public string? TypePrefix { get; set; }
+        public uint? Carriages { get; set; }
+
+        // The (TypePrefix, Carriages) pair identifying this unit's TrainUnitType.
+        // Nullable fields are unwrapped here on the assumption that, by the
+        // time this is called, the unit's type has already been resolved.
+        public (string TypePrefix, uint Carriages) TypeDisplayName() =>
+            (this.TypePrefix!, this.Carriages!.Value);
 
         public IList<TaskSpec> Tasks { get; init; } = [];
     }
@@ -109,7 +116,12 @@ namespace ServiceSiteScheduling.NoProto
     {
         public required string Id { get; set; }
 
-        public required string TypeDisplayName { get; set; }
+        public required string TypePrefix { get; set; }
+        public required uint Carriages { get; set; }
+
+        // The (TypePrefix, Carriages) pair identifying this unit's TrainUnitType.
+        public (string TypePrefix, uint Carriages) TypeDisplayName() =>
+            (this.TypePrefix, this.Carriages);
 
         // Tasks for this train unit
         public IList<TaskSpec> Tasks { get; init; } = [];
@@ -120,19 +132,22 @@ namespace ServiceSiteScheduling.NoProto
     {
         public override bool Equals(object? obj)
         {
-            return obj is TrainUnitType other
-                && other.DisplayName == this.DisplayName
-                && other.Carriages == this.Carriages;
+            return obj is TrainUnitType other && other.TypeDisplayName() == this.TypeDisplayName();
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(this.DisplayName, this.Carriages);
+            return this.TypeDisplayName().GetHashCode();
         }
 
-        // Name of the train unit type
-        // For example, "SGM" or "SLT".
-        public required string DisplayName { get; set; }
+        // The (TypePrefix, Carriages) pair identifying this TrainUnitType.
+        // Two variants of the same family (e.g. SLT-4 and SLT-6) share a
+        // TypePrefix and are only disambiguated by Carriages.
+        public (string TypePrefix, uint Carriages) TypeDisplayName() =>
+            (this.TypePrefix, this.Carriages);
+
+        // Name of the train unit type family, e.g. "SLT" or "VIRM".
+        public required string TypePrefix { get; set; }
 
         // Number of carriages. This is the total number of carriages,
         // including the first and last carriage.
@@ -159,9 +174,6 @@ namespace ServiceSiteScheduling.NoProto
 
         // Startup + Shutdown
         public ulong? StartUpTime { get; set; }
-
-        // for example: "SLT" or "VIRM"
-        public string? TypePrefix { get; set; }
 
         // This TrainUnitType needs a locomotive, e.g. it cannot drive itself
         public bool NeedsLoco { get; set; }

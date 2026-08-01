@@ -111,4 +111,98 @@ public class TestUnifiedSchema
 
         Assert.Equal("\"RailRoad\"", json);
     }
+
+    private static TrainUnitType MakeTrainUnitType(string typePrefix, uint carriages) =>
+        new()
+        {
+            TypePrefix = typePrefix,
+            Carriages = carriages,
+            CombineDuration = 180,
+            SplitDuration = 120,
+            BackNormTime = 120,
+            BackAdditionTime = 16,
+        };
+
+    [Fact]
+    public void TrainUnitType_SerializesTypePrefix_NotDisplayName()
+    {
+        TrainUnitType type = MakeTrainUnitType("SLT", 4);
+
+        string json = type.SerializeJson();
+
+        using JsonDocument doc = JsonDocument.Parse(json);
+        Assert.Equal("SLT", doc.RootElement.GetProperty("typePrefix").GetString());
+        Assert.Equal(4u, doc.RootElement.GetProperty("carriages").GetUInt32());
+        Assert.False(doc.RootElement.TryGetProperty("displayName", out _));
+    }
+
+    [Fact]
+    public void TrainUnitType_Deserialize_RequiresTypePrefix()
+    {
+        string json = "{\"carriages\": 4}";
+
+        Assert.Throws<JsonException>(() =>
+            JsonSerializer.Deserialize<TrainUnitType>(json, options)
+        );
+    }
+
+    [Fact]
+    public void TrainUnitType_EqualityAndHash_DistinguishSharedTypePrefixByCarriages()
+    {
+        // SLT-4 and SLT-6 share a TypePrefix and must only be disambiguated
+        // by Carriages -- the exact case this rename exists to handle.
+        TrainUnitType slt4 = MakeTrainUnitType("SLT", 4);
+        TrainUnitType slt6 = MakeTrainUnitType("SLT", 6);
+
+        Assert.NotEqual(slt4, slt6);
+        Assert.NotEqual(slt4.GetHashCode(), slt6.GetHashCode());
+        Assert.Equal(slt4, MakeTrainUnitType("SLT", 4));
+
+        Dictionary<(string TypePrefix, uint Carriages), TrainUnitType> byType = new()
+        {
+            [slt4.TypeDisplayName()] = slt4,
+            [slt6.TypeDisplayName()] = slt6,
+        };
+
+        Assert.Equal(2, byType.Count);
+        Assert.Same(slt4, byType[("SLT", 4u)]);
+        Assert.Same(slt6, byType[("SLT", 6u)]);
+    }
+
+    [Fact]
+    public void TrainUnit_SerializesTypePrefixAndCarriages_NotTypeDisplayName()
+    {
+        TrainUnit unit = new()
+        {
+            Id = "2422",
+            TypePrefix = "SLT",
+            Carriages = 4,
+        };
+
+        string json = unit.SerializeJson();
+
+        using JsonDocument doc = JsonDocument.Parse(json);
+        Assert.Equal("SLT", doc.RootElement.GetProperty("typePrefix").GetString());
+        Assert.Equal(4u, doc.RootElement.GetProperty("carriages").GetUInt32());
+        Assert.False(doc.RootElement.TryGetProperty("typeDisplayName", out _));
+    }
+
+    [Fact]
+    public void IncomingTrainUnit_SerializesTypePrefixAndCarriages_NotTypeDisplayName()
+    {
+        IncomingTrainUnit unit = new()
+        {
+            Id = "2422",
+            TypePrefix = "SLT",
+            Carriages = 4,
+        };
+
+        string json = unit.SerializeJson();
+
+        using JsonDocument doc = JsonDocument.Parse(json);
+        Assert.Equal("SLT", doc.RootElement.GetProperty("typePrefix").GetString());
+        Assert.Equal(4u, doc.RootElement.GetProperty("carriages").GetUInt32());
+        Assert.False(doc.RootElement.TryGetProperty("typeDisplayName", out _));
+        Assert.Equal(("SLT", 4u), unit.TypeDisplayName());
+    }
 }
