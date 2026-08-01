@@ -1,4 +1,287 @@
 {
-	"actions": [],
+	"schemaVersion": 1,
+	"actions": [
+		{
+			"startTime": 1500,
+			"endTime": 1500,
+			"taskType": {
+				"predefined": "Arrive",
+				"other": null
+			},
+			"shuntingUnit": {
+				"id": "0",
+				"memberIDs": [
+					"2422"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 13,
+			"resources": [
+				{
+					"kind": "trackPart",
+					"id": 4
+				}
+			],
+			"trainUnitIds": null
+		},
+		{
+			"startTime": 1500,
+			"endTime": 1650,
+			"taskType": {
+				"predefined": "Move",
+				"other": null
+			},
+			"shuntingUnit": {
+				"id": "0",
+				"memberIDs": [
+					"2422"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 4,
+			"resources": [
+				{
+					"kind": "trackPart",
+					"id": 21
+				},
+				{
+					"kind": "trackPart",
+					"id": 1
+				}
+			],
+			"trainUnitIds": null
+		},
+		{
+			"startTime": 1650,
+			"endTime": 2150,
+			"taskType": {
+				"predefined": null,
+				"other": "Reinigingsperron"
+			},
+			"shuntingUnit": {
+				"id": "0",
+				"memberIDs": [
+					"2422"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 1,
+			"resources": [
+				{
+					"kind": "facility",
+					"id": 22
+				}
+			],
+			"trainUnitIds": null
+		},
+		{
+			"startTime": 2150,
+			"endTime": 2150,
+			"taskType": {
+				"predefined": "Wait",
+				"other": null
+			},
+			"shuntingUnit": {
+				"id": "0",
+				"memberIDs": [
+					"2422"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 1,
+			"resources": [],
+			"trainUnitIds": null
+		},
+		{
+			"startTime": 2150,
+			"endTime": 2300,
+			"taskType": {
+				"predefined": "Move",
+				"other": null
+			},
+			"shuntingUnit": {
+				"id": "0",
+				"memberIDs": [
+					"2422"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 1,
+			"resources": [
+				{
+					"kind": "trackPart",
+					"id": 20
+				},
+				{
+					"kind": "trackPart",
+					"id": 2
+				}
+			],
+			"trainUnitIds": null
+		},
+		{
+			"startTime": 2300,
+			"endTime": 2300,
+			"taskType": {
+				"predefined": "Exit",
+				"other": null
+			},
+			"shuntingUnit": {
+				"id": "0",
+				"memberIDs": [
+					"2422"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 2,
+			"resources": [
+				{
+					"kind": "trackPart",
+					"id": 11
+				}
+			],
+			"trainUnitIds": null
+		},
+		{
+			"startTime": 4000,
+			"endTime": 4000,
+			"taskType": {
+				"predefined": "Arrive",
+				"other": null
+			},
+			"shuntingUnit": {
+				"id": "1",
+				"memberIDs": [
+					"2301"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 10,
+			"resources": [
+				{
+					"kind": "trackPart",
+					"id": 5
+				}
+			],
+			"trainUnitIds": null
+		},
+		{
+			"startTime": 4000,
+			"endTime": 4150,
+			"taskType": {
+				"predefined": "Move",
+				"other": null
+			},
+			"shuntingUnit": {
+				"id": "1",
+				"memberIDs": [
+					"2301"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 5,
+			"resources": [
+				{
+					"kind": "trackPart",
+					"id": 21
+				},
+				{
+					"kind": "trackPart",
+					"id": 1
+				}
+			],
+			"trainUnitIds": null
+		},
+		{
+			"startTime": 4150,
+			"endTime": 4350,
+			"taskType": {
+				"predefined": "Wait",
+				"other": null
+			},
+			"shuntingUnit": {
+				"id": "1",
+				"memberIDs": [
+					"2301"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 1,
+			"resources": [],
+			"trainUnitIds": null
+		},
+		{
+			"startTime": 4350,
+			"endTime": 4500,
+			"taskType": {
+				"predefined": "Move",
+				"other": null
+			},
+			"shuntingUnit": {
+				"id": "1",
+				"memberIDs": [
+					"2301"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 1,
+			"resources": [
+				{
+					"kind": "trackPart",
+					"id": 20
+				},
+				{
+					"kind": "trackPart",
+					"id": 3
+				}
+			],
+			"trainUnitIds": null
+		},
+		{
+			"startTime": 4500,
+			"endTime": 4500,
+			"taskType": {
+				"predefined": "Exit",
+				"other": null
+			},
+			"shuntingUnit": {
+				"id": "1",
+				"memberIDs": [
+					"2301"
+				],
+				"parentIDs": [],
+				"childIDs": [],
+				"standingType": null
+			},
+			"location": 3,
+			"resources": [
+				{
+					"kind": "trackPart",
+					"id": 12
+				}
+			],
+			"trainUnitIds": null
+		}
+	],
 	"trackParts": null
 }

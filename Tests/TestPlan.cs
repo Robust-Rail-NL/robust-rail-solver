@@ -19,7 +19,7 @@ public class TestPlan(ITestOutputHelper output)
 
         // Where to get the input
         var test_data_path = Path.Combine(Directory.GetCurrentDirectory(), "TestData");
-        var location_path = Path.Combine(test_data_path, "location_kleine_binckhorst.json");
+        var location_path = Path.Combine(test_data_path, "location_simple_service.json");
         var scenario_path = Path.Combine(test_data_path, "scenario_example1.json");
         var config_file = Path.Combine(test_data_path, "config.yaml");
 
