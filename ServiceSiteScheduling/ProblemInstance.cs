@@ -487,7 +487,7 @@ namespace ServiceSiteScheduling
             List<TrainUnit> trainunits = [];
             List<ArrivalTrain> arrivals = [];
             Dictionary<(string TypePrefix, uint Carriages), TrainType> traintypemap = [];
-            Dictionary<string, TrainUnit> trainunitmap = [];
+            Dictionary<uint, TrainUnit> trainunitmap = [];
             instance.TrainUnitConversion = [];
             instance.GatewayConversion = [];
             var freeservicelists = new List<Service[]>();
@@ -703,9 +703,9 @@ namespace ServiceSiteScheduling
             foreach (var departuretrain in scenario.Out)
             {
                 var units = departuretrain.TrainUnits.Select(unit =>
-                    string.IsNullOrEmpty(unit.Id)
+                    unit.Id is null
                         ? new DepartureTrainUnit(traintypemap[unit.TypeDisplayName()])
-                        : new DepartureTrainUnit(trainunitmap[unit.Id])
+                        : new DepartureTrainUnit(trainunitmap[unit.Id.Value])
                 );
 
                 if (infrastructuremap[departuretrain.LeaveTrackPart] is GateWay gateway)
@@ -741,9 +741,9 @@ namespace ServiceSiteScheduling
                 foreach (var departuretrain in scenario.OutStanding ?? [])
                 {
                     var units = departuretrain.TrainUnits.Select(unit =>
-                        string.IsNullOrEmpty(unit.Id)
+                        unit.Id is null
                             ? new DepartureTrainUnit(traintypemap[unit.TypeDisplayName()])
-                            : new DepartureTrainUnit(trainunitmap[unit.Id])
+                            : new DepartureTrainUnit(trainunitmap[unit.Id.Value])
                     );
 
                     if (infrastructuremap[departuretrain.LeaveTrackPart] is GateWay gateway)
@@ -822,7 +822,7 @@ namespace ServiceSiteScheduling
                 foreach (var unit in arrivaltrain.Members)
                 {
                     TrainUnit trainunit = new(
-                        unit.Id,
+                        unit.Id.ToString(),
                         trainunits.Count,
                         traintypemap[unit.TypeDisplayName()],
                         unit.Tasks.Where(task =>

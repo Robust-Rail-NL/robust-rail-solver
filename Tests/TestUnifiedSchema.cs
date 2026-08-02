@@ -174,7 +174,7 @@ public class TestUnifiedSchema
     {
         TrainUnit unit = new()
         {
-            Id = "2422",
+            Id = 2422,
             TypePrefix = "SLT",
             Carriages = 4,
         };
@@ -192,7 +192,7 @@ public class TestUnifiedSchema
     {
         IncomingTrainUnit unit = new()
         {
-            Id = "2422",
+            Id = 2422,
             TypePrefix = "SLT",
             Carriages = 4,
         };

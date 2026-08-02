@@ -97,8 +97,10 @@ namespace ServiceSiteScheduling.NoProto
     // TrainUnit represents a combination of carriages which can move independently.
     public record TrainUnit
     {
-        // A unique identifier of the unit
-        public string? Id { get; set; }
+        // A unique identifier of the unit. Null means "any unit of the
+        // matching type is acceptable" (used for departing trains whose
+        // exact composition isn't tracked).
+        public uint? Id { get; set; }
 
         public string? TypePrefix { get; set; }
         public uint? Carriages { get; set; }
@@ -114,7 +116,7 @@ namespace ServiceSiteScheduling.NoProto
 
     public record IncomingTrainUnit
     {
-        public required string Id { get; set; }
+        public required uint Id { get; set; }
 
         public required string TypePrefix { get; set; }
         public required uint Carriages { get; set; }
@@ -204,7 +206,7 @@ namespace ServiceSiteScheduling.NoProto
         public ShuntingUnit(ShuntingUnit other)
         {
             this.Id = other.Id;
-            this.MemberIDs = new List<string>(other.MemberIDs);
+            this.MemberIDs = new List<uint>(other.MemberIDs);
             this.ParentIDs = new List<string>(other.ParentIDs);
             this.ChildIDs = new List<string>(other.ChildIDs);
             this.StandingType = other.StandingType;
@@ -214,7 +216,7 @@ namespace ServiceSiteScheduling.NoProto
         public string Id { get; set; }
 
         // The TrainUnits contained in this ShuntingUnit
-        public IList<string> MemberIDs { get; set; }
+        public IList<uint> MemberIDs { get; set; }
 
         // The parents of a current ShuntingUnit,
         // that is, the shuntingunits which have been merged into this one,
