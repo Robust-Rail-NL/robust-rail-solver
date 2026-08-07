@@ -58,6 +58,7 @@ namespace ServiceSiteScheduling.Initial
             }
             // Add arrival and initial routing tasks
             List<ArrivalTask> arrivals = [];
+            List<StandInTask> standins = [];
             List<RoutingTask> routings = [];
             BinaryHeap<MoveTask> moveheap = new(
                 (a, b) =>
@@ -107,10 +108,13 @@ namespace ServiceSiteScheduling.Initial
                 TrackTask firstTask;
                 if (train.InStanding)
                 {
-                    // Instanding: already parked in the yard, start with a parking action
-                    var initialParking = new ParkingTask(new ShuntTrain(shunttrain), train.Track);
+                    // Instanding: already parked in the yard, so there is no arrival to
+                    // plan. StandIn marks the chain head so that plan serialisation and
+                    // the PlanGraph structure check can still recognise it as one.
+                    var initialParking = new StandInTask(new ShuntTrain(shunttrain), train.Track);
                     initialParking.Start = initialParking.End = train.Time;
                     initialParking.ArrivalSide = train.Side;
+                    standins.Add(initialParking);
                     firstTask = initialParking;
                 }
                 else
@@ -149,8 +153,9 @@ namespace ServiceSiteScheduling.Initial
                 TrackTask finalTask;
                 if (dt.Departure.OutStanding)
                 {
-                    // Outstanding: stays in the yard, end with a parking action
-                    var finalParking = new ParkingTask(
+                    // Outstanding: stays in the yard, so there is no departure to plan.
+                    // StandOut marks the chain tail; see StandInTask.
+                    var finalParking = new StandOutTask(
                         new ShuntTrain(shunttrain),
                         dt.Departure.Track
                     );
@@ -404,7 +409,8 @@ namespace ServiceSiteScheduling.Initial
                 routinggraph,
                 shunttrainunits,
                 arrivals.ToArray(),
-                departures.ToArray()
+                departures.ToArray(),
+                standins.ToArray()
             );
 
             // Connect movetasks

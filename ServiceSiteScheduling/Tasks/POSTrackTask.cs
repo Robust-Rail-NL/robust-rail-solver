@@ -48,7 +48,11 @@ namespace ServiceSiteScheduling.Tasks
                     this.TaskType = POSTrackTaskType.Departure;
                     break;
 
+                // StandIn/StandOut are parking tasks that happen to bookend an
+                // inStanding/outStanding train; in a POS plan they are parking.
                 case TrackTaskType.Parking:
+                case TrackTaskType.StandIn:
+                case TrackTaskType.StandOut:
                     this.TaskType = POSTrackTaskType.Parking;
                     break;
 

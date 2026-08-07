@@ -30,6 +30,14 @@ namespace ServiceSiteScheduling.Solutions
         public ImmutableArray<ArrivalTask> ArrivalTasks { get; init; }
         public ImmutableArray<DepartureTask> DepartureTasks { get; init; }
 
+        /// <summary>
+        /// Chain heads of inStanding trains. These are not ArrivalTasks — an
+        /// inStanding train is already parked when the scenario starts — but they
+        /// play the same structural role, so any traversal of the task graph must
+        /// seed from both this and <see cref="ArrivalTasks"/>.
+        /// </summary>
+        public ImmutableArray<StandInTask> StandInTasks { get; init; }
+
         public TrainMatching Matching { get; private set; }
 
         public ArrivalTask? FirstArrival
@@ -58,7 +66,8 @@ namespace ServiceSiteScheduling.Solutions
             RoutingGraph graph,
             ShuntTrainUnit[] shuntunits,
             ArrivalTask[] arrivals,
-            DepartureTask[] departures
+            DepartureTask[] departures,
+            StandInTask[] standins
         )
         {
             this.RoutingGraph = graph;
@@ -66,6 +75,7 @@ namespace ServiceSiteScheduling.Solutions
             this.ShuntUnits = shuntunits;
             this.ArrivalTasks = ImmutableArray.ToImmutableArray(arrivals);
             this.DepartureTasks = ImmutableArray.ToImmutableArray(departures);
+            this.StandInTasks = ImmutableArray.ToImmutableArray(standins);
 
             TrackOccupation[] occupations = new TrackOccupation[
                 ProblemInstance.Current.Tracks.Length
@@ -167,13 +177,7 @@ namespace ServiceSiteScheduling.Solutions
                     var routing = (RoutingTask)move;
 
                     // Arrive previously if necessary
-                    if (
-                        routing.Previous.TaskType == TrackTaskType.Arrival
-                        || (
-                            routing.Previous.TaskType == TrackTaskType.Parking
-                            && routing.Previous.Previous == null
-                        )
-                    )
+                    if (routing.Previous.TaskType is TrackTaskType.Arrival or TrackTaskType.StandIn)
                         routing.Previous.Arrive(
                             this.TrackOccupations[routing.Previous.Track.Index]
                         );
@@ -278,10 +282,7 @@ namespace ServiceSiteScheduling.Solutions
                         routing.Start =
                             routing.Previous.Start
                             + ((ServiceTask)routing.Previous).MinimumDuration;
-                    else if (
-                        routing.Previous.TaskType == TrackTaskType.Parking
-                        && routing.Previous.Previous == null
-                    )
+                    else if (routing.Previous.TaskType == TrackTaskType.StandIn)
                         routing.Start = routing.Previous.Start;
                     else
                         routing.Start = time;
@@ -687,10 +688,7 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     foreach (var task in move.AllNext)
                     {
-                        if (
-                            task.TaskType != TrackTaskType.Parking
-                            || task.Train.UnitBits.IsSubsetOf(done)
-                        )
+                        if (!task.IsParkingLike || task.Train.UnitBits.IsSubsetOf(done))
                             continue;
 
                         Time time = 0;
@@ -1294,18 +1292,26 @@ namespace ServiceSiteScheduling.Solutions
             // `default(PredefinedTaskType)` equals Move — its first,
             // zero-valued member — which silently overwrote Move's order and
             // sorted it after Exit.) Any PredefinedTaskType not explicitly
-            // listed here (custom Other types, or newer values not yet
-            // produced by this code, e.g. StandIn/StandOut) falls into the
-            // trailing catch-all bucket.
+            // listed here (custom Other types) falls into the trailing
+            // catch-all bucket.
+            //
+            // StandIn/StandOut share a bucket with Arrive/Exit: they are the
+            // chain head/tail of an inStanding/outStanding train and are emitted
+            // with zero duration at the scenario start/end, where their timestamps
+            // necessarily tie with the Wait that follows or precedes them. This
+            // comparator is therefore the only thing that keeps them on the
+            // correct side of it.
             static int TaskTypeOrder(PredefinedTaskType? t) =>
                 t switch
                 {
                     Arrive => 0,
+                    StandIn => 0,
                     Move => 1,
                     Wait => 2,
                     Split => 3,
                     Combine => 4,
                     Exit => 5,
+                    StandOut => 5,
                     _ => 6,
                 };
 
@@ -1491,6 +1497,48 @@ namespace ServiceSiteScheduling.Solutions
                     trackaction.StartTime = (ulong)task.Start;
                     trackaction.EndTime = (ulong)endtime;
                     break;
+                case TrackTaskType.StandIn:
+                {
+                    // The train is already on its track when the scenario starts, so
+                    // there is no gateway route to reserve: a StandIn is an instantaneous
+                    // marker that puts the shunting unit on the yard, followed by a Wait
+                    // for however long it stands there. This mirrors the Arrival case.
+                    trackaction.TaskType = TaskType.FromPredefined(StandIn);
+                    trackaction.StartTime = trackaction.EndTime = (ulong)task.Start;
+                    if (endtime > task.Start)
+                    {
+                        var nextparking = new NoProto.Action
+                        {
+                            Location = task.Track.ID,
+                            ShuntingUnit = GetShuntUnit(task.Train, trainconversion),
+                            TaskType = TaskType.FromPredefined(Wait),
+                            StartTime = trackaction.EndTime,
+                            EndTime = (ulong)endtime,
+                        };
+                        actions.Add(nextparking);
+                    }
+                    break;
+                }
+                case TrackTaskType.StandOut:
+                {
+                    // Mirror of StandIn: Wait until the scenario ends, then an
+                    // instantaneous StandOut marker. No gateway route either.
+                    if (endtime > task.Start)
+                    {
+                        var previousparking = new NoProto.Action
+                        {
+                            Location = task.Track.ID,
+                            ShuntingUnit = GetShuntUnit(task.Train, trainconversion),
+                            TaskType = TaskType.FromPredefined(Wait),
+                            StartTime = (ulong)task.Start,
+                            EndTime = (ulong)endtime,
+                        };
+                        actions.Add(previousparking);
+                    }
+                    trackaction.TaskType = TaskType.FromPredefined(StandOut);
+                    trackaction.StartTime = trackaction.EndTime = (ulong)endtime;
+                    break;
+                }
                 case TrackTaskType.Service:
                     var service = (ServiceTask)task;
                     if (service.Start > service.Previous.End)
@@ -1591,13 +1639,7 @@ namespace ServiceSiteScheduling.Solutions
             HashSet<TrackTask> seen_tt = [];
             Dictionary<MoveTask, int> seen_mt = [];
 
-            // Disabled: CheckGraphStructure seeds its traversal only from this.ArrivalTasks,
-            // assuming every TrackTask chain starts with an ArrivalTask. InStanding trains
-            // start with a parking action instead of an arrival action, so that assumption
-            // doesn't hold for them and the traversal's internal Debug.Asserts fire on
-            // otherwise-valid graphs. Re-enable once CheckGraphStructure also seeds from
-            // in-standing trains' starting (parking) tasks.
-            // Debug.Assert(CheckGraphStructure(seen_mt, seen_tt));
+            Debug.Assert(CheckGraphStructure(seen_mt, seen_tt));
 
             // Check other well-formedness criteria
             foreach (var tt in seen_tt)
@@ -1640,14 +1682,18 @@ namespace ServiceSiteScheduling.Solutions
         {
             Queue<MoveTask> queue_mt = [];
             Queue<TrackTask> queue_tt = [];
-            foreach (ArrivalTask at in this.ArrivalTasks)
+            // Seed from every chain head. An inStanding train has no ArrivalTask —
+            // it is already parked when the scenario starts — so its StandInTask is
+            // the head instead. Omitting these leaves their whole chain unvisited,
+            // which the traversal below then reports as a broken graph.
+            foreach (TrackTask at in this.ArrivalTasks.Concat<TrackTask>(this.StandInTasks))
             {
-                Debug.Assert(at != null, "ArrivalTask must not be null");
-                Debug.Assert(!seen_tt.Contains(at), "Duplicate ArrivalTask");
+                Debug.Assert(at != null, "Chain head must not be null");
+                Debug.Assert(!seen_tt.Contains(at), "Duplicate chain head");
                 seen_tt.Add(at);
                 Debug.Assert(at.Track != null, "Track must be set");
-                Debug.Assert(at.Previous == null, "ArrivalTask must not have Previous task");
-                Debug.Assert(at.Next != null, "ArrivalTask must have a Next task");
+                Debug.Assert(at.Previous == null, "Chain head must not have Previous task");
+                Debug.Assert(at.Next != null, "Chain head must have a Next task");
                 queue_mt.Enqueue(at.Next);
             }
             while (queue_mt.Count != 0 || queue_tt.Count != 0)
@@ -1687,9 +1733,8 @@ namespace ServiceSiteScheduling.Solutions
                     if (tt.Next == null)
                     {
                         Debug.Assert(
-                            tt.TaskType == TrackTaskType.Departure
-                                || tt.TaskType == TrackTaskType.Parking,
-                            "Only DepartureTask or ParkingTask may have Next unset"
+                            tt.TaskType == TrackTaskType.Departure || tt.IsParkingLike,
+                            "Only DepartureTask, ParkingTask or StandOutTask may have Next unset"
                         );
                         Debug.Assert(
                             tt.Previous.TaskType == MoveTaskType.Departure,
