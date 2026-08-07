@@ -1523,20 +1523,25 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     // Mirror of StandIn: Wait until the scenario ends, then an
                     // instantaneous StandOut marker. No gateway route either.
-                    if (endtime > task.Start)
-                    {
-                        var previousparking = new NoProto.Action
-                        {
-                            Location = task.Track.ID,
-                            ShuntingUnit = GetShuntUnit(task.Train, trainconversion),
-                            TaskType = TaskType.FromPredefined(Wait),
-                            StartTime = (ulong)task.Start,
-                            EndTime = (ulong)endtime,
-                        };
-                        actions.Add(previousparking);
-                    }
+                    //
+                    // The marker belongs at the scenario horizon, not at task.End.
+                    // An outStanding train has no departure of its own; what the
+                    // request asserts is where it stands when the scenario ends,
+                    // and TORS only accepts its exit once the clock has reached
+                    // that point. ProblemInstance builds these DepartureTrains
+                    // with ScenarioEndTime for the same reason, but the scheduler
+                    // then moves task.End to whenever the train actually settles.
+                    var horizon = (ulong)ProblemInstance.Current.ScenarioEndTime;
+                    // No trailing Wait: TORS derives a wait's duration from the next
+                    // event rather than from the plan, and rejects one outright when
+                    // there is no next event to wait for — which is precisely the
+                    // situation of a train that simply stays put until the scenario
+                    // ends. The marker alone says where it stands.
                     trackaction.TaskType = TaskType.FromPredefined(StandOut);
-                    trackaction.StartTime = trackaction.EndTime = (ulong)endtime;
+                    // If the train is still busy past the horizon the plan does not
+                    // in fact leave it standing at the end, and emitting the marker
+                    // here lets the evaluator say so rather than hiding it.
+                    trackaction.StartTime = trackaction.EndTime = horizon;
                     break;
                 }
                 case TrackTaskType.Service:
