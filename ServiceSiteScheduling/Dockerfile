@@ -3,7 +3,12 @@ WORKDIR /build
 COPY HIP.csproj .
 RUN dotnet restore
 COPY . .
-RUN dotnet publish -c Release --no-restore -o /publish
+# Build with ASSERTIONS=true for an image intended for integration testing:
+# same optimisation and same plans as the default build, but Debug.Assert stays
+# live so internal invariant violations surface. Publish those under a separate
+# tag - never as the release tag, since a failing assertion aborts the process.
+ARG ASSERTIONS=false
+RUN dotnet publish -c Release -p:Assertions=${ASSERTIONS} --no-restore -o /publish
 
 FROM mcr.microsoft.com/dotnet/runtime:8.0
 
