@@ -12,11 +12,42 @@
             revertstart,
             revertend;
 
+#if DEBUG
+        /// <summary>
+        /// Check the plan graph on one in every this many candidate moves.
+        /// </summary>
+        /// <remarks>
+        /// The two debug-only checks below — CheckCorrectness, and serialising
+        /// the routing order before and after to prove Revert restored the graph
+        /// — walk or stringify the entire graph for every candidate move. Between
+        /// them they account for ~97% of the cost of an assertions-enabled build
+        /// (measured on KleineBinckhorst 30t_random_98s_test: 817 neighbours in a
+        /// 10s budget against 24904 with both disabled, of which the routing-order
+        /// round trip is ~60% and CheckCorrectness ~36%). That is too slow to run
+        /// the integration pipeline against, and because the search is bounded by
+        /// wall clock it also changes which plan comes out.
+        ///
+        /// Sampling keeps the checks meaningful — a corruption still surfaces
+        /// within this many moves — at a fraction of the cost. Set to 1 to check
+        /// every move, as builds before this change did.
+        /// </remarks>
+        public static int DebugCheckInterval { get; set; } = 100;
+
+        private static int debugCheckCounter;
+
+        /// <summary>Whether this particular move is one of the sampled ones.</summary>
+        private readonly bool debugCheckThisMove;
+#endif
+
         public LocalSearchMove(Solutions.PlanGraph graph)
         {
             this.Graph = graph;
 #if DEBUG
-            if (this.Graph != null)
+            // Decided once per move so that the Revert comparison below is only
+            // made when the constructor actually recorded a routing order.
+            this.debugCheckThisMove =
+                DebugCheckInterval <= 1 || ++debugCheckCounter % DebugCheckInterval == 0;
+            if (this.debugCheckThisMove && this.Graph != null)
             {
                 this.routingordering = graph.RoutingOrdering();
                 this.Graph.CheckCorrectness();
@@ -34,7 +65,8 @@
                 this.executeend ?? this.Graph.Last
             );
 #if DEBUG
-            this.Graph.CheckCorrectness();
+            if (this.debugCheckThisMove)
+                this.Graph.CheckCorrectness();
 #endif
             return this.Cost;
         }
@@ -47,9 +79,12 @@
                 this.revertend ?? this.Graph.Last
             );
 #if DEBUG
-            this.Graph.CheckCorrectness();
-            if (this.routingordering != this.Graph.RoutingOrdering())
-                throw new InvalidOperationException();
+            if (this.debugCheckThisMove)
+            {
+                this.Graph.CheckCorrectness();
+                if (this.routingordering != this.Graph.RoutingOrdering())
+                    throw new InvalidOperationException();
+            }
 #endif
             return cost;
         }
