@@ -28,6 +28,24 @@ namespace ServiceSiteScheduling.Tasks
         }
         protected readonly TrackTaskType tasktype;
 
+        /// <summary>
+        /// True for tasks in which the train simply stands on a track: regular
+        /// parking, plus the StandIn/StandOut tasks that bookend inStanding and
+        /// outStanding trains.
+        /// <para>
+        /// Use this to ask "is the train standing still here?". Do NOT use it to
+        /// decide whether a local search operator may act on a task: a StandIn or
+        /// StandOut sits on the track and at the time the scenario dictates, so
+        /// relocating one produces a plan that contradicts its own scenario. Those
+        /// operators must test <c>TaskType == TrackTaskType.Parking</c> instead.
+        /// </para>
+        /// </summary>
+        public bool IsParkingLike =>
+            this.tasktype
+                is TrackTaskType.Parking
+                    or TrackTaskType.StandIn
+                    or TrackTaskType.StandOut;
+
         private Parking.State? OriginalState { get; set; }
 
         public TrackTask(Trains.ShuntTrain train, TrackParts.Track track, TrackTaskType type)

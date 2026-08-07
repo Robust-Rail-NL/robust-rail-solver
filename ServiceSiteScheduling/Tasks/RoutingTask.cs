@@ -42,9 +42,7 @@ namespace ServiceSiteScheduling.Tasks
 
         public override bool SkipsParking
         {
-            get =>
-                this.Previous.TaskType != TrackTaskType.Parking
-                && this.Next.Any(task => task.TaskType != TrackTaskType.Parking);
+            get => !this.Previous.IsParkingLike && this.Next.Any(task => !task.IsParkingLike);
         }
 
         public Stack<RoutingTask> RouteToSkippedParking { get; set; }

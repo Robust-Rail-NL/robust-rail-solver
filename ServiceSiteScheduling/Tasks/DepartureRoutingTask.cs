@@ -15,7 +15,7 @@ namespace ServiceSiteScheduling.Tasks
 
         public override bool SkipsParking
         {
-            get => this.Previous.Any(task => task.TaskType != TrackTaskType.Parking);
+            get => this.Previous.Any(task => !task.IsParkingLike);
         }
 
         public override IList<TrackTask> AllPrevious
@@ -132,9 +132,7 @@ namespace ServiceSiteScheduling.Tasks
 
         public override bool IsParkingSkipped(Trains.ShuntTrain train)
         {
-            return this.Previous.Any(task =>
-                task.TaskType != TrackTaskType.Parking && task.Train.Equals(train)
-            );
+            return this.Previous.Any(task => !task.IsParkingLike && task.Train.Equals(train));
         }
 
         public override ParkingTask GetSkippedParking(Trains.ShuntTrain train)
