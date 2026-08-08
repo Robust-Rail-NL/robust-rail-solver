@@ -2,6 +2,7 @@ namespace Tests;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 using ServiceSiteScheduling;
 using ServiceSiteScheduling.NoProto;
 using ServiceSiteScheduling.Utilities;
@@ -15,27 +16,71 @@ public class TestSchemaVersion
         Converters = { new JsonStringEnumConverter() },
     };
 
-    // WarnOnSchemaVersionMismatch logs via Microsoft.Extensions.Logging's
-    // console provider, which writes asynchronously on a background thread,
-    // so asserting on captured console text is flaky. These tests instead
-    // pin down the contract that matters: warn-and-continue never throws,
-    // for any combination of missing/mismatched/matching input.
-    [Fact]
-    public void WarnOnSchemaVersionMismatch_DoesNotThrow_WhenMissing()
+    // Collects what was logged, so these tests can assert on the warning
+    // rather than only on the absence of an exception. It also keeps the two
+    // deliberate mismatch cases off the console: they used to print warnings
+    // into every CI run, where they read as a real problem.
+    private sealed class CapturingLogger : ILogger
     {
-        ProblemInstance.WarnOnSchemaVersionMismatch("Location", null);
+        public readonly List<string> Warnings = new();
+
+        public IDisposable BeginScope<TState>(TState state) => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception exception,
+            Func<TState, Exception, string> formatter
+        )
+        {
+            if (logLevel == LogLevel.Warning)
+                Warnings.Add(formatter(state, exception));
+        }
     }
 
     [Fact]
-    public void WarnOnSchemaVersionMismatch_DoesNotThrow_WhenMismatched()
+    public void WarnOnSchemaVersionMismatch_SaysWhatIsAssumed_WhenMissing()
     {
-        ProblemInstance.WarnOnSchemaVersionMismatch("Scenario", 2);
+        CapturingLogger logger = new();
+
+        ProblemInstance.WarnOnSchemaVersionMismatch("Location", null, logger);
+
+        string warning = Assert.Single(logger.Warnings);
+        Assert.Contains("Location", warning);
+        Assert.Contains("missing", warning);
+        Assert.Contains(InterchangeSchema.ExpectedVersion.ToString(), warning);
     }
 
     [Fact]
-    public void WarnOnSchemaVersionMismatch_DoesNotThrow_WhenMatching()
+    public void WarnOnSchemaVersionMismatch_NamesBothVersions_WhenMismatched()
     {
-        ProblemInstance.WarnOnSchemaVersionMismatch("Location", InterchangeSchema.ExpectedVersion);
+        CapturingLogger logger = new();
+
+        ProblemInstance.WarnOnSchemaVersionMismatch("Scenario", 2, logger);
+
+        string warning = Assert.Single(logger.Warnings);
+        Assert.Contains("Scenario", warning);
+        // Both the value found and the one expected: a warning naming only one
+        // of them leaves the reader unable to tell which end is wrong.
+        Assert.Contains("2", warning);
+        Assert.Contains(InterchangeSchema.ExpectedVersion.ToString(), warning);
+    }
+
+    [Fact]
+    public void WarnOnSchemaVersionMismatch_IsSilent_WhenMatching()
+    {
+        CapturingLogger logger = new();
+
+        ProblemInstance.WarnOnSchemaVersionMismatch(
+            "Location",
+            InterchangeSchema.ExpectedVersion,
+            logger
+        );
+
+        Assert.Empty(logger.Warnings);
     }
 
     [Fact]

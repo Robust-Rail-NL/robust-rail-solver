@@ -134,28 +134,34 @@ namespace ServiceSiteScheduling
         // Warn-and-continue: a missing or unexpected schemaVersion is logged,
         // never a hard reject. Internal (rather than private) so tests can
         // exercise it directly without going through a full Parse().
-        internal static void WarnOnSchemaVersionMismatch(string modelName, int? version)
+        //
+        // The logger is a parameter so that tests can read back what was
+        // written instead of only checking that nothing threw. Passing one
+        // rather than swapping the static factory keeps it safe under xUnit's
+        // parallelism: there is no shared state to race on.
+        internal static void WarnOnSchemaVersionMismatch(
+            string modelName,
+            int? version,
+            ILogger logger = null
+        )
         {
+            logger ??= Logging.GetLogger();
             if (version is null)
             {
-                Logging
-                    .GetLogger()
-                    .LogWarning(
-                        "{ModelName}: schemaVersion is missing; assuming {Expected}.",
-                        modelName,
-                        NoProto.InterchangeSchema.ExpectedVersion
-                    );
+                logger.LogWarning(
+                    "{ModelName}: schemaVersion is missing; assuming {Expected}.",
+                    modelName,
+                    NoProto.InterchangeSchema.ExpectedVersion
+                );
             }
             else if (version != NoProto.InterchangeSchema.ExpectedVersion)
             {
-                Logging
-                    .GetLogger()
-                    .LogWarning(
-                        "{ModelName}: schemaVersion {Actual} does not match expected {Expected}.",
-                        modelName,
-                        version,
-                        NoProto.InterchangeSchema.ExpectedVersion
-                    );
+                logger.LogWarning(
+                    "{ModelName}: schemaVersion {Actual} does not match expected {Expected}.",
+                    modelName,
+                    version,
+                    NoProto.InterchangeSchema.ExpectedVersion
+                );
             }
         }
 
