@@ -165,7 +165,7 @@
         {
             "id": "22",
             "type": "Reinigingsperron",
-            "relatedTrackParts": [
+            "relatedTrackPartIDs": [
                 "1"
             ],
             "taskTypes": [

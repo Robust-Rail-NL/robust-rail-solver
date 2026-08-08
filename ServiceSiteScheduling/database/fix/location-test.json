@@ -795,7 +795,7 @@
         {
             "id": "71",
             "type": "ElevatedPlatform",
-            "relatedTrackParts": [
+            "relatedTrackPartIDs": [
                 "13"
             ],
             "simultaneousUsageCount": 1
@@ -803,7 +803,7 @@
         {
             "id": "72",
             "type": "Pit",
-            "relatedTrackParts": [
+            "relatedTrackPartIDs": [
                 "13"
             ],
             "simultaneousUsageCount": 1
@@ -811,7 +811,7 @@
         {
             "id": "73",
             "type": "CleaningPlatform",
-            "relatedTrackParts": [
+            "relatedTrackPartIDs": [
                 "10",
                 "11"
             ],
@@ -825,7 +825,7 @@
         {
             "id": "74",
             "type": "WashingMachine",
-            "relatedTrackParts": [
+            "relatedTrackPartIDs": [
                 "12"
             ],
             "taskTypes": [
@@ -841,7 +841,7 @@
         {
             "id": "75",
             "type": "Unknown",
-            "relatedTrackParts": [
+            "relatedTrackPartIDs": [
                 "1",
                 "2",
                 "3",

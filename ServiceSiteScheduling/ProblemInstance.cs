@@ -414,7 +414,7 @@ namespace ServiceSiteScheduling
                 }
 
                 var facilitytracks = new List<Track>();
-                foreach (var part in facility.RelatedTrackParts)
+                foreach (var part in facility.RelatedTrackPartIDs)
                 {
                     if (infrastructuremap.TryGetValue(part, out Infrastructure infra))
                     {

@@ -30,7 +30,7 @@ namespace ServiceSiteScheduling.NoProto
     public record Facility(
         ulong? Id,
         string? Type,
-        ImmutableArray<ulong> RelatedTrackParts,
+        ImmutableArray<ulong> RelatedTrackPartIDs,
         ImmutableArray<TaskType> TaskTypes,
         int? SimultaneousUsageCount
     );

@@ -164,7 +164,7 @@
     {
       "id": "11",
       "type": "Unknown",
-      "relatedTrackParts": [
+      "relatedTrackPartIDs": [
         "2"
       ],
       "taskTypes": [

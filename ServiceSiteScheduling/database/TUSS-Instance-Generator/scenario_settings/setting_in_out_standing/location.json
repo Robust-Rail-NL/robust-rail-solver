@@ -1103,7 +1103,7 @@
         {
             "id": "72",
             "type": "Reinigingsperron",
-            "relatedTrackParts": [
+            "relatedTrackPartIDs": [
                 10,
                 11
             ],
@@ -1121,14 +1121,14 @@
         {
             "id": "73",
             "type": "Wasmachine",
-            "relatedTrackParts": [
+            "relatedTrackPartIDs": [
                 12
             ]
         },
         {
             "id": "74",
             "type": "Inspectieput",
-            "relatedTrackParts": [
+            "relatedTrackPartIDs": [
                 13
             ],
             "taskTypes": [
@@ -1147,7 +1147,7 @@
         {
             "id": "75",
             "type": "Monteur",
-            "relatedTrackParts": [
+            "relatedTrackPartIDs": [
                 1,
                 2,
                 3,

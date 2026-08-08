@@ -209,7 +209,6 @@ namespace ServiceSiteScheduling.NoProto
             this.MemberIDs = new List<uint>(other.MemberIDs);
             this.ParentIDs = new List<ulong>(other.ParentIDs);
             this.ChildIDs = new List<ulong>(other.ChildIDs);
-            this.StandingType = other.StandingType;
         }
 
         // Unique ID of this ShuntingUnit
@@ -227,10 +226,6 @@ namespace ServiceSiteScheduling.NoProto
         // that is, the shuntingunits which contain parts of this shuntingunit.
         // Alternatively, ShuntingUnit S has parent P iff P has child S.
         public IList<ulong> ChildIDs { get; set; }
-
-        // If field is defined it states InStanding when the train unit was alredy on the yard even if the action says it is an arrival
-        // or it states OutStanding when the train unit will stay in the shunting yards after the scenario ends even if the action is an exite one
-        public string? StandingType { get; set; }
     }
 
     // A task specification specifies a certain task.
