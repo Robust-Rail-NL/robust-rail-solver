@@ -3,34 +3,42 @@
 
 name: .NET
 
+# noproto and pydantic are the 2.0.0 migration branches. Until they merge, a
+# workflow that names only main and dev never runs on the code under change.
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main", "dev", "noproto", "pydantic" ]
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main", "dev", "noproto", "pydantic" ]
+  workflow_dispatch:
 
 jobs:
   check_formatting:
     runs-on: ubuntu-latest
     name: Check Formatting
+    timeout-minutes: 10
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - run: |
         dotnet tool restore
         dotnet csharpier check ./ServiceSiteScheduling/
         dotnet csharpier check ./Tests/
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
+    # Smoke test: with no --config, HIP parses and plans setting_A, whose
+    # location.json and scenario.json are committed. Paths are relative, so
+    # this step depends on the working-directory below.
     - name: Run
       working-directory: ./ServiceSiteScheduling
       run: dotnet run --no-build --verbosity normal --project HIP.csproj
