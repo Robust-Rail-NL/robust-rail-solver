@@ -3,13 +3,13 @@
 
 name: .NET
 
-# noproto and pydantic are the 2.0.0 migration branches. Until they merge, a
-# workflow that names only main and dev never runs on the code under change.
+# release/2.0.0 is the shared integration branch for the 2.0.0 release across
+# all five repos; it is merged and deleted when 2.0.0 ships.
 on:
   push:
-    branches: [ "main", "dev", "noproto", "pydantic" ]
+    branches: [ "main", "dev", "release/2.0.0" ]
   pull_request:
-    branches: [ "main", "dev", "noproto", "pydantic" ]
+    branches: [ "main", "dev", "release/2.0.0" ]
   workflow_dispatch:
 
 jobs:
