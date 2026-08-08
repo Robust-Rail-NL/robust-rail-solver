@@ -85,8 +85,11 @@ namespace ServiceSiteScheduling
                 Console.WriteLine(
                     $"No config file provided, running with default test files: {directory}"
                 );
-                string prefix =
-                    "/home/leon/Projects/Robust-Rail-NL/robust-rail-solver/ServiceSiteScheduling";
+                // Relative to the working directory, which is expected to be
+                // ServiceSiteScheduling/. An absolute path here would tie the
+                // no-config run to one machine and break it everywhere else,
+                // CI included.
+                string prefix = ".";
                 Test_Location_Scenario_Parsing(
                     $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/location.json",
                     $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario.json",
