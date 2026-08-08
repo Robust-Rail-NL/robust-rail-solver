@@ -60,7 +60,7 @@ namespace ServiceSiteScheduling.NoProto
         public ulong? Arrival { get; set; }
         public ulong? Departure { get; set; }
 
-        public string? Id { get; set; }
+        public ulong? Id { get; set; }
 
         public IList<IncomingTrainUnit> Members { get; init; } = [];
 
@@ -83,8 +83,8 @@ namespace ServiceSiteScheduling.NoProto
         public ulong? Arrival { get; set; }
         public ulong? Departure { get; set; }
 
-        // Name of this train
-        public string? DisplayName { get; set; }
+        // Unique ID of this train request
+        public ulong? Id { get; set; }
 
         // Outgoing train units; if in a TrainUnit the id field is not specified, then any train unit will do, provided that the other fields (train type, number of carriages) are still adhered to.
         public IList<TrainUnit>? TrainUnits { get; set; }
@@ -195,7 +195,7 @@ namespace ServiceSiteScheduling.NoProto
     // and moves as a unit at some point in time.
     public class ShuntingUnit
     {
-        public ShuntingUnit(string id)
+        public ShuntingUnit(ulong id)
         {
             this.MemberIDs = [];
             this.ParentIDs = [];
@@ -207,13 +207,13 @@ namespace ServiceSiteScheduling.NoProto
         {
             this.Id = other.Id;
             this.MemberIDs = new List<uint>(other.MemberIDs);
-            this.ParentIDs = new List<string>(other.ParentIDs);
-            this.ChildIDs = new List<string>(other.ChildIDs);
+            this.ParentIDs = new List<ulong>(other.ParentIDs);
+            this.ChildIDs = new List<ulong>(other.ChildIDs);
             this.StandingType = other.StandingType;
         }
 
         // Unique ID of this ShuntingUnit
-        public string Id { get; set; }
+        public ulong Id { get; set; }
 
         // The TrainUnits contained in this ShuntingUnit
         public IList<uint> MemberIDs { get; set; }
@@ -221,12 +221,12 @@ namespace ServiceSiteScheduling.NoProto
         // The parents of a current ShuntingUnit,
         // that is, the shuntingunits which have been merged into this one,
         // or the shuntingunit that has been split into (among others) this one.
-        public IList<string> ParentIDs { get; set; }
+        public IList<ulong> ParentIDs { get; set; }
 
         // The children of the current ShuntingUnit,
         // that is, the shuntingunits which contain parts of this shuntingunit.
         // Alternatively, ShuntingUnit S has parent P iff P has child S.
-        public IList<string> ChildIDs { get; set; }
+        public IList<ulong> ChildIDs { get; set; }
 
         // If field is defined it states InStanding when the train unit was alredy on the yard even if the action says it is an arrival
         // or it states OutStanding when the train unit will stay in the shunting yards after the scenario ends even if the action is an exite one

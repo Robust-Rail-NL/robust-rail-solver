@@ -395,7 +395,7 @@ namespace ServiceSiteScheduling
                             "Departure track "
                                 + train.LastParkingTrackPart
                                 + " for train (id) "
-                                + train.DisplayName
+                                + train.Id
                                 + " at time "
                                 + train.Departure
                         );

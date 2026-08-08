@@ -1612,13 +1612,8 @@ namespace ServiceSiteScheduling.Solutions
         {
             if (!trainconversion.TryGetValue(train, out ShuntingUnit? shuntingunit))
             {
-                string id = (
-                    (
-                        trainconversion.Count > 0
-                            ? trainconversion.Max(kvp => int.Parse(kvp.Value.Id))
-                            : -1
-                    ) + 1
-                ).ToString();
+                ulong id =
+                    trainconversion.Count > 0 ? trainconversion.Max(kvp => kvp.Value.Id) + 1 : 0;
                 shuntingunit = new ShuntingUnit(id);
                 foreach (var unit in train.Units)
                     shuntingunit.MemberIDs.Add(
