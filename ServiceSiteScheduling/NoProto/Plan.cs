@@ -47,10 +47,6 @@ namespace ServiceSiteScheduling.NoProto
         // a CleaningPlatform Facility Resource.
         public IList<Resource> Resources { get; set; } = [];
 
-        // Train units involved in this Action
-        // If not specified, all train units are involved.
-        public IList<uint>? TrainUnitIds { get; set; }
-
         // Compute hash code from all fields except the lists.
         public override int GetHashCode()
         {
