@@ -1285,36 +1285,6 @@ namespace ServiceSiteScheduling.Solutions
                 }
             }
 
-            // Sort the actions in the plan. A Dictionary can't be used here:
-            // its keys can't be null, so a custom (Other) task type's `null`
-            // Predefined value has no representable fallback key. (An
-            // earlier version used `default` as that fallback, but
-            // `default(PredefinedTaskType)` equals Move — its first,
-            // zero-valued member — which silently overwrote Move's order and
-            // sorted it after Exit.) Any PredefinedTaskType not explicitly
-            // listed here (custom Other types) falls into the trailing
-            // catch-all bucket.
-            //
-            // StandIn/StandOut share a bucket with Arrive/Exit: they are the
-            // chain head/tail of an inStanding/outStanding train and are emitted
-            // with zero duration at the scenario start/end, where their timestamps
-            // necessarily tie with the Wait that follows or precedes them. This
-            // comparator is therefore the only thing that keeps them on the
-            // correct side of it.
-            static int TaskTypeOrder(PredefinedTaskType? t) =>
-                t switch
-                {
-                    Arrive => 0,
-                    StandIn => 0,
-                    Move => 1,
-                    Wait => 2,
-                    Split => 3,
-                    Combine => 4,
-                    Exit => 5,
-                    StandOut => 5,
-                    _ => 6,
-                };
-
             Plan plan_pb = new();
             foreach (
                 NoProto.Action a in actions
@@ -1432,6 +1402,37 @@ namespace ServiceSiteScheduling.Solutions
                 move = move.NextMove;
             }
         }
+
+        /// <summary>
+        /// Tie-break order for actions that share a start and end time.
+        /// </summary>
+        /// <remarks>
+        /// A Dictionary can't be used here: its keys can't be null, so a custom
+        /// (Other) task type's null Predefined value has no representable fallback
+        /// key. An earlier version used <c>default</c> as that fallback, but
+        /// <c>default(PredefinedTaskType)</c> equals Move — its first, zero-valued
+        /// member — which silently overwrote Move's order and sorted it after Exit.
+        /// Any PredefinedTaskType not listed falls into the trailing catch-all.
+        ///
+        /// StandIn and StandOut share a bucket with Arrive and Exit. They are the
+        /// chain head and tail of an inStanding/outStanding train and are emitted
+        /// with zero duration at the scenario start and end, where their timestamps
+        /// necessarily tie with the Wait that follows or precedes them, so this
+        /// comparator is the only thing keeping them on the correct side of it.
+        /// </remarks>
+        internal static int TaskTypeOrder(PredefinedTaskType? t) =>
+            t switch
+            {
+                Arrive => 0,
+                StandIn => 0,
+                Move => 1,
+                Wait => 2,
+                Split => 3,
+                Combine => 4,
+                Exit => 5,
+                StandOut => 5,
+                _ => 6,
+            };
 
         private static void AddTrackAction(
             TrackTask task,
