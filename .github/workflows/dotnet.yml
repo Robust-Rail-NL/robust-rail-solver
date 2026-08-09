@@ -24,7 +24,18 @@ jobs:
         dotnet csharpier check ./ServiceSiteScheduling/
         dotnet csharpier check ./Tests/
   build:
-    runs-on: ubuntu-latest
+    # Both architectures the hip image is published for; several developers
+    # work on arm64. .NET abstracts away most of the difference, so this is
+    # cheaper insurance than the evaluator's matrix rather than an equally
+    # likely place to find something — but the solver is where the
+    # wall-clock-bounded local search lives, and "it runs at all on arm64" is
+    # worth knowing rather than assuming.
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    name: Build and test (${{ matrix.runner }})
     timeout-minutes: 20
     steps:
     - uses: actions/checkout@v5
