@@ -1107,8 +1107,16 @@ namespace ServiceSiteScheduling.Solutions
                         }
                     }
 
-                    // Add move
-                    if (move.Duration > 0)
+                    // Add move.
+                    //
+                    // Only when the train actually travels. A routing task's
+                    // duration also covers the decoupling of a split, so a split
+                    // that stays on its own track has a non-zero duration without
+                    // a route: reading the duration alone would emit a Move action
+                    // whose path is empty, and the RemoveAt below would then run
+                    // off the end of the list. NumberOfRoutes is the model's own
+                    // test for "this routing traverses a route".
+                    if (routing.NumberOfRoutes > 0)
                     {
                         var moveaction = new NoProto.Action
                         {
