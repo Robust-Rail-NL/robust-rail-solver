@@ -9,6 +9,21 @@
 # versions (e.g. 2.0.0-alpha.1 on the noproto branch) are pushed under
 # their own tag only, so they never shadow the current stable image.
 #
+# Two images are pushed per version: $VERSION, and $VERSION-assert built with
+# -p:Assertions=true (Release optimisation plus the DEBUG symbol, so Debug.
+# Assert survives — see HIP.csproj). Both go out together so the assert tag
+# cannot silently fail to exist, which is how the evaluator's equivalent tag
+# came to be referenced by the pipeline for a whole release without ever
+# having been built.
+#
+# The assert image is deliberately NOT what the pipeline runs. The solver is a
+# wall-clock-bounded local search, so an assertions build explores less of the
+# neighbourhood in the same budget and returns different plans on any scenario
+# that has not already converged — which would break comparison against the
+# baseline. Its purpose is the opposite: soak testing, sweeping seeds looking
+# for an invariant violation, which is how the intermittent PlanGraph/Parking
+# failure in Robust-Rail-NL/robust-rail-solver#11 would get pinned down.
+#
 # Requires a buildx builder using the "docker-container" driver with
 # network=host. The default driver runs the BuildKit container in an
 # isolated network namespace whose DNS resolution can fail to reach
@@ -41,5 +56,17 @@ docker buildx build \
     --platform linux/amd64,linux/arm64 \
     --build-arg "VERSION=$VERSION" \
     "${TAGS[@]}" \
+    --push \
+    .
+
+# Never tagged :latest, whatever the version shape — :latest is what someone
+# gets when they ask for the solver without thinking about it, and that should
+# never be a build that aborts on a failed assertion.
+docker buildx build \
+    --builder "$BUILDER_NAME" \
+    --platform linux/amd64,linux/arm64 \
+    --build-arg "VERSION=$VERSION" \
+    --build-arg "ASSERTIONS=true" \
+    -t "$IMAGE:$VERSION-assert" \
     --push \
     .
