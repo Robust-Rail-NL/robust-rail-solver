@@ -186,8 +186,22 @@ namespace ServiceSiteScheduling.Solutions
                     int departurecrossingsA = 0,
                         departurecrossingsB = 0;
 
-                    // Depart from the previous track
-                    if (routing.FromTrack != routing.ToTrack)
+                    // Depart from the previous track.
+                    //
+                    // A routing that ends on the track it started from normally
+                    // moves nothing, so the train keeps its place in the track's
+                    // occupation and the Next task simply takes over the same
+                    // State (the "Replace" branch below). That shortcut only
+                    // works one-to-one. A split ends with several tasks, and one
+                    // State cannot stand for all of them: each would later remove
+                    // the very same deque node, so the second removal finds the
+                    // node already gone (#11). An in-place split therefore takes
+                    // the ordinary path -- depart, then arrive each part -- which
+                    // gives every part its own State. See ComputeLocation's
+                    // else-branch below.
+                    bool keepsPlace = routing.FromTrack == routing.ToTrack && !routing.IsSplit;
+
+                    if (!keepsPlace)
                     {
                         if (routing.FromTrack.Access.HasFlag(Side.A))
                             departurecrossingsA = routing.Previous.State.GetCrossings(Side.A);
@@ -203,7 +217,7 @@ namespace ServiceSiteScheduling.Solutions
                     )
                         this.ComputeRouting(routing, departurecrossingsA, departurecrossingsB);
 
-                    if (routing.FromTrack == routing.ToTrack)
+                    if (keepsPlace)
                     {
                         foreach (TrackTask to in routing.Next)
                             to.Replace(routing.Previous);
