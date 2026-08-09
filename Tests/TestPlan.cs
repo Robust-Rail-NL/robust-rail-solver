@@ -6,6 +6,9 @@ using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+// Shares the mutable static ProblemInstance.Current with the other tests that
+// build a plan, so it must not run alongside them.
+[Collection(InPlaceSplit.PlanBuilding.Name)]
 public class TestPlan(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
