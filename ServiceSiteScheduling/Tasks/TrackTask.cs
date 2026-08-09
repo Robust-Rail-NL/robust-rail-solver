@@ -65,14 +65,23 @@ namespace ServiceSiteScheduling.Tasks
 
         public void Arrive(Parking.TrackOccupation track)
         {
+            this.ReclaimOwnState();
+            track.Arrive(this);
+        }
+
+        /// <summary>
+        /// Takes back the State this task owns, undoing a <see cref="Replace"/> that
+        /// handed it another task's. Anything that puts this task on a track itself,
+        /// rather than letting it share, has to do this first.
+        /// </summary>
+        public void ReclaimOwnState()
+        {
             if (this.OriginalState != null)
             {
                 this.State = this.OriginalState;
                 this.State.Reset();
                 this.OriginalState = null;
             }
-
-            track.Arrive(this);
         }
 
         public void Depart(Parking.TrackOccupation track)
