@@ -88,6 +88,23 @@
         {
             ArgumentNullException.ThrowIfNull(node);
 
+            this.CheckPresent(node);
+
+            if (node == this.A)
+                this.A = node.B;
+            if (node == this.B)
+                this.B = node.A;
+            node.Remove();
+            this.Count--;
+        }
+
+        /// <summary>
+        /// Throws unless <paramref name="node"/> is in this deque. Shared by every
+        /// operation that rewrites links around an existing node, so that a
+        /// mismatched caller is caught where it offends rather than later.
+        /// </summary>
+        private void CheckPresent(T node)
+        {
             if ((this.A == null && this.B == null) || this.Count == 0)
                 throw new ArgumentException("Cannot remove from an empty deque.");
 
@@ -120,13 +137,52 @@
                     "The node is linked, but into a different deque than this one."
                 );
 #endif
+        }
 
-            if (node == this.A)
-                this.A = node.B;
-            if (node == this.B)
-                this.B = node.A;
+        /// <summary>
+        /// Replaces <paramref name="node"/> with <paramref name="replacements"/>, which
+        /// take over exactly the stretch it occupied and keep its neighbours on either
+        /// side. This is what splitting a train where it stands does to a track: the
+        /// parts end up adjacent, in the same place and the same order as the whole.
+        /// Adding them instead would put them at one end of the track, which is only
+        /// right if the train drove out and back.
+        /// </summary>
+        /// <param name="replacements">In A-to-B order, so the first ends up nearest A.</param>
+        public void Replace(T node, IReadOnlyList<T> replacements)
+        {
+            ArgumentNullException.ThrowIfNull(node);
+            ArgumentNullException.ThrowIfNull(replacements);
+            if (replacements.Count == 0)
+                throw new ArgumentException(
+                    "Use Remove to take a node out; Replace must put something in its place."
+                );
+
+            this.CheckPresent(node);
+
+            // Hold on to the neighbours before unlinking: node.Remove clears both.
+            T towardsA = node.A,
+                towardsB = node.B;
             node.Remove();
-            this.Count--;
+
+            for (int i = 0; i < replacements.Count; i++)
+            {
+                replacements[i].A = i == 0 ? towardsA : replacements[i - 1];
+                replacements[i].B = i == replacements.Count - 1 ? towardsB : replacements[i + 1];
+            }
+
+            T first = replacements[0],
+                last = replacements[^1];
+            if (towardsA != null)
+                towardsA.B = first;
+            if (towardsB != null)
+                towardsB.A = last;
+
+            if (this.A == node)
+                this.A = first;
+            if (this.B == node)
+                this.B = last;
+
+            this.Count += replacements.Count - 1;
         }
 
         public void Clear()
