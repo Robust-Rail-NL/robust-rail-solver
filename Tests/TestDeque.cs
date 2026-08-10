@@ -148,3 +148,64 @@ public class DequeReplaceTests
         Assert.Throws<ArgumentException>(() => deque.Replace(new Node("x"), [new Node("y")]));
     }
 }
+
+public class DequeRemoveHeadTests
+{
+    private sealed class Node(string name) : DequeNode<Node>
+    {
+        public readonly string Name = name;
+
+        public override string ToString() => this.Name;
+    }
+
+    private static Deque<Node> Of(params Node[] nodes)
+    {
+        var deque = new Deque<Node>();
+        foreach (var node in nodes)
+            deque.Add(node, Side.B);
+        return deque;
+    }
+
+    [Fact]
+    public void RemovingTheHeadAtA_TakesTheAEndAndDoesNotThrow()
+    {
+        var deque = Of(new Node("a"), new Node("b"));
+
+        // It used to throw here whatever happened: the "wrong side" throw at the
+        // end of the method was reached on the success path too, so a caller got
+        // the removal and an exception blaming its perfectly good argument.
+        deque.RemoveHead(Side.A);
+
+        Assert.Equal("b", string.Join(",", deque.A2B));
+        Assert.Equal(1, deque.Count);
+    }
+
+    [Fact]
+    public void RemovingTheHeadAtB_TakesTheBEnd()
+    {
+        var deque = Of(new Node("a"), new Node("b"));
+
+        deque.RemoveHead(Side.B);
+
+        Assert.Equal("a", string.Join(",", deque.A2B));
+        Assert.Equal(1, deque.Count);
+    }
+
+    [Fact]
+    public void RemovingTheHeadOfANonSide_IsRejected()
+    {
+        var deque = Of(new Node("a"));
+
+        // A deque has two ends, so "both" and "neither" name no head to remove.
+        Assert.Throws<ArgumentException>(() => deque.RemoveHead(Side.Both));
+        Assert.Throws<ArgumentException>(() => deque.RemoveHead(Side.None));
+    }
+
+    [Fact]
+    public void RemovingTheHeadOfAnEmptyDeque_IsRejected()
+    {
+        var deque = new Deque<Node>();
+
+        Assert.Throws<ArgumentException>(() => deque.RemoveHead(Side.A));
+    }
+}

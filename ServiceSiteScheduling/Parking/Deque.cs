@@ -74,14 +74,11 @@
         public void RemoveHead(Side side)
         {
             if (this.Count == 0)
-                throw new ArgumentException("Cannot remove from empty deque");
+                throw new ArgumentException("Cannot remove from an empty deque.");
 
-            if (side == Side.A)
-                this.Remove(this.A);
-            else if (side == Side.B)
-                this.Remove(this.B);
-
-            throw new ArgumentException("The side should be precisely one of {A, B}");
+            // Head is where a side is checked to be precisely one of {A, B}, and it
+            // throws otherwise, so there is nothing to repeat here.
+            this.Remove(this.Head(side));
         }
 
         public void Remove(T node)
