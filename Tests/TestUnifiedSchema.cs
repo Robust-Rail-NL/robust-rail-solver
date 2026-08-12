@@ -205,4 +205,34 @@ public class TestUnifiedSchema
         Assert.False(doc.RootElement.TryGetProperty("typeDisplayName", out _));
         Assert.Equal(("SLT", 4u), unit.TypeDisplayName());
     }
+
+    // trackParts and actions became required in the interchange schema on
+    // 2026-08-12, and these models mirror that with C# `required` members.
+    // Before, a location file missing its track graph deserialized to an empty
+    // yard and the solver reported an infeasible instance — a malformed input
+    // presenting as a legitimate negative result.
+    [Fact]
+    public void Location_WithoutTrackParts_IsRejected()
+    {
+        string json = "{\"schemaVersion\": 1}";
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<Location>(json, options));
+    }
+
+    [Fact]
+    public void Location_WithEmptyTrackParts_IsAccepted()
+    {
+        // `required` is presence, not non-emptiness: minItems was deliberately
+        // left off the schema, so an empty list stays legal here too.
+        string json = "{\"schemaVersion\": 1, \"trackParts\": []}";
+        Location? location = JsonSerializer.Deserialize<Location>(json, options);
+        Assert.NotNull(location);
+        Assert.Empty(location.TrackParts);
+    }
+
+    [Fact]
+    public void Plan_WithoutActions_IsRejected()
+    {
+        string json = "{\"schemaVersion\": 1}";
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<Plan>(json, options));
+    }
 }

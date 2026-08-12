@@ -17,7 +17,10 @@ namespace ServiceSiteScheduling.NoProto
         // current interchange schema version without callers having to set it.
         public int SchemaVersion { get; init; } = InterchangeSchema.ExpectedVersion;
 
-        public IList<Action> Actions { get; init; } = [];
+        // Required, mirroring the interchange schema: a plan is its actions, so
+        // reading one that has none is a malformed file rather than an empty
+        // result. Callers building a Plan set it explicitly.
+        public required IList<Action> Actions { get; init; }
     }
 
     public record Action

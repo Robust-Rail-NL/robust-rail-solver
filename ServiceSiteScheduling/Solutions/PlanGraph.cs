@@ -1311,7 +1311,7 @@ namespace ServiceSiteScheduling.Solutions
                 }
             }
 
-            Plan plan_pb = new();
+            Plan plan_pb = new() { Actions = [] };
             foreach (
                 NoProto.Action a in actions
                     .OrderBy(a => a.StartTime)

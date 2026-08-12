@@ -9,7 +9,11 @@ namespace ServiceSiteScheduling.NoProto
     {
         public int? SchemaVersion { get; init; }
 
-        public ImmutableArray<TrackPart> TrackParts { get; init; } = [];
+        // Required, mirroring the interchange schema: a Location without
+        // trackParts is not a location. With a default it deserialized to zero
+        // tracks and the solver carried on against an empty yard, which reads
+        // as an infeasible instance rather than a malformed file.
+        public required ImmutableArray<TrackPart> TrackParts { get; init; }
         public ImmutableArray<Facility> Facilities { get; init; } = [];
         public ImmutableArray<TaskType> TaskTypes { get; init; } = [];
     }

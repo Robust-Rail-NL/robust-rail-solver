@@ -86,14 +86,14 @@ public class TestSchemaVersion
     [Fact]
     public void Plan_DefaultsToExpectedSchemaVersion()
     {
-        ServiceSiteScheduling.NoProto.Plan plan = new();
+        ServiceSiteScheduling.NoProto.Plan plan = new() { Actions = [] };
         Assert.Equal(InterchangeSchema.ExpectedVersion, plan.SchemaVersion);
     }
 
     [Fact]
     public void Plan_SerializeJson_AlwaysIncludesSchemaVersion()
     {
-        ServiceSiteScheduling.NoProto.Plan plan = new();
+        ServiceSiteScheduling.NoProto.Plan plan = new() { Actions = [] };
         string json = plan.SerializeJson();
         Assert.Contains("\"schemaVersion\"", json);
         using JsonDocument doc = JsonDocument.Parse(json);
