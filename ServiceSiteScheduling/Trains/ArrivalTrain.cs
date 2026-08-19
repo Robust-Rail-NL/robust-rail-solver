@@ -14,7 +14,7 @@ namespace ServiceSiteScheduling.Trains
 
         public bool InStanding { get; set; }
 
-        public double StandingIndex { get; set; }
+        public int StandingIndex { get; set; }
 
         public ArrivalTrain(
             TrainUnit[] units,
@@ -22,7 +22,7 @@ namespace ServiceSiteScheduling.Trains
             Side side,
             Time time,
             bool inStanding = false,
-            double standingIndex = 0.0
+            int standingIndex = 0
         )
         {
             this.Units = units;

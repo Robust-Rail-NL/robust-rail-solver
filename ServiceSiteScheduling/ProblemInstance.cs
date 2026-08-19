@@ -605,7 +605,7 @@ namespace ServiceSiteScheduling
                         Side.None,
                         (int)instance.ScenarioStartTime,
                         true,
-                        arrivaltrain.StandingIndex ?? 0.0
+                        arrivaltrain.StandingIndex ?? 0
                     );
                     arrivals.Add(train);
 
@@ -634,7 +634,7 @@ namespace ServiceSiteScheduling
                         infra.Access,
                         (int)instance.ScenarioStartTime,
                         true,
-                        arrivaltrain.StandingIndex ?? 0.0
+                        arrivaltrain.StandingIndex ?? 0
                     );
                     arrivals.Add(train);
                 }

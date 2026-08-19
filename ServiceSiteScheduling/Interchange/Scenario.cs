@@ -65,8 +65,10 @@ namespace ServiceSiteScheduling.Interchange
         public IList<IncomingTrainUnit> Members { get; init; } = [];
 
         // The index of the train unit when in- or outstanding, with lower indices
-        // at the A-side of the track
-        public double? StandingIndex { get; set; }
+        // at the A-side of the track. Required and mutually distinct within
+        // inStanding groups sharing a track; see unified-schema-design.md's
+        // "Standing order" decision.
+        public int? StandingIndex { get; set; }
     }
 
     // A request for a train to leave the shunting area
@@ -90,8 +92,9 @@ namespace ServiceSiteScheduling.Interchange
         public IList<TrainUnit>? TrainUnits { get; set; }
 
         // The index of the train unit when in- or outstanding, with lower indices
-        // at the A-side of the track
-        public double? StandingIndex { get; set; }
+        // at the A-side of the track. Optional within outStanding: null means
+        // no preference; see unified-schema-design.md's "Standing order" decision.
+        public int? StandingIndex { get; set; }
     }
 
     // TrainUnit represents a combination of carriages which can move independently.
