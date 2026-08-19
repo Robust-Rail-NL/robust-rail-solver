@@ -12,7 +12,7 @@
                 }
             ],
             "parkingTrackPart": "41",
-            "standingIndex": 1.0,
+            "standingIndex": null,
             "minimumDuration": "60",
             "canDepartFromAnyTrack": false
         },
@@ -113,7 +113,7 @@
                     "tasks": []
                 }
             ],
-            "standingIndex": 0.0,
+            "standingIndex": null,
             "minimumDuration": "60",
             "canDepartFromAnyTrack": true
         },
@@ -134,7 +134,7 @@
                 }
             ],
             "lastParkingTrackPart": "11",
-            "standingIndex": 0.0,
+            "standingIndex": null,
             "minimumDuration": "60",
             "canDepartFromAnyTrack": true
         }

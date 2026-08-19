@@ -83,7 +83,7 @@
                     "carriages": 3
                 }
             ],
-            "standingIndex": 0.0
+            "standingIndex": null
         },
         {
             "leaveTrackPart": 11,
@@ -97,7 +97,7 @@
                     "carriages": 4
                 }
             ],
-            "standingIndex": 0.0
+            "standingIndex": null
         }
     ]
 }
