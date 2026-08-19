@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using ServiceSiteScheduling;
-using ServiceSiteScheduling.NoProto;
+using ServiceSiteScheduling.Interchange;
 using ServiceSiteScheduling.Utilities;
 
 public class TestSchemaVersion
@@ -86,14 +86,14 @@ public class TestSchemaVersion
     [Fact]
     public void Plan_DefaultsToExpectedSchemaVersion()
     {
-        ServiceSiteScheduling.NoProto.Plan plan = new() { Actions = [] };
+        ServiceSiteScheduling.Interchange.Plan plan = new() { Actions = [] };
         Assert.Equal(InterchangeSchema.ExpectedVersion, plan.SchemaVersion);
     }
 
     [Fact]
     public void Plan_SerializeJson_AlwaysIncludesSchemaVersion()
     {
-        ServiceSiteScheduling.NoProto.Plan plan = new() { Actions = [] };
+        ServiceSiteScheduling.Interchange.Plan plan = new() { Actions = [] };
         string json = plan.SerializeJson();
         Assert.Contains("\"schemaVersion\"", json);
         using JsonDocument doc = JsonDocument.Parse(json);

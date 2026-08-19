@@ -5,7 +5,7 @@
 namespace Tests.StandingTasks;
 
 using ServiceSiteScheduling;
-using ServiceSiteScheduling.NoProto;
+using ServiceSiteScheduling.Interchange;
 using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Tasks;
 

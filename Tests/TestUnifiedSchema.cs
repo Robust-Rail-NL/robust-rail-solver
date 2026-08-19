@@ -6,7 +6,7 @@ namespace Tests.UnifiedSchema;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ServiceSiteScheduling.NoProto;
+using ServiceSiteScheduling.Interchange;
 using ServiceSiteScheduling.Utilities;
 
 // Covers the Phase 1 scenario-unification wire-format changes: the Resource
