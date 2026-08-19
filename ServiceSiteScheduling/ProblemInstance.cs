@@ -560,8 +560,20 @@ namespace ServiceSiteScheduling
 
             // Consider the instanding trains as arrival (incoming) trains
             // the time of arrival of these trains is set to the start time of the scenario
-            // TODO: check scenario of two instanding trains maybe conflict will happen
-            // because of the same arrival times ?
+
+            // The solver does not yet order multiple inStanding trains sharing a track
+            // (see solver#18); reject such scenarios rather than silently guessing an
+            // order that may not match the one the scenario intends.
+            foreach (var group in (scenario.InStanding ?? []).GroupBy(t => t.FirstParkingTrackPart))
+            {
+                if (group.Count() > 1)
+                {
+                    throw new NotSupportedException(
+                        $"Track part {group.Key} has {group.Count()} inStanding trains. "
+                            + "The solver does not yet support multiple inStanding trains on the same track (see solver#18)."
+                    );
+                }
+            }
 
             foreach (var arrivaltrain in scenario.InStanding ?? [])
             {
