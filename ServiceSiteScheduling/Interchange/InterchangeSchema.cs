@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace ServiceSiteScheduling.NoProto
+namespace ServiceSiteScheduling.Interchange
 {
     // The shared interchange schemaVersion carried by Location, Scenario, and
     // Plan. Independent monotonic integer, decoupled from tool release

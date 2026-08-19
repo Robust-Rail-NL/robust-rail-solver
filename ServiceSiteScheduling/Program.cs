@@ -309,7 +309,7 @@ namespace ServiceSiteScheduling
                     {
                         Console.WriteLine("The Location file parsing was successful");
                         Console.WriteLine(
-                            $"    Location with {ProblemInstance.Current.Tracks.Length} tracks and {ProblemInstance.Current.InterfaceLocation.TrackParts.Length} track parts, including {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type == NoProto.TrackPartType.RailRoad && tp.ParkingAllowed)} parking tracks, {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type != NoProto.TrackPartType.RailRoad && tp.Type != NoProto.TrackPartType.Bumper)} crossings and {ProblemInstance.Current.InterfaceLocation.Facilities.Length} servicing tracks"
+                            $"    Location with {ProblemInstance.Current.Tracks.Length} tracks and {ProblemInstance.Current.InterfaceLocation.TrackParts.Length} track parts, including {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type == Interchange.TrackPartType.RailRoad && tp.ParkingAllowed)} parking tracks, {ProblemInstance.Current.InterfaceLocation.TrackParts.Count(tp => tp.Type != Interchange.TrackPartType.RailRoad && tp.Type != Interchange.TrackPartType.Bumper)} crossings and {ProblemInstance.Current.InterfaceLocation.Facilities.Length} servicing tracks"
                         );
                     }
                 }
@@ -367,12 +367,12 @@ namespace ServiceSiteScheduling
                     Console.WriteLine("***The Scenario file parsing was not successful***");
                 }
 
-                List<NoProto.IncomingTrain> incomingTrains = new(scenario_in);
+                List<Interchange.IncomingTrain> incomingTrains = new(scenario_in);
                 if (debugLevel > 1)
                 {
                     Console.WriteLine("Scenario details: ");
                     Console.WriteLine("---- Incoming Trains ----");
-                    foreach (NoProto.IncomingTrain train in incomingTrains)
+                    foreach (Interchange.IncomingTrain train in incomingTrains)
                     {
                         Console.WriteLine(
                             "Arrival track "
@@ -385,11 +385,11 @@ namespace ServiceSiteScheduling
                     }
                 }
 
-                List<NoProto.TrainRequest> outgoingTrains = new(scenario_out);
+                List<Interchange.TrainRequest> outgoingTrains = new(scenario_out);
                 if (debugLevel > 1)
                 {
                     Console.WriteLine("---- Outgoing Trains ----");
-                    foreach (NoProto.TrainRequest train in outgoingTrains)
+                    foreach (Interchange.TrainRequest train in outgoingTrains)
                     {
                         Console.WriteLine(
                             "Departure track "

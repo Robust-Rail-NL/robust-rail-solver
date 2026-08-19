@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace ServiceSiteScheduling.NoProto
+namespace ServiceSiteScheduling.Interchange
 {
     // Represents a single time interval.
     public readonly record struct TimeInterval(double Start, double End);

@@ -2,7 +2,7 @@
 
 using System.Collections;
 
-namespace ServiceSiteScheduling.NoProto
+namespace ServiceSiteScheduling.Interchange
 {
     // A Scenario contains the part of the problem specification which varies daily,
     // that is the trains which come in and go out of the shunting area.

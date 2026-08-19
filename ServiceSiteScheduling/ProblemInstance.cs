@@ -29,10 +29,10 @@ namespace ServiceSiteScheduling
         public Dictionary<TrainType, List<DepartureTrain>> DeparturesByType;
         public DepartureTrain[] DeparturesOrdered;
 
-        public NoProto.Location InterfaceLocation;
-        public NoProto.Scenario InterfaceScenario;
-        public Dictionary<TrainUnit, NoProto.IncomingTrainUnit> TrainUnitConversion;
-        public Dictionary<ServiceType, NoProto.Facility> FacilityConversion;
+        public Interchange.Location InterfaceLocation;
+        public Interchange.Scenario InterfaceScenario;
+        public Dictionary<TrainUnit, Interchange.IncomingTrainUnit> TrainUnitConversion;
+        public Dictionary<ServiceType, Interchange.Facility> FacilityConversion;
         public Dictionary<ulong, TrackSwitchContainer> GatewayConversion;
 
         public Service[][] FreeServices;
@@ -98,21 +98,21 @@ namespace ServiceSiteScheduling
             };
 
             Console.WriteLine($"Parsing JSON location from {locationpath}");
-            NoProto.Location location;
+            Interchange.Location location;
             using (var input = File.OpenRead(locationpath))
             using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
-                location = JsonSerializer.Deserialize<NoProto.Location>(jsonContent, options);
+                location = JsonSerializer.Deserialize<Interchange.Location>(jsonContent, options);
             }
 
             Console.WriteLine($"Parsing JSON scenario from {scenariopath}");
-            NoProto.Scenario scenario;
+            Interchange.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
             using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
-                scenario = JsonSerializer.Deserialize<NoProto.Scenario>(jsonContent, options);
+                scenario = JsonSerializer.Deserialize<Interchange.Scenario>(jsonContent, options);
             }
 
             return Parse(location, scenario);
@@ -120,13 +120,13 @@ namespace ServiceSiteScheduling
 
         public static ProblemInstance Parse(string locationpath, string scenariopath)
         {
-            NoProto.Location location;
+            Interchange.Location location;
             using (var input = File.OpenRead(locationpath))
-                location = JsonSerializer.Deserialize<NoProto.Location>(input);
+                location = JsonSerializer.Deserialize<Interchange.Location>(input);
 
-            NoProto.Scenario scenario;
+            Interchange.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
-                scenario = JsonSerializer.Deserialize<NoProto.Scenario>(input);
+                scenario = JsonSerializer.Deserialize<Interchange.Scenario>(input);
 
             return Parse(location, scenario);
         }
@@ -151,23 +151,23 @@ namespace ServiceSiteScheduling
                 logger.LogWarning(
                     "{ModelName}: schemaVersion is missing; assuming {Expected}.",
                     modelName,
-                    NoProto.InterchangeSchema.ExpectedVersion
+                    Interchange.InterchangeSchema.ExpectedVersion
                 );
             }
-            else if (version != NoProto.InterchangeSchema.ExpectedVersion)
+            else if (version != Interchange.InterchangeSchema.ExpectedVersion)
             {
                 logger.LogWarning(
                     "{ModelName}: schemaVersion {Actual} does not match expected {Expected}.",
                     modelName,
                     version,
-                    NoProto.InterchangeSchema.ExpectedVersion
+                    Interchange.InterchangeSchema.ExpectedVersion
                 );
             }
         }
 
         public static ProblemInstance Parse(
-            NoProto.Location location,
-            NoProto.Scenario scenario,
+            Interchange.Location location,
+            Interchange.Scenario scenario,
             int debugLevel = 0
         )
         {
@@ -198,7 +198,7 @@ namespace ServiceSiteScheduling
             {
                 switch (part.Type)
                 {
-                    case NoProto.TrackPartType.RailRoad:
+                    case Interchange.TrackPartType.RailRoad:
                         Track track = new(
                             part.Id,
                             part.Name,
@@ -212,19 +212,19 @@ namespace ServiceSiteScheduling
                         tracks.Add(track);
                         infrastructuremap[part.Id] = track;
                         break;
-                    case NoProto.TrackPartType.Switch:
+                    case Interchange.TrackPartType.Switch:
                         infrastructuremap[part.Id] = new Switch(part.Id, part.Name);
                         break;
-                    case NoProto.TrackPartType.EnglishSwitch:
+                    case Interchange.TrackPartType.EnglishSwitch:
                         infrastructuremap[part.Id] = new EnglishSwitch(part.Id, part.Name);
                         break;
-                    case NoProto.TrackPartType.HalfEnglishSwitch:
+                    case Interchange.TrackPartType.HalfEnglishSwitch:
                         infrastructuremap[part.Id] = new HalfEnglishSwitch(part.Id, part.Name);
                         break;
-                    case NoProto.TrackPartType.Intersection:
+                    case Interchange.TrackPartType.Intersection:
                         infrastructuremap[part.Id] = new Intersection(part.Id, part.Name);
                         break;
-                    case NoProto.TrackPartType.Bumper:
+                    case Interchange.TrackPartType.Bumper:
                         var gateway = new GateWay(part.Id, part.Name);
                         infrastructuremap[part.Id] = gateway;
                         gateways.Add(gateway);
@@ -235,7 +235,7 @@ namespace ServiceSiteScheduling
                             .LogWarning(
                                 $"No TrackPartType set for TrackPart {part.Name} ({part.Id}); assuming RailRoad"
                             );
-                        goto case NoProto.TrackPartType.RailRoad;
+                        goto case Interchange.TrackPartType.RailRoad;
                 }
             }
             instance.Tracks = tracks.ToArray();
@@ -249,7 +249,7 @@ namespace ServiceSiteScheduling
 
                 switch (part.Type)
                 {
-                    case NoProto.TrackPartType.RailRoad:
+                    case Interchange.TrackPartType.RailRoad:
                         Track track = infrastructuremap[part.Id] as Track;
                         Infrastructure A = null,
                             B = null;
@@ -262,7 +262,7 @@ namespace ServiceSiteScheduling
                         track.Connect(A, B);
 
                         break;
-                    case NoProto.TrackPartType.Switch:
+                    case Interchange.TrackPartType.Switch:
                         Switch @switch = infrastructuremap[part.Id] as Switch;
                         if (part.ASide.Length == 1)
                         { // A side is connected to two B side infrastructure
@@ -290,14 +290,14 @@ namespace ServiceSiteScheduling
                         }
 
                         break;
-                    case NoProto.TrackPartType.EnglishSwitch:
+                    case Interchange.TrackPartType.EnglishSwitch:
                         EnglishSwitch englishswitch = infrastructuremap[part.Id] as EnglishSwitch;
                         englishswitch.Connect(
                             part.ASide.Select(neighbor => infrastructuremap[neighbor]).ToList(),
                             part.BSide.Select(neighbor => infrastructuremap[neighbor]).ToList()
                         );
                         break;
-                    case NoProto.TrackPartType.HalfEnglishSwitch:
+                    case Interchange.TrackPartType.HalfEnglishSwitch:
                         Debug.Assert(part.ASide.Length == 2);
                         Debug.Assert(part.BSide.Length == 2);
                         HalfEnglishSwitch halfenglishswitch =
@@ -309,7 +309,7 @@ namespace ServiceSiteScheduling
                             infrastructuremap[part.BSide[1]]
                         );
                         break;
-                    case NoProto.TrackPartType.Intersection:
+                    case Interchange.TrackPartType.Intersection:
                         Debug.Assert(part.ASide.Length == 2);
                         Debug.Assert(part.BSide.Length == 2);
                         Intersection intersection = infrastructuremap[part.Id] as Intersection;
@@ -320,7 +320,7 @@ namespace ServiceSiteScheduling
                             infrastructuremap[part.BSide[0]]
                         );
                         break;
-                    case NoProto.TrackPartType.Bumper:
+                    case Interchange.TrackPartType.Bumper:
                         GateWay gateway = infrastructuremap[part.Id] as GateWay;
 
                         if (debugLevel > 1)
@@ -351,7 +351,7 @@ namespace ServiceSiteScheduling
                         }
                         break;
                     default:
-                        goto case NoProto.TrackPartType.RailRoad;
+                        goto case Interchange.TrackPartType.RailRoad;
                 }
             }
             Dictionary<GateWay, TrackSwitchContainer> gatewayconnections = [];
@@ -371,15 +371,15 @@ namespace ServiceSiteScheduling
             }
 
             // LP FIXME shouldn't we also iterate over InStanding here?
-            Dictionary<NoProto.TaskType, ServiceType> taskmap = [];
+            Dictionary<Interchange.TaskType, ServiceType> taskmap = [];
             var tasktypes = scenario
                 .In.Aggregate(
-                    new List<NoProto.TaskType>(),
+                    new List<Interchange.TaskType>(),
                     (list, train) =>
                     {
                         list.AddRange(
                             train.Members.Aggregate(
-                                new List<NoProto.TaskType>(),
+                                new List<Interchange.TaskType>(),
                                 (l, unit) =>
                                 {
                                     l.AddRange(unit.Tasks.Select(task => task.Type));
@@ -442,7 +442,7 @@ namespace ServiceSiteScheduling
                         var crew = new ServiceCrew(
                             "crew " + i,
                             facility
-                                .TaskTypes.AsQueryable<NoProto.TaskType>()
+                                .TaskTypes.AsQueryable<Interchange.TaskType>()
                                 .Select(type => taskmap[type])
                         );
                         crews.Add(crew);
@@ -834,7 +834,7 @@ namespace ServiceSiteScheduling
             /// <summary>
             /// Extracts the train unit types in the arrival train and returns the train units.
             /// </summary>
-            List<TrainUnit> GetTrainUnits(NoProto.IncomingTrain arrivaltrain)
+            List<TrainUnit> GetTrainUnits(Interchange.IncomingTrain arrivaltrain)
             {
                 var currenttrainunits = new List<TrainUnit>();
                 foreach (var unit in arrivaltrain.Members)

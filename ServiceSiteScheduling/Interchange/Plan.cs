@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace ServiceSiteScheduling.NoProto
+namespace ServiceSiteScheduling.Interchange
 {
     public record UnhashableRecord
     {

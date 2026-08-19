@@ -100,7 +100,7 @@ namespace ServiceSiteScheduling.Solutions
             {
                 switch (part.Type)
                 {
-                    case NoProto.TrackPartType.RailRoad:
+                    case Interchange.TrackPartType.RailRoad:
                         Track track = new(
                             part.Id,
                             part.Name,
@@ -113,19 +113,19 @@ namespace ServiceSiteScheduling.Solutions
                         );
                         infrastructuremap[part.Id] = track;
                         break;
-                    case NoProto.TrackPartType.Switch:
+                    case Interchange.TrackPartType.Switch:
                         infrastructuremap[part.Id] = new Switch(part.Id, part.Name);
                         break;
-                    case NoProto.TrackPartType.EnglishSwitch:
+                    case Interchange.TrackPartType.EnglishSwitch:
                         infrastructuremap[part.Id] = new EnglishSwitch(part.Id, part.Name);
                         break;
-                    case NoProto.TrackPartType.HalfEnglishSwitch:
+                    case Interchange.TrackPartType.HalfEnglishSwitch:
                         infrastructuremap[part.Id] = new HalfEnglishSwitch(part.Id, part.Name);
                         break;
-                    case NoProto.TrackPartType.Intersection:
+                    case Interchange.TrackPartType.Intersection:
                         infrastructuremap[part.Id] = new Intersection(part.Id, part.Name);
                         break;
-                    case NoProto.TrackPartType.Bumper:
+                    case Interchange.TrackPartType.Bumper:
                         var gateway = new GateWay(part.Id, part.Name);
                         infrastructuremap[part.Id] = gateway;
                         break;

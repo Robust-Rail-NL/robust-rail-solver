@@ -3,7 +3,7 @@
 using System.Collections.Immutable;
 using ServiceSiteScheduling.TrackParts;
 
-namespace ServiceSiteScheduling.NoProto
+namespace ServiceSiteScheduling.Interchange
 {
     public record Location
     {
