@@ -5,9 +5,9 @@
 # source of truth — use bump-version.sh to change it) and passed into the
 # image as a build-arg, so the Dockerfile LABEL never needs a separate edit.
 #
-# The :latest tag is only applied to final 1.x.y releases. Prerelease
-# versions (e.g. 2.0.0-alpha.1 on the noproto branch) are pushed under
-# their own tag only, so they never shadow the current stable image.
+# The :latest tag is only applied to final X.Y.Z releases. Prerelease
+# versions (e.g. 2.0.0-rc.1) are pushed under their own tag only, so they
+# never shadow the current stable image.
 #
 # Two images are pushed per version: $VERSION, and $VERSION-assert built with
 # -p:Assertions=true (Release optimisation plus the DEBUG symbol, so Debug.
@@ -43,7 +43,7 @@ VERSION=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' HIP.csproj)
 [[ -n "$VERSION" ]] || { echo "Could not read <Version> from HIP.csproj" >&2; exit 1; }
 
 TAGS=(-t "$IMAGE:$VERSION")
-if [[ "$VERSION" =~ ^1\.[0-9]+\.[0-9]+$ ]]; then
+if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     TAGS+=(-t "$IMAGE:latest")
 fi
 
