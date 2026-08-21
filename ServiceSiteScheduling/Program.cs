@@ -41,36 +41,29 @@ namespace ServiceSiteScheduling
                             tmpPathPlan = config.TemporaryPlanPath + "/";
                         }
 
-                        if (config.Mode == "Standard")
+                        if (config.DebugLevel > 1)
                         {
-                            if (config.DebugLevel > 1)
-                            {
-                                Console.WriteLine(
-                                    "***************** Reading Location and Scenario *****************"
-                                );
-                            }
-                            Test_Location_Scenario_Parsing(
-                                config.LocationPath,
-                                config.ScenarioPath,
-                                config.DebugLevel
-                            );
-                            if (config.DebugLevel > 1)
-                                Console.WriteLine(
-                                    "***************** Creating a Plan *****************"
-                                );
-                            CreatePlan(
-                                config.LocationPath,
-                                config.ScenarioPath,
-                                config.PlanPath,
-                                config,
-                                config.DebugLevel,
-                                tmpPathPlan
+                            Console.WriteLine(
+                                "***************** Reading Location and Scenario *****************"
                             );
                         }
-                        else
-                        {
-                            Console.WriteLine("Unknown parameter for Mode");
-                        }
+                        Test_Location_Scenario_Parsing(
+                            config.LocationPath,
+                            config.ScenarioPath,
+                            config.DebugLevel
+                        );
+                        if (config.DebugLevel > 1)
+                            Console.WriteLine(
+                                "***************** Creating a Plan *****************"
+                            );
+                        CreatePlan(
+                            config.LocationPath,
+                            config.ScenarioPath,
+                            config.PlanPath,
+                            config,
+                            config.DebugLevel,
+                            tmpPathPlan
+                        );
                     }
                     else
                     {
@@ -444,7 +437,6 @@ namespace ServiceSiteScheduling
         public string ScenarioPath { get; set; }
         public string PlanPath { get; set; }
         public string TemporaryPlanPath { get; set; }
-        public string Mode { get; set; }
 
         internal static Config ReadFrom(string config_file)
         {

@@ -1,5 +1,3 @@
-Mode: "Standard"
-
 TabuSearch:
   Iterations: 40
   IterationsUntilReset: 100

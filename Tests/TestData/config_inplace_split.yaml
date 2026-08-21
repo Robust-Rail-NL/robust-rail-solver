@@ -1,7 +1,6 @@
 # Deliberately a short search: the plan graph that triggers #11 is built by the
 # tabu phase within the first few iterations, so a long budget would only make
 # the test slow without making it more likely to catch anything.
-Mode: "Standard"
 Seed: 1
 
 TabuSearch:

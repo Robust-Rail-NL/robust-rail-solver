@@ -1,9 +1,8 @@
 
-LocationPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/location_solver.json"
-ScenarioPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/scenario_solver.json"
-PlanPath: "./database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/plan.json"
-Mode: "DeepLook" #Standard or DeepLook
-
+LocationPath: "../fixtures/setting_A/location.json"
+ScenarioPath: "../fixtures/setting_A/scenario.json"
+PlanPath: "../fixtures/setting_A/plan.json"
+DebugLevel: 2
 
 TabuSearch:
   Iterations: 40
@@ -21,22 +20,3 @@ SimulatedAnnealing:
   Reset: 2000
   Bias: 0.2
   IntensifyOnImprovement: false
-
-DeepLook:
-  TestCases: 0
-  MaxTest: 10
-  EvaluatorInput:
-    Path: "/workspace/robust-rail-evaluator/build/TORS" #../../C++/hello"
-    Mode: "EVAL_AND_STORE" #EVAL_AND_STORE or EVAL
-    PathLocation: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look"
-    PathScenario: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/scenario_evaluator.json"
-    PathPlan: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/plan.json"
-    PlanType: "Solver"
-    DepartureDelay: "600"
-  ConversionAndStorage:  
-    PathEvalResult: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look/Evaluation_Results.txt"
-    PathScenarioEval: "/workspace/robust-rail-solver/ServiceSiteScheduling/database/TUSS-Instance-Generator/scenario_settings/setting_deep_look"
-  DeterministicPlanning:
-    LookForSeed: false # if we look for a working seed
-    DisplaySeed: false
-    Seed: 0
