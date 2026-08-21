@@ -61,6 +61,16 @@ anything in this release, but from two open issues:
 
 Both were deferred deliberately rather than blocking 2.0.0.
 
+### One more schema-adjacent change after the initial cut
+
+`reversalDuration` is dropped from the wire format entirely, landed after
+this file was first written. It was declared on the interchange DTO
+(`Interchange/Scenario.cs`) but never read anywhere — the solver's real
+computation, `ShuntTrain.ReversalDuration`, already derives it locally from
+`BackNormTime` + `Carriages * BackAdditionTime` (`ProblemInstance.cs`), so
+nothing here changes behavior. See generator's `SCHEMA_CHANGELOG.md`
+("Unversioned — 2026-08-21") for the full trace.
+
 ### Other known issues, not blocking
 
 - **[#17](https://github.com/Robust-Rail-NL/robust-rail-solver/issues/17)** —
