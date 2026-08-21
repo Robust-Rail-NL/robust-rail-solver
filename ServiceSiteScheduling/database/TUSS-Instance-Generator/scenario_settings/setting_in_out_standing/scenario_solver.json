@@ -40,8 +40,7 @@
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "120",
-                                "backAdditionTime": "16",
-                                "reversalDuration": "0"
+                                "backAdditionTime": "16"
                             }
                         }
                     },
@@ -55,11 +54,10 @@
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "120",
-                                "backAdditionTime": "16",
-                                "reversalDuration": "0"
+                                "backAdditionTime": "16"
                             }
                         }
-                    }                    
+                    }
                 ],
                 "firstParkingTrackPart": "41"
             }
@@ -80,7 +78,6 @@
                             "length": 75.7,
                             "combineDuration": "180",
                             "splitDuration": "120",
-                            "reversalDuration": "0",
                             "backNormTime": "0",
                             "backAdditionTime": "0"
                         }
@@ -101,7 +98,6 @@
                             "length": 59.5,
                             "combineDuration": "180",
                             "splitDuration": "120",
-                            "reversalDuration": "0",
                             "backNormTime": "0",
                             "backAdditionTime": "0"
                         }
@@ -113,7 +109,6 @@
                             "length": 59.5,
                             "combineDuration": "180",
                             "splitDuration": "120",
-                            "reversalDuration": "0",
                             "backNormTime": "0",
                             "backAdditionTime": "0"
                         }
@@ -139,7 +134,6 @@
                                 "length": 59.5,
                                 "combineDuration": "180",
                                 "splitDuration": "120",
-                                "reversalDuration": "0",
                                 "backNormTime": "0",
                                 "backAdditionTime": "0"
                             }
@@ -155,7 +149,6 @@
                                 "length": 59.5,
                                 "combineDuration": "180",
                                 "splitDuration": "120",
-                                "reversalDuration": "0",
                                 "backNormTime": "0",
                                 "backAdditionTime": "0"
                             }
@@ -180,7 +173,6 @@
                                 "length": 75.7,
                                 "combineDuration": "180",
                                 "splitDuration": "120",
-                                "reversalDuration": "0",
                                 "backNormTime": "0",
                                 "backAdditionTime": "0"
                             }
@@ -210,8 +202,7 @@
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "backNormTime": "120",
-                            "backAdditionTime": "15",
-                            "reversalDuration": "0"
+                            "backAdditionTime": "15"
                         },
                         "id": ""
                     }
@@ -233,8 +224,7 @@
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "backNormTime": "120",
-                            "backAdditionTime": "16",
-                            "reversalDuration": "0"
+                            "backAdditionTime": "16"
                         },
                         "id": ""
                     },
@@ -246,8 +236,7 @@
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "backNormTime": "120",
-                            "backAdditionTime": "16",
-                            "reversalDuration": "0"
+                            "backAdditionTime": "16"
                         },
                         "id": ""
                     }

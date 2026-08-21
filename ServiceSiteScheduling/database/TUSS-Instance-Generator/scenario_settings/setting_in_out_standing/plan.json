@@ -14,7 +14,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 75.7,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -50,7 +49,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 3,
-							"reversalDuration": "0",
 							"length": 59.5,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -63,7 +61,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 3,
-							"reversalDuration": "0",
 							"length": 59.5,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -143,7 +140,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 3,
-							"reversalDuration": "0",
 							"length": 59.5,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -156,7 +152,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 3,
-							"reversalDuration": "0",
 							"length": 59.5,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -192,7 +187,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 6,
-							"reversalDuration": "0",
 							"length": 100.54,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -272,7 +266,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 6,
-							"reversalDuration": "0",
 							"length": 100.54,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -303,7 +296,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 6,
-							"reversalDuration": "0",
 							"length": 100.54,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -339,7 +331,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -352,7 +343,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -432,7 +422,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -445,7 +434,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -476,7 +464,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -489,7 +476,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -525,7 +511,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 75.7,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -556,7 +541,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 75.7,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -628,7 +612,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 75.7,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -664,7 +647,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 3,
-							"reversalDuration": "0",
 							"length": 59.5,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -677,7 +659,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 3,
-							"reversalDuration": "0",
 							"length": 59.5,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -708,7 +689,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 3,
-							"reversalDuration": "0",
 							"length": 59.5,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -721,7 +701,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 3,
-							"reversalDuration": "0",
 							"length": 59.5,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -817,7 +796,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 3,
-							"reversalDuration": "0",
 							"length": 59.5,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -830,7 +808,6 @@
 						"type": {
 							"displayName": "SNG",
 							"carriages": 3,
-							"reversalDuration": "0",
 							"length": 59.5,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -866,7 +843,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 6,
-							"reversalDuration": "0",
 							"length": 100.54,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -897,7 +873,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 6,
-							"reversalDuration": "0",
 							"length": 100.54,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -928,7 +903,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 6,
-							"reversalDuration": "0",
 							"length": 100.54,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -964,7 +938,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -977,7 +950,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -1008,7 +980,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -1021,7 +992,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -1077,7 +1047,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
@@ -1090,7 +1059,6 @@
 						"type": {
 							"displayName": "SLT",
 							"carriages": 4,
-							"reversalDuration": "0",
 							"length": 69.36,
 							"combineDuration": "180",
 							"splitDuration": "120",
