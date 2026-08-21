@@ -9,7 +9,6 @@ Table of contents
         - [Run solver with command line arguments](#create-plan-with-tabu-and-local-search-methods)
     - [Validated scenarios](#validated-scenarios)
     - [Partial Order Schedule](#partial-order-schedule-pos---other-helper-functions)
-    - [ProtoBuffers](#protobuffers)
 - [Known Problems](#known-problems)
 - [Building Process](#build-as-standalone-tool)
     - [Build in Linux](#building-process---native-support-linux)
@@ -102,7 +101,7 @@ dotnet run
 ### Location Scenario Parsing
 
 It is advised to first call `Test_Location_Scenario_Parsing(string location_path, string scenario_path)` function:
-* It will test if the given location and scenario (json format) files can be parsed correctly into protobuf objects (`ProblemInstance`). As part of the test, the overall infrastructure of the location (e.g., track parts) will be displayed. If the parsing from `location_solver.json` `->` `protobuf location object` is successful, the json format location will be displayed. When the parsing from `scenario_solver.json` `->` `protobuf scenario object` is successful, the json format scenario will be displayed and some details about the Incoming and Outgoing trains.
+* It will test if the given location and scenario (json format) files can be parsed correctly into a `ProblemInstance`. As part of the test, the overall infrastructure of the location (e.g., track parts) will be displayed. If the parsing of `location_solver.json` is successful, the json format location will be displayed. When the parsing of `scenario_solver.json` is successful, the json format scenario will be displayed and some details about the Incoming and Outgoing trains.
 
 Usage of the parsing test:
 ```bash
@@ -214,25 +213,6 @@ Where `start` is the first MoveTask of the totally ordered solution in the `Plan
 
 * `DisplayMovements`: Shows rich information about the movements and infrastructure used in the Totally Ordered Solution
 
-## ProtoBuffers
-
-* **Optional step** - all the protobufers used are pre-compiled. Nevertheless, when modifications must be added a proper compilation of protobufs is required.
-* New version of protobufers are used to create scenario, location and plan structures. 
-* `protoc-28.3-linux-x86_64` (libprotoc 28.3) contains the `protoc` compiler and other proto files.
-
-* `Usage:`
-
-```bash
-protoc --proto_path=protos --csharp_out=generated protos/Scenario.proto
-protoc --proto_path=protos --csharp_out=generated protos/Location.proto
-protoc --proto_path=protos --csharp_out=generated protos/Plan.proto
-``` 
-
-* `HIP.csproj has to contain`
-```bash
-<PackageReference Include="Google.Protobuf" Version="3.28.3" />
-```
-
 # Known Problems
 Several scenario results in an invalid plan. Sometimes these results are due to some constraints in the scenario, some of them are due to suspicious errors/handling tasks in the solver (e.g., same track occupation by multiple train) or in the evaluator (e.g., invalid end move action). These latter should be addressed in future development phases. The following descriptions and configurations help to reproduce the known problems/errors/suspected errors. The configuration, scenario and location files can be found in [setting_known_problems](./fixtures/setting_known_problems/).
 
@@ -298,23 +278,6 @@ Other packages might also be needed to be installed on the system:
 
 ```bash
 sudo apt install name-of-the-package
-```
-
-## Compile ProtoBuf
-In case the ProtoBuf structures must be modified (they can be found under [ProtoBuf](./ServiceSiteScheduling/ProtoBuf/)), then they must be compiled, so the main program can call their functionalities.
-
-If first usage:
-
-```bash
-conda env create -f env.yml
-source ~/.bashrc
-```
-
-Activate the environment:
-
-```bash
-conda activate my_proto_env_solver
-protoc --proto_path="/workspace/robust-rail-solver/ServiceSiteScheduling/ProtoBuf" --csharp_out="/workspace/robust-rail-solver/ServiceSiteScheduling/ProtoBuf" /workspace/robust-rail-solver/ServiceSiteScheduling/ProtoBuf/name_of_the_file_to_compile.proto
 ```
 
 ## Publishing the HIP image
