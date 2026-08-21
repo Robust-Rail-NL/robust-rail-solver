@@ -47,9 +47,10 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    # Smoke test: with no --config, HIP parses and plans setting_A, whose
-    # location.json and scenario.json are committed. Paths are relative, so
-    # this step depends on the working-directory below.
+    # Smoke test: with no --config, HIP parses and plans the example
+    # Kleine Binckhorst fixture, whose location.json and scenario.json are
+    # committed. Paths are relative, so this step depends on the
+    # working-directory below.
     - name: Run
       working-directory: ./ServiceSiteScheduling
       run: dotnet run --no-build --verbosity normal --project HIP.csproj

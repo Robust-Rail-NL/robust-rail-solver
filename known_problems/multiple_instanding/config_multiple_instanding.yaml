@@ -1,8 +1,7 @@
 
-LocationPath: "../example_kleine_binckhorst/location.json"
-ScenarioPath: "../example_kleine_binckhorst/scenario.json"
-PlanPath: "../example_kleine_binckhorst/plan.json"
-DebugLevel: 2
+LocationPath: "../known_problems/multiple_instanding/location_solver.json"
+ScenarioPath: "../known_problems/multiple_instanding/scenario_solver.json"
+PlanPath: "../known_problems/multiple_instanding/plan.json"
 
 TabuSearch:
   Iterations: 40

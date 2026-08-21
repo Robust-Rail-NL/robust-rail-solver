@@ -74,25 +74,24 @@ namespace ServiceSiteScheduling
             }
             else
             {
-                string directory = "setting_A";
                 Console.WriteLine(
-                    $"No config file provided, running with default test files: {directory}"
+                    "No config file provided, running with the example Kleine Binckhorst fixture"
                 );
                 // Relative to the working directory, which is expected to be
                 // ServiceSiteScheduling/. An absolute path here would tie the
                 // no-config run to one machine and break it everywhere else,
                 // CI included.
-                string prefix = "..";
+                string prefix = "../example_kleine_binckhorst";
                 Test_Location_Scenario_Parsing(
-                    $"{prefix}/fixtures/{directory}/location.json",
-                    $"{prefix}/fixtures/{directory}/scenario.json",
+                    $"{prefix}/location.json",
+                    $"{prefix}/scenario.json",
                     2
                 );
                 Console.WriteLine("***************** CreatePlan() *****************");
                 CreatePlan(
-                    $"{prefix}/fixtures/{directory}/location.json",
-                    $"{prefix}/fixtures/{directory}/scenario.json",
-                    $"{prefix}/fixtures/{directory}/plan.json",
+                    $"{prefix}/location.json",
+                    $"{prefix}/scenario.json",
+                    $"{prefix}/plan.json",
                     debugLevel: 0
                 );
             }
