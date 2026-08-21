@@ -55,11 +55,11 @@ Where [config.yaml](./ServiceSiteScheduling/config.yaml) contains all the parame
 ### Create Plan with Tabu and Local Search methods
 
 * This function takes as input the path to location file `location_path` and the path to the scenario file `scenario_path`. 
-    * E.g., of the location is shunting yard - [location.json](./fixtures/setting_A/location.json). 
-    * E.g., of the scenario is the time of arrivals & departures, train types/composition - [scenario.json](./fixtures/setting_A/scenario.json).
+    * E.g., of the location is shunting yard - [location.json](./example_kleine_binckhorst/location.json). 
+    * E.g., of the scenario is the time of arrivals & departures, train types/composition - [scenario.json](./example_kleine_binckhorst/scenario.json).
 
 * The function returns a schedule plan as solution to the scenario. The function uses Tabu Search and Simulated Annealing methods to find a Totally Ordered Graph which is finally converted into a schedule plan.
-    *  The plan is stored in JSON format and the path/name of the plan defined by `plan_path` input argument (e.g., fixtures/setting_A/plan.json).  
+    *  The plan is stored in JSON format and the path/name of the plan defined by `plan_path` input argument (e.g., example_kleine_binckhorst/plan.json).  
 
 ```bash
 CreatePlan(string location_path, string scenario_path, string plan_path)
@@ -110,60 +110,19 @@ Test_Location_Scenario_Parsing(string location_path, string scenario_path)
 Example: 
 
 ```bash
-Test_Location_Scenario_Parsing("../fixtures/setting_A/location.json", "../fixtures/setting_A/scenario.json");
+Test_Location_Scenario_Parsing("../example_kleine_binckhorst/location.json", "../example_kleine_binckhorst/scenario.json");
 ```
 
 
 ## Validated scenarios
-Some of the scenarios were successfully solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver) and the plans were validated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator). All the validated scenarios and location files are collected under [scenario-planning-inputs](https://github.com/Robust-Rail-NL/scenario-planning-inputs) repository. Nevertheless, some of those plans are available in the `robust-rail-solver` as well. 
+Some of the scenarios were successfully solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver) and the plans were validated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator). All the validated scenarios and location files are collected under [scenario-planning-inputs](https://github.com/Robust-Rail-NL/scenario-planning-inputs) repository.
 
-
-* [**Scenarios:**](./fixtures/)
-
-- **`setting_A/`** - scenario at Kleine Binckhorst 6 trains custom config v2
-    - **location_solver.json** - Kleine Binckhorst solver format
-    - **scenario_solver.json** - 6 trains custom config solver format
+- [**`example_kleine_binckhorst/`**](./example_kleine_binckhorst/) - a single Kleine Binckhorst scenario (6 trains), used as the smoke-test/demo fixture by the no-`--config` run, CI, and [`config.yaml`](./ServiceSiteScheduling/config.yaml)
+    - **location.json** - Kleine Binckhorst location
+    - **scenario.json** - 6 trains custom config scenario
     - **plan.json** - plan corresponding to the scenario
 
-- **`setting_B/`** - scenario at Kleine Binckhorst 6 trains custom config v3
-    - **location_solver.json** - Kleine Binckhorst solver format
-    - **scenario_solver.json** - 6 trains custom config solver format
-    - **plan.json** - plan corresponding to the scenario
-
-- **`setting_C/`** - scenario at Kleine Binckhorst 10 trains random 42 seed distribution 1
-    - **location_solver.json** - Kleine Binckhorst solver format
-    - **scenario_solver.json** - 10 trains custom config solver format
-    - **plan.json** - plan corresponding to the scenario
-    
-- **`setting_D/`** - scenario at Kleine Binckhorst 10 trains random 42 seed distribution 2
-    - **location_solver.json** - Kleine Binckhorst solver format
-    - **scenario_solver.json** - 10 trains custom config solver format
-    - **plan.json** - plan corresponding to the scenario
-
-- **`setting_deep_look`**
-    - **clean.sh** - script to clean the results
-    - **config.json** - config for the evaluator
-    - **location.json** - Kleine Binckhorst evaluator format
-    - **location_solver.json** - Kleine Binckhorst solver format
-    - **plan.json** - plan corresponding to the scenario
-    - **scenario_evaluator.json** - 6 trains custom config evaluator format
-    - **scenario_solver.json** - 6 trains custom config solver format
-    - **vis_config.json** - emulator config for visualization (this is not functional)
-
-- **`setting_issue`**
-    - **clean.sh** - script to clean the results
-    - **config.json** - config for the evaluator
-    - **location.json** - [Small Yard - switch matter](./fixtures/setting_known_problems/setting_invalid_endmove/switch.jpg) - switch declaration will result in different plans (valid/not valid) 
-    - **location_solver.json** - [Small Yard - switch matter](./fixtures/setting_known_problems/setting_invalid_endmove/switch.jpg) - switch declaration will result in different plans (valid/not valid) 
-    - **plan.json** - plan corresponding to the scenario
-    - **scenario_evaluator.json** - 2 trains custom config evaluator format
-    - **scenario_solver.json** - 2 trains custom config solver format
-    - **vis_config.json** - emulator config for visualization (this is not functional)
-
-- **`setting_known_problems`** - read more about these known problems in **Known Problems** section
-    - **setting_invalid_endmove**
-    - **setting_multiple_instanding**
-    - **setting_occupation_error**
+- [**`known_problems/`**](./known_problems/) - read more about these in the [Known Problems](#known-problems) section below
 
 ## Partial Order Schedule (POS) - Other helper functions 
 
@@ -214,22 +173,22 @@ Where `start` is the first MoveTask of the totally ordered solution in the `Plan
 * `DisplayMovements`: Shows rich information about the movements and infrastructure used in the Totally Ordered Solution
 
 # Known Problems
-Several scenario results in an invalid plan. Sometimes these results are due to some constraints in the scenario, some of them are due to suspicious errors/handling tasks in the solver (e.g., same track occupation by multiple train) or in the evaluator (e.g., invalid end move action). These latter should be addressed in future development phases. The following descriptions and configurations help to reproduce the known problems/errors/suspected errors. The configuration, scenario and location files can be found in [setting_known_problems](./fixtures/setting_known_problems/).
+Several scenario results in an invalid plan. Sometimes these results are due to some constraints in the scenario, some of them are due to suspicious errors/handling tasks in the solver (e.g., same track occupation by multiple train) or in the evaluator (e.g., invalid end move action). These latter should be addressed in future development phases. The following descriptions and configurations help to reproduce the known problems/errors/suspected errors. The configuration, scenario and location files can be found in [known_problems](./known_problems/).
 
 
 
 | ID | Files  | Config file  | Expected Errors | Log file |
 | :------------ |:------------|:------------|:------------|:------------|
-| **[Solver issue]** Track occupation issue | [setting_occupation_error](./fixtures/setting_known_problems/setting_occupation_error) | [config_occupation_error.yaml](./fixtures/setting_known_problems/setting_occupation_error/config_occupation_error.yaml) | The train occupation is not always handled in a straightforward way, there are scenarios when train A is parked on a specific track, and later train B is parked on the same track. It used to happen when the deadlines of departure times are tight that train B goes through train A. | [occupation_error.txt](./fixtures/setting_known_problems/setting_occupation_error/occupation_error.txt)|
-| **[Evaluator issue]** Invalid EndMove action | [setting_invalid_endmove](./fixtures/setting_known_problems/setting_occupation_error/) | [config_setting_invalid_endmove.yaml](./fixtures/setting_known_problems/setting_invalid_endmove/config_invalid_endmove.yaml) |  There might be an issue with the train activity checking: when the “move” action followed by an “endmove” action it used to happen that the evaluator states that action is not valid because the train action is already active. To reproduce an error use **seed: 5**. To reproduce a valid plan use the **seed: 6**, departure time 2300 and 2600 respectively. | [invalid_endmove_error.txt](./fixtures/setting_known_problems/setting_invalid_endmove/invalid_endmove_error.txt) |
-| **[Solver issue]** Multiple Instanding Trains | [setting_multiple_instanding](./fixtures/setting_known_problems/setting_multiple_instanding/) | [config_multiple_instanding.yaml](./fixtures/setting_known_problems/setting_multiple_instanding/config_multiple_instanding.yaml) | When the scenario contains multiple instanding trains it happens that the Solver parks too many trains on the departure track, and finally the departure trains start blocking each other movements | [instandning_error.txt](./fixtures/setting_known_problems/setting_multiple_instanding/instandning_error.txt) |
+| **[Solver issue]** Track occupation issue | [occupation_error](./known_problems/occupation_error) | [config_occupation_error.yaml](./known_problems/occupation_error/config_occupation_error.yaml) | The train occupation is not always handled in a straightforward way, there are scenarios when train A is parked on a specific track, and later train B is parked on the same track. It used to happen when the deadlines of departure times are tight that train B goes through train A. | [occupation_error.txt](./known_problems/occupation_error/occupation_error.txt)|
+| **[Evaluator issue]** Invalid EndMove action | [invalid_endmove](./known_problems/invalid_endmove/) | [config_invalid_endmove.yaml](./known_problems/invalid_endmove/config_invalid_endmove.yaml) |  There might be an issue with the train activity checking: when the “move” action followed by an “endmove” action it used to happen that the evaluator states that action is not valid because the train action is already active. To reproduce an error use **seed: 5**. To reproduce a valid plan use the **seed: 6**, departure time 2300 and 2600 respectively. | [invalid_endmove_error.txt](./known_problems/invalid_endmove/invalid_endmove_error.txt) |
+| **[Solver issue]** Multiple Instanding Trains | [multiple_instanding](./known_problems/multiple_instanding/) | [config_multiple_instanding.yaml](./known_problems/multiple_instanding/config_multiple_instanding.yaml) | When the scenario contains multiple instanding trains it happens that the Solver parks too many trains on the departure track, and finally the departure trains start blocking each other movements | [instandning_error.txt](./known_problems/multiple_instanding/instandning_error.txt) |
 
 ### Specific "structural" issue
 | ID | Files  | Config file  | Expected Errors | Log file |
 | :------------ |:------------|:------------|:------------|:------------|
-| Switch matter | [Definition of a Switch](./fixtures/setting_known_problems/setting_invalid_endmove/switch.jpg) | Not Specified | Switch definition might affect the solving complexity. Reversing the switch will result in a different location structure which affect directly the plan solving. In as the figure shows, a switch with Bside{5} Aside{4,1} is not the sane as switch Bside{1} Aside{4,5}, however, switch with Bside{4,5} Aside{1} is the same as switch with Bside{4,5} Aside{1} | Not Specified | 
+| Switch matter | [Definition of a Switch](./known_problems/invalid_endmove/switch.jpg) | Not Specified | Switch definition might affect the solving complexity. Reversing the switch will result in a different location structure which affect directly the plan solving. In as the figure shows, a switch with Bside{5} Aside{4,1} is not the sane as switch Bside{1} Aside{4,5}, however, switch with Bside{4,5} Aside{1} is the same as switch with Bside{4,5} Aside{1} | Not Specified | 
 
-![Switch](./fixtures/setting_known_problems/setting_invalid_endmove/switch.jpg)
+![Switch](./known_problems/invalid_endmove/switch.jpg)
 Figure: Switch
 
 
