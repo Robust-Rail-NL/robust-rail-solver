@@ -89,17 +89,17 @@ namespace ServiceSiteScheduling
                 // ServiceSiteScheduling/. An absolute path here would tie the
                 // no-config run to one machine and break it everywhere else,
                 // CI included.
-                string prefix = ".";
+                string prefix = "..";
                 Test_Location_Scenario_Parsing(
-                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/location.json",
-                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario.json",
+                    $"{prefix}/fixtures/{directory}/location.json",
+                    $"{prefix}/fixtures/{directory}/scenario.json",
                     2
                 );
                 Console.WriteLine("***************** CreatePlan() *****************");
                 CreatePlan(
-                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/location.json",
-                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/scenario.json",
-                    $"{prefix}/database/TUSS-Instance-Generator/scenario_settings/{directory}/plan.json",
+                    $"{prefix}/fixtures/{directory}/location.json",
+                    $"{prefix}/fixtures/{directory}/scenario.json",
+                    $"{prefix}/fixtures/{directory}/plan.json",
                     debugLevel: 0
                 );
             }
