@@ -12,9 +12,7 @@ Table of contents
     - [ProtoBuffers](#protobuffers)
 - [Known Problems](#known-problems)
 - [Building Process](#build-as-standalone-tool)
-    - [Build as `.devcontainer`](#building-process---dev-container)
     - [Build in Linux](#building-process---native-support-linux)
-    - [Known issues](#issues)
     - [Publishing the HIP image](#publishing-the-hip-image)
 
 
@@ -261,21 +259,6 @@ Figure: Switch
 In principle the robust-rail tools are built in a single Docker do ease the development and usage. Nevertheless, it is possible to use/build `robust-rail-solver` as a standalone tool.
 
 
-## Building process - Dev-Container
-### Dev-Container set up
-The usage of **[Dev-Container](https://code.visualstudio.com/docs/devcontainers/tutorial)** is highly recommended in macOS environment. Running **VS Code** inside a Docker container is useful, since it allows compiling and use cTORS without platform dependencies. In addition, **Dev-Container** allows to an easy to use dockerized development since the mounted `ctors` code base can be modified real-time in a docker environment via **VS Code**.
-
-* 1st - Install **Docker**
-
-* 2nd - Install **VS Code** with the **Dev-Container** extension. 
-
-* 3rd - Open the project in **VS Code**
-
-* 4th - `Ctrl+Shif+P` → Dev Containers: Rebuild Container (it can take a few minutes) - this command will use the [Dockerfile](.devcontainer/Dockerfile) and [devcontainer.json](.devcontainer/devcontainer.json) definitions under [.devcontainer](.devcontainer).
-
-* 5th - Build process of the tool is below: 
-Note: all the dependencies are already contained by the Docker instance.
-
 ## Building process - Native support (Linux)
 ## Dependencies
 
@@ -332,38 +315,6 @@ Activate the environment:
 ```bash
 conda activate my_proto_env_solver
 protoc --proto_path="/workspace/robust-rail-solver/ServiceSiteScheduling/ProtoBuf" --csharp_out="/workspace/robust-rail-solver/ServiceSiteScheduling/ProtoBuf" /workspace/robust-rail-solver/ServiceSiteScheduling/ProtoBuf/name_of_the_file_to_compile.proto
-```
-
-
-## Issues
-There is a known issue when using the new `.devcontainer` of the project. It might happen that after switching to the new version, the following error will be raised when running the solver:
-
-### Issue 1
-```bash
-/usr/share/dotnet/sdk/8.0.411/Microsoft.Common.CurrentVersion.targets(3829,5): error MSB3491: Could not write lines to file "obj/Debug/net8.0/HIP.csproj.CoreCompileInputs.cache". Access to the path '/workspace/robust-rail-solver/ServiceSiteScheduling/obj/Debug/net8.0/HIP.csproj.CoreCompileInputs.cache' is denied.  [/workspace/robust-rail-solver/ServiceSiteScheduling/HIP.csproj]
-```
-
-Solution:
-
-```bash
-cd /workspace/robust-rail-solver/ServiceSiteScheduling
-rm -rf obj/
-rm -rf bin/
-```
-
-### Issue 2
-```bash
-./build/TORS: error while loading shared libraries: libprotobuf.so.26: cannot open shared object file: No such file or directory
-```
-In that case the `robust-rail-evaluator` project should be rebuilt. 
-
-If it was already rebuilt, then:
-```bash
-cd /workspace/robust-rail-evaluator
-conda env create -f env.yml # if the env has not yet been build
-source ~/.bashrc
-conda activate my_proto_env 
-cd /workspace/robust-rail-solver/ServiceSiteScheduling
 ```
 
 ## Publishing the HIP image
