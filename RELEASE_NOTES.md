@@ -41,6 +41,13 @@ pre-migration shape needs to account for:
   Fixture data that carried a decorative `standingIndex` (present but not
   meaningful) has been nulled out to avoid implying an ordering the solver
   doesn't enforce.
+- **`reversalDuration` is dropped from the wire format entirely.** It was
+  declared on the interchange DTO (`Interchange/Scenario.cs`) but never read
+  anywhere — the solver's real computation, `ShuntTrain.ReversalDuration`,
+  already derives it locally from `BackNormTime` + `Carriages *
+  BackAdditionTime` (`ProblemInstance.cs`), so nothing here changes
+  behavior. See generator's `SCHEMA_CHANGELOG.md` ("Unversioned —
+  2026-08-21") for the full trace.
 
 `schemaVersion` mismatches are logged as a warning, never a hard reject.
 
@@ -60,16 +67,6 @@ anything in this release, but from two open issues:
   evaluator#6).
 
 Both were deferred deliberately rather than blocking 2.0.0.
-
-### One more schema-adjacent change after the initial cut
-
-`reversalDuration` is dropped from the wire format entirely, landed after
-this file was first written. It was declared on the interchange DTO
-(`Interchange/Scenario.cs`) but never read anywhere — the solver's real
-computation, `ShuntTrain.ReversalDuration`, already derives it locally from
-`BackNormTime` + `Carriages * BackAdditionTime` (`ProblemInstance.cs`), so
-nothing here changes behavior. See generator's `SCHEMA_CHANGELOG.md`
-("Unversioned — 2026-08-21") for the full trace.
 
 ### Other known issues, not blocking
 
@@ -107,7 +104,7 @@ both fixed in this release.
 The HIP image is versioned from `HIP.csproj`'s `<Version>` element and pushed
 to `ghcr.io/robust-rail-nl/hip` via `./ServiceSiteScheduling/docker-push.sh`
 (multi-arch: `linux/amd64`, `linux/arm64`). The `hip:2.0.0` tag points at the
-same image digest already verified as `2.0.0-rc.2` — re-tagged, not rebuilt,
+same image digest already verified as `2.0.0-rc.3` — re-tagged, not rebuilt,
 so the tag names exactly the bytes that were tested. `:latest` moves to
 `2.0.0` as the first stable tag of the release; it does not move for
 `-rc.*`/`-beta.*` builds.
