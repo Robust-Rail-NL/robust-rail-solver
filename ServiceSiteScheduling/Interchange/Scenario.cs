@@ -161,9 +161,6 @@ namespace ServiceSiteScheduling.Interchange
         // Length of this train unit, in meters
         public double? Length { get; set; }
 
-        // The time it takes to reverse ("kopmaken"), in seconds
-        public ulong? ReversalDuration { get; set; }
-
         // Time it takes to perform a combine in seconds
         public ulong? CombineDuration { get; set; }
 
