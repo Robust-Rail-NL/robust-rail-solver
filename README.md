@@ -9,7 +9,6 @@ Table of contents
         - [Run solver with command line arguments](#create-plan-with-tabu-and-local-search-methods)
     - [Validated scenarios](#validated-scenarios)
     - [Partial Order Schedule](#partial-order-schedule-pos---other-helper-functions)
-- [Known Problems](#known-problems)
 - [Building Process](#build-as-standalone-tool)
     - [Build in Linux](#building-process---native-support-linux)
     - [Publishing the HIP image](#publishing-the-hip-image)
@@ -122,8 +121,6 @@ Some of the scenarios were successfully solved by [robust-rail-solver](https://g
     - **scenario.json** - 6 trains custom config scenario
     - **plan.json** - plan corresponding to the scenario
 
-- [**`known_problems/`**](./known_problems/) - read more about these in the [Known Problems](#known-problems) section below
-
 ## Partial Order Schedule (POS) - Other helper functions 
 
 There are optional functions to display movement actions and other Partial Order Schedule graphs (relations among the actions i.e., moves using the same infrastructure, service resource, activities that require the same train unit). Example of the partial order schedule of a shunting plan. ![Partial Order Schedule](./POS.png). Reference to the figure: [A Local Search Algorithm for Train Unit Shunting with Service Scheduling](https://pubsonline.informs.org/doi/10.1287/trsc.2021.1090), by Roel van den Broek.
@@ -171,28 +168,6 @@ Where `start` is the first MoveTask of the totally ordered solution in the `Plan
 
 
 * `DisplayMovements`: Shows rich information about the movements and infrastructure used in the Totally Ordered Solution
-
-# Known Problems
-Several scenario results in an invalid plan. Sometimes these results are due to some constraints in the scenario, some of them are due to suspicious errors/handling tasks in the solver (e.g., same track occupation by multiple train) or in the evaluator (e.g., invalid end move action). These latter should be addressed in future development phases. The following descriptions and configurations help to reproduce the known problems/errors/suspected errors. The configuration, scenario and location files can be found in [known_problems](./known_problems/).
-
-
-
-| ID | Files  | Config file  | Expected Errors | Log file |
-| :------------ |:------------|:------------|:------------|:------------|
-| **[Solver issue]** Track occupation issue | [occupation_error](./known_problems/occupation_error) | [config_occupation_error.yaml](./known_problems/occupation_error/config_occupation_error.yaml) | The train occupation is not always handled in a straightforward way, there are scenarios when train A is parked on a specific track, and later train B is parked on the same track. It used to happen when the deadlines of departure times are tight that train B goes through train A. | [occupation_error.txt](./known_problems/occupation_error/occupation_error.txt)|
-| **[Evaluator issue]** Invalid EndMove action | [invalid_endmove](./known_problems/invalid_endmove/) | [config_invalid_endmove.yaml](./known_problems/invalid_endmove/config_invalid_endmove.yaml) |  There might be an issue with the train activity checking: when the “move” action followed by an “endmove” action it used to happen that the evaluator states that action is not valid because the train action is already active. To reproduce an error use **seed: 5**. To reproduce a valid plan use the **seed: 6**, departure time 2300 and 2600 respectively. | [invalid_endmove_error.txt](./known_problems/invalid_endmove/invalid_endmove_error.txt) |
-| **[Solver issue]** Multiple Instanding Trains | [multiple_instanding](./known_problems/multiple_instanding/) | [config_multiple_instanding.yaml](./known_problems/multiple_instanding/config_multiple_instanding.yaml) | When the scenario contains multiple instanding trains it happens that the Solver parks too many trains on the departure track, and finally the departure trains start blocking each other movements | [instandning_error.txt](./known_problems/multiple_instanding/instandning_error.txt) |
-
-### Specific "structural" issue
-| ID | Files  | Config file  | Expected Errors | Log file |
-| :------------ |:------------|:------------|:------------|:------------|
-| Switch matter | [Definition of a Switch](./known_problems/invalid_endmove/switch.jpg) | Not Specified | Switch definition might affect the solving complexity. Reversing the switch will result in a different location structure which affect directly the plan solving. In as the figure shows, a switch with Bside{5} Aside{4,1} is not the sane as switch Bside{1} Aside{4,5}, however, switch with Bside{4,5} Aside{1} is the same as switch with Bside{4,5} Aside{1} | Not Specified | 
-
-![Switch](./known_problems/invalid_endmove/switch.jpg)
-Figure: Switch
-
-
-
 
 # Build as standalone tool
 In principle the robust-rail tools are built in a single Docker do ease the development and usage. Nevertheless, it is possible to use/build `robust-rail-solver` as a standalone tool.
