@@ -1072,12 +1072,12 @@ namespace ServiceSiteScheduling.Solutions
 
         public void WriteJSONFile(string filePath)
         {
-            Plan? plan = this.ToProtobuf();
+            Plan? plan = this.ToPlan();
             string jsonPlan = plan.SerializeJson();
             File.WriteAllText(filePath, jsonPlan);
         }
 
-        public Plan? ToProtobuf()
+        public Plan? ToPlan()
         {
             if (
                 ProblemInstance.Current.InterfaceLocation == null
@@ -1274,7 +1274,7 @@ namespace ServiceSiteScheduling.Solutions
         }
 
         /// <summary>
-        /// Clean up and sort protobuf actions, then return a protobuf plan.
+        /// Clean up and sort actions, then return a Plan.
         /// </summary>
         static Plan ActionsToPlan(IList<Interchange.Action> actions)
         {

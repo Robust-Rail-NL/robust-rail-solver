@@ -8,8 +8,8 @@ namespace ServiceSiteScheduling.Utilities
         private static readonly JsonSerializerOptions serializerOptions = new()
         {
             // Numbers are written as plain JSON numbers, matching the
-            // generator's Pydantic output. Reading still tolerates the old
-            // protobuf-style quoted numbers for backward compatibility.
+            // generator's Pydantic output. Reading still tolerates the
+            // old-style quoted numbers for backward compatibility.
             NumberHandling = JsonNumberHandling.AllowReadingFromString,
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

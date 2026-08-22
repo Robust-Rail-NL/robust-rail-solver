@@ -268,7 +268,7 @@ namespace ServiceSiteScheduling
             }
         }
 
-        // Tests if the given location and scenario (json format) files can be parsed correctly int protobuf objects (ProblemInstance)
+        // Tests if the given location and scenario (json format) files can be parsed correctly into ProblemInstance and related objects
         // As partial results, the function displays the details about the infrstructure of the location, and the incoming and outgoing trains of the scenario
         // Input:   @location_path: path to the location (.json) file
         //          @scenario_path: path to the scenario (.json) file
