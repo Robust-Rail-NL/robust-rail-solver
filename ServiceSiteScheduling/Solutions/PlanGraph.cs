@@ -1160,7 +1160,27 @@ namespace ServiceSiteScheduling.Solutions
                             }
                         }
                         // remove first
-                        moveaction.Resources.RemoveAt(0);
+                        //
+                        // NumberOfRoutes > 0 is meant to guarantee at least one
+                        // resource was added above, but doesn't always hold (see
+                        // solver known_problems/invalid_endmove, seed 5): a route
+                        // whose arcs all resolve to the same infrastructure as
+                        // `previous` collapses to zero resources. Skip rather than
+                        // crash so the rest of the plan still gets written -
+                        // this move ends up with no resources, which is a real
+                        // gap worth investigating, not a fix for the root cause.
+                        if (moveaction.Resources.Count > 0)
+                        {
+                            moveaction.Resources.RemoveAt(0);
+                        }
+                        else
+                        {
+                            logger.LogWarning(
+                                "Move action for {ShuntingUnit} at {Location} has NumberOfRoutes > 0 but resolved zero resources; leaving Resources empty.",
+                                moveaction.ShuntingUnit.Id,
+                                moveaction.Location
+                            );
+                        }
                         // add to plan
                         actions.Add(moveaction);
                     }
