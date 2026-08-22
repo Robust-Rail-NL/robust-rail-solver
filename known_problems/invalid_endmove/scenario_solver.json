@@ -69,6 +69,7 @@
             "arrival": "2000",
             "departure": "2000",
             "displayName": "33334",
+            "id": 33334,
             "trainUnits": [
                 {
                     "typePrefix": "SNG",
@@ -82,6 +83,7 @@
             "arrival": "2300",
             "departure": "2300",
             "displayName": "11112",
+            "id": 11112,
             "trainUnits": [
                 {
                     "typePrefix": "SLT",

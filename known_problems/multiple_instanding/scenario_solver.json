@@ -157,6 +157,7 @@
             "arrival": "3600",
             "departure": "3600",
             "displayName": "2001",
+            "id": 2001,
             "trainUnits": [
                 {
                     "typePrefix": "SLT",
@@ -170,6 +171,7 @@
             "arrival": "3900",
             "departure": "3900",
             "displayName": "3001",
+            "id": 3001,
             "trainUnits": [
                 {
                     "typePrefix": "SLT",
@@ -183,6 +185,7 @@
             "arrival": "4200",
             "departure": "4200",
             "displayName": "4001",
+            "id": 4001,
             "trainUnits": [
                 {
                     "typePrefix": "SNG",
@@ -200,6 +203,7 @@
             "leaveTrackPart": "1",
             "lastParkingTrackPart": "1",
             "displayName": "5001",
+            "id": 5001,
             "trainUnits": [
                 {
                     "typePrefix": "SLT",
@@ -211,6 +215,7 @@
             "leaveTrackPart": "3",
             "lastParkingTrackPart": "3",
             "displayName": "6001",
+            "id": 6001,
             "trainUnits": [
                 {
                     "typePrefix": "SLT",
@@ -222,6 +227,7 @@
             "leaveTrackPart": "6",
             "lastParkingTrackPart": "6",
             "displayName": "7001",
+            "id": 7001,
             "trainUnits": [
                 {
                     "typePrefix": "SLT",
