@@ -202,6 +202,8 @@
         {
             "leaveTrackPart": "1",
             "lastParkingTrackPart": "1",
+            "arrival": "5000",
+            "departure": "5000",
             "displayName": "5001",
             "id": 5001,
             "trainUnits": [
@@ -214,6 +216,8 @@
         {
             "leaveTrackPart": "3",
             "lastParkingTrackPart": "3",
+            "arrival": "5000",
+            "departure": "5000",
             "displayName": "6001",
             "id": 6001,
             "trainUnits": [
@@ -226,6 +230,8 @@
         {
             "leaveTrackPart": "6",
             "lastParkingTrackPart": "6",
+            "arrival": "5000",
+            "departure": "5000",
             "displayName": "7001",
             "id": 7001,
             "trainUnits": [
