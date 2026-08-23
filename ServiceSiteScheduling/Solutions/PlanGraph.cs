@@ -1160,7 +1160,27 @@ namespace ServiceSiteScheduling.Solutions
                             }
                         }
                         // remove first
-                        moveaction.Resources.RemoveAt(0);
+                        //
+                        // NumberOfRoutes > 0 is meant to guarantee at least one
+                        // resource was added above, but doesn't always hold - a
+                        // route whose arcs all resolve to the same infrastructure
+                        // as `previous` (observed on short/single-hop routes, e.g.
+                        // solver known_problems/invalid_endmove, seed 5) collapses
+                        // to zero resources. Skip rather than crash so the rest of
+                        // the plan still gets written; the resulting action having
+                        // no resources is a real gap, not fixed here - see #24.
+                        if (moveaction.Resources.Count > 0)
+                        {
+                            moveaction.Resources.RemoveAt(0);
+                        }
+                        else
+                        {
+                            logger.LogError(
+                                "Move action for {ShuntingUnit} at {Location} has NumberOfRoutes > 0 but resolved zero resources; leaving Resources empty.",
+                                moveaction.ShuntingUnit.Id,
+                                moveaction.Location
+                            );
+                        }
                         // add to plan
                         actions.Add(moveaction);
                     }
@@ -1236,9 +1256,23 @@ namespace ServiceSiteScheduling.Solutions
                                 }
                             }
                         }
-                        // remove first
+                        // remove first - same gap as the arrival/general routing case
+                        // above (see #24), just already guarded here; add the
+                        // matching diagnostic so a departure-side occurrence is
+                        // traceable the same way. This is in fact the common case -
+                        // see #24's frequency findings.
                         if (moveaction.Resources.Count > 0)
+                        {
                             moveaction.Resources.RemoveAt(0);
+                        }
+                        else
+                        {
+                            logger.LogError(
+                                "Departure move action for {ShuntingUnit} at {Location} has a route but resolved zero resources; leaving Resources empty.",
+                                moveaction.ShuntingUnit.Id,
+                                moveaction.Location
+                            );
+                        }
                         // add to plan
                         actions.Add(moveaction);
                         starttime += route.Duration;
