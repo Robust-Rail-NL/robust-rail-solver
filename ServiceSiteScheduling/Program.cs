@@ -239,7 +239,7 @@ namespace ServiceSiteScheduling
                 }
 
                 // Write JSON plan to file
-                sa.Graph.WriteJSONFile(plan_path);
+                sa.Graph.WriteJSONFile(plan_path, validateFinal: true);
                 Console.WriteLine("Plan written to: " + plan_path);
 
                 File.WriteAllText(

@@ -1070,11 +1070,58 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public void WriteJSONFile(string filePath)
+        // Populated by ToPlan() with every Move action it emitted that has no
+        // Resources (see #24), tagged with whether the underlying route was
+        // the known Route.Invalid sentinel (no feasible route found) or
+        // something else - the latter would mean a new, as yet unexplained
+        // cause and warrants fresh investigation rather than being assumed
+        // to be the same gap.
+        private readonly List<(
+            ulong ShuntingUnitId,
+            ulong? Location,
+            ulong? StartTime,
+            ulong? EndTime,
+            bool RouteInvalid
+        )> zeroResourceMoves = [];
+
+        // @validateFinal: when true (only appropriate for the actual
+        // delivered plan, not the tmp_plans/ debug snapshots TabuSearch and
+        // SimulatedAnnealing write on every improving move), refuse to
+        // silently ship a plan containing a Move with no Resources - such a
+        // Move doesn't specify where the shunting unit went, so the plan is
+        // not usable. The file is still written first so the broken plan
+        // remains available for inspection.
+        public void WriteJSONFile(string filePath, bool validateFinal = false)
         {
             Plan? plan = this.ToPlan();
             string jsonPlan = plan.SerializeJson();
             File.WriteAllText(filePath, jsonPlan);
+
+            if (validateFinal && this.zeroResourceMoves.Count > 0)
+            {
+                int knownCause = this.zeroResourceMoves.Count(m => m.RouteInvalid);
+                int unknownCause = this.zeroResourceMoves.Count - knownCause;
+                string details = string.Join(
+                    "; ",
+                    this.zeroResourceMoves.Select(m =>
+                        $"shunting unit {m.ShuntingUnitId} at {m.Location} from {m.StartTime} to {m.EndTime} "
+                        + (
+                            m.RouteInvalid
+                                ? "(known cause: no feasible route was found, Route.Invalid - see #24)"
+                                : "(UNKNOWN CAUSE - needs fresh investigation)"
+                        )
+                    )
+                );
+                logger.LogError(
+                    "Delivered plan at {FilePath} has {Count} Move action(s) with no Resources ({KnownCause} known-cause / {UnknownCause} unexplained): {Details}",
+                    filePath,
+                    this.zeroResourceMoves.Count,
+                    knownCause,
+                    unknownCause,
+                    details
+                );
+                Environment.Exit(1);
+            }
         }
 
         public Plan? ToPlan()
@@ -1085,6 +1132,7 @@ namespace ServiceSiteScheduling.Solutions
             )
                 return null;
 
+            this.zeroResourceMoves.Clear();
             List<Interchange.Action> actions = [];
 
             Dictionary<ShuntTrain, ShuntingUnit> trainconversion = [];
@@ -1175,12 +1223,31 @@ namespace ServiceSiteScheduling.Solutions
                         }
                         else
                         {
-                            logger.LogWarning(
-                                "Move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it. The delivered plan does not correctly represent this move. See issue #24.",
+                            bool routeInvalid = ReferenceEquals(routing.Route, Route.Invalid);
+                            this.zeroResourceMoves.Add(
+                                (
+                                    moveaction.ShuntingUnit.Id,
+                                    moveaction.Location,
+                                    moveaction.StartTime,
+                                    moveaction.EndTime,
+                                    routeInvalid
+                                )
+                            );
+                            // Debug, not Warning: this fires on every ToPlan()
+                            // call, including the tmp_plans/ debug snapshots
+                            // TabuSearch/SimulatedAnnealing write before the
+                            // search has had a chance to route this task - a
+                            // Route.Invalid there is expected, transient
+                            // search state, not a defect. WriteJSONFile's
+                            // validateFinal escalates when it matters: the
+                            // actual delivered plan.
+                            logger.LogDebug(
+                                "Move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it (RouteInvalid={RouteInvalid}). See issue #24.",
                                 moveaction.ShuntingUnit.Id,
                                 moveaction.Location,
                                 moveaction.StartTime,
-                                moveaction.EndTime
+                                moveaction.EndTime,
+                                routeInvalid
                             );
                         }
                         // add to plan
@@ -1278,12 +1345,25 @@ namespace ServiceSiteScheduling.Solutions
                             }
                             else
                             {
-                                logger.LogWarning(
-                                    "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it. The delivered plan does not correctly represent this move. See issue #24.",
+                                bool routeInvalid = ReferenceEquals(route, Route.Invalid);
+                                this.zeroResourceMoves.Add(
+                                    (
+                                        moveaction.ShuntingUnit.Id,
+                                        moveaction.Location,
+                                        moveaction.StartTime,
+                                        moveaction.EndTime,
+                                        routeInvalid
+                                    )
+                                );
+                                // Debug, not Warning - see the matching comment
+                                // on the arrival/general routing case above.
+                                logger.LogDebug(
+                                    "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it (RouteInvalid={RouteInvalid}). See issue #24.",
                                     moveaction.ShuntingUnit.Id,
                                     moveaction.Location,
                                     moveaction.StartTime,
-                                    moveaction.EndTime
+                                    moveaction.EndTime,
+                                    routeInvalid
                                 );
                             }
                             // add to plan
