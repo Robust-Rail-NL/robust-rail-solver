@@ -21,4 +21,10 @@ LABEL org.opencontainers.image.source="https://github.com/Robust-Rail-NL/robust-
 WORKDIR /app
 RUN mkdir -p /app/tmp_plans && chmod 777 /app/tmp_plans
 COPY --from=build /publish .
+# The no-config run (see Program.cs) reads "../example_kleine_binckhorst",
+# relative to the working directory it expects to run from — ServiceSiteScheduling/
+# locally, /app here. "fixtures" is a named build context (passed via
+# --build-context in docker-push.sh) pointing at the repo-root fixture
+# directory, which sits outside this Dockerfile's own build context.
+COPY --from=fixtures . /example_kleine_binckhorst
 ENTRYPOINT ["dotnet", "ServiceSiteScheduling.dll"]

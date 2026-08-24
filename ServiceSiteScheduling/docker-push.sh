@@ -55,6 +55,7 @@ docker buildx build \
     --builder "$BUILDER_NAME" \
     --platform linux/amd64,linux/arm64 \
     --build-arg "VERSION=$VERSION" \
+    --build-context fixtures=../example_kleine_binckhorst \
     "${TAGS[@]}" \
     --push \
     .
@@ -67,6 +68,7 @@ docker buildx build \
     --platform linux/amd64,linux/arm64 \
     --build-arg "VERSION=$VERSION" \
     --build-arg "ASSERTIONS=true" \
+    --build-context fixtures=../example_kleine_binckhorst \
     -t "$IMAGE:$VERSION-assert" \
     --push \
     .
