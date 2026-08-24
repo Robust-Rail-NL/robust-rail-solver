@@ -37,6 +37,36 @@ namespace ServiceSiteScheduling.Parking
             task.State.HasDeparted = true;
         }
 
+        /// <summary>
+        /// Splits <paramref name="task"/> into <paramref name="parts"/> without moving
+        /// anything: the parts take over the stretch of track the whole train occupied,
+        /// in the same order and between the same neighbours.
+        ///
+        /// This is deliberately not a Depart followed by an Arrive per part. Arriving
+        /// adds at one end of the track, so a train standing in the middle would have
+        /// its parts teleported to the end — right only if it had driven out and back.
+        /// The total length on the track does not change, so nothing else has to.
+        /// </summary>
+        /// <param name="parts">In A-to-B order, so the first ends up nearest A.</param>
+        public virtual void SplitInPlace(TrackTask task, IList<TrackTask> parts)
+        {
+            var whole = task.State;
+            whole.ComputeCrossings();
+
+            var states = new List<State>(parts.Count);
+            foreach (var part in parts)
+            {
+                part.ReclaimOwnState();
+                part.State.TrackOccupation = this;
+                part.State.HasArrived = true;
+                this.States.Add(part.State);
+                states.Add(part.State);
+            }
+
+            this.StateDeque.Replace(whole, states);
+            whole.HasDeparted = true;
+        }
+
         public virtual void UpdateDepartureOrder(
             IList<TrackTask> tasks,
             ShuntTrain train,

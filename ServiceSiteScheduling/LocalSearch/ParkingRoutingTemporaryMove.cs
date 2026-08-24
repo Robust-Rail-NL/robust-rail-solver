@@ -91,6 +91,7 @@ namespace ServiceSiteScheduling.LocalSearch
 
                 foreach (Tasks.TrackTask task in movetask.AllNext)
                 {
+                    // Strictly Parking: see the comment in ParkingInsertMove.
                     if (task.TaskType != Tasks.TrackTaskType.Parking)
                         continue;
 

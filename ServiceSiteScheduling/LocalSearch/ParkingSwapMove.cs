@@ -113,6 +113,7 @@ namespace ServiceSiteScheduling.LocalSearch
                     // Check if all tasks are parking tasks
                     if (
                         routing.Next.All(task =>
+                            // Strictly Parking: see the comment in ParkingInsertMove.
                             task.TaskType == Tasks.TrackTaskType.Parking
                             || (task as Tasks.ServiceTask)?.Type.LocationType
                                 == Servicing.ServiceLocationType.Free

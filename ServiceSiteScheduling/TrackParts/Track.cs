@@ -4,36 +4,17 @@ namespace ServiceSiteScheduling.TrackParts
 {
     class Track : Infrastructure
     {
-        public Infrastructure ASide;
-        public Infrastructure BSide;
+        public Infrastructure ASide { get; private set; }
+        public Infrastructure BSide { get; private set; }
 
-        public ServiceType[] Services;
-        public int Length;
-        public Side Access;
-        public bool CanReverse;
-        public int Index;
+        public readonly ServiceType[] Services;
+        public readonly int Length;
+        public Side Access { get; private set; }
+        public readonly bool CanReverse;
+        public readonly int Index;
         public bool IsActive;
 
-        public bool CanPark;
-
-        public Track(
-            ulong id,
-            string name,
-            ServiceType[] services,
-            int length,
-            Side access,
-            bool canpark,
-            bool canreverse
-        )
-            : base(id, name)
-        {
-            this.Services = services;
-            this.Length = length;
-            this.Access = access;
-            this.CanReverse = canreverse;
-            this.CanPark = canpark;
-            this.IsActive = canpark | canreverse;
-        }
+        public readonly bool CanPark;
 
         public Track(
             ulong id,
@@ -42,10 +23,19 @@ namespace ServiceSiteScheduling.TrackParts
             int length,
             Side access,
             bool canpark,
-            bool canreverse
+            bool canreverse,
+            int index
         )
-            : this(id, name, new ServiceType[1] { service }, length, access, canpark, canreverse)
-        { }
+            : base(id, name)
+        {
+            this.Services = [service];
+            this.Length = length;
+            this.Access = access;
+            this.CanReverse = canreverse;
+            this.CanPark = canpark;
+            this.IsActive = canpark | canreverse;
+            this.Index = index;
+        }
 
         public Side GetSide(Infrastructure needle)
         {

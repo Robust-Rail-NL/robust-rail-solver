@@ -117,6 +117,8 @@ namespace ServiceSiteScheduling.LocalSearch
 
                 foreach (Tasks.TrackTask task in movetask.AllNext)
                 {
+                    // Strictly Parking: a StandIn/StandOut task is pinned to the track
+                    // and time its scenario dictates and must not be moved.
                     if (task.TaskType != Tasks.TrackTaskType.Parking)
                         continue;
 

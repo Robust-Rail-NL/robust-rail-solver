@@ -1,7 +1,12 @@
-﻿using ServiceSiteScheduling.Servicing;
+﻿using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
+using ServiceSiteScheduling.Servicing;
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
+using Switch = ServiceSiteScheduling.TrackParts.Switch;
 
 namespace ServiceSiteScheduling
 {
@@ -24,10 +29,10 @@ namespace ServiceSiteScheduling
         public Dictionary<TrainType, List<DepartureTrain>> DeparturesByType;
         public DepartureTrain[] DeparturesOrdered;
 
-        public AlgoIface.Location InterfaceLocation;
-        public AlgoIface.Scenario InterfaceScenario;
-        public Dictionary<TrainUnit, AlgoIface.TrainUnit> TrainUnitConversion;
-        public Dictionary<ServiceType, AlgoIface.Facility> FacilityConversion;
+        public Interchange.Location InterfaceLocation;
+        public Interchange.Scenario InterfaceScenario;
+        public Dictionary<TrainUnit, Interchange.IncomingTrainUnit> TrainUnitConversion;
+        public Dictionary<ServiceType, Interchange.Facility> FacilityConversion;
         public Dictionary<ulong, TrackSwitchContainer> GatewayConversion;
 
         public Service[][] FreeServices;
@@ -85,20 +90,29 @@ namespace ServiceSiteScheduling
 
         public static ProblemInstance ParseJson(string locationpath, string scenariopath)
         {
-            AlgoIface.Location location;
+            JsonSerializerOptions options = new()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                Converters = { new JsonStringEnumConverter() },
+            };
+
+            Console.WriteLine($"Parsing JSON location from {locationpath}");
+            Interchange.Location location;
             using (var input = File.OpenRead(locationpath))
             using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
-                location = AlgoIface.Location.Parser.ParseJson(jsonContent);
+                location = JsonSerializer.Deserialize<Interchange.Location>(jsonContent, options);
             }
 
-            AlgoIface.Scenario scenario;
+            Console.WriteLine($"Parsing JSON scenario from {scenariopath}");
+            Interchange.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
             using (StreamReader reader = new(input))
             {
                 string jsonContent = reader.ReadToEnd();
-                scenario = AlgoIface.Scenario.Parser.ParseJson(jsonContent);
+                scenario = JsonSerializer.Deserialize<Interchange.Scenario>(jsonContent, options);
             }
 
             return Parse(location, scenario);
@@ -106,31 +120,62 @@ namespace ServiceSiteScheduling
 
         public static ProblemInstance Parse(string locationpath, string scenariopath)
         {
-            AlgoIface.Location location;
+            Interchange.Location location;
             using (var input = File.OpenRead(locationpath))
-                location = AlgoIface.Location.Parser.ParseFrom(input);
+                location = JsonSerializer.Deserialize<Interchange.Location>(input);
 
-            AlgoIface.Scenario scenario;
+            Interchange.Scenario scenario;
             using (var input = File.OpenRead(scenariopath))
-                scenario = AlgoIface.Scenario.Parser.ParseFrom(input);
+                scenario = JsonSerializer.Deserialize<Interchange.Scenario>(input);
 
             return Parse(location, scenario);
         }
 
+        // Warn-and-continue: a missing or unexpected schemaVersion is logged,
+        // never a hard reject. Internal (rather than private) so tests can
+        // exercise it directly without going through a full Parse().
+        //
+        // The logger is a parameter so that tests can read back what was
+        // written instead of only checking that nothing threw. Passing one
+        // rather than swapping the static factory keeps it safe under xUnit's
+        // parallelism: there is no shared state to race on.
+        internal static void WarnOnSchemaVersionMismatch(
+            string modelName,
+            int? version,
+            ILogger logger = null
+        )
+        {
+            logger ??= Logging.GetLogger();
+            if (version is null)
+            {
+                logger.LogWarning(
+                    "{ModelName}: schemaVersion is missing; assuming {Expected}.",
+                    modelName,
+                    Interchange.InterchangeSchema.ExpectedVersion
+                );
+            }
+            else if (version != Interchange.InterchangeSchema.ExpectedVersion)
+            {
+                logger.LogWarning(
+                    "{ModelName}: schemaVersion {Actual} does not match expected {Expected}.",
+                    modelName,
+                    version,
+                    Interchange.InterchangeSchema.ExpectedVersion
+                );
+            }
+        }
+
         public static ProblemInstance Parse(
-            AlgoIface.Location location,
-            AlgoIface.Scenario scenario,
+            Interchange.Location location,
+            Interchange.Scenario scenario,
             int debugLevel = 0
         )
         {
-            ProblemInstance instance = new();
+            WarnOnSchemaVersionMismatch("Location", location.SchemaVersion);
+            WarnOnSchemaVersionMismatch("Scenario", scenario.SchemaVersion);
 
-            // only for database/*.dat
-            bool include94139414 = false;
-            bool include24082409 = false;
-            bool include2610 = false;
-            bool include2611 = false;
-            bool noservices = false;
+            //debugLevel = 2;
+            ProblemInstance instance = new();
 
             // Get start and end time of the scenario
             // this is needed sice the start time will be associated with the arrival time
@@ -153,39 +198,44 @@ namespace ServiceSiteScheduling
             {
                 switch (part.Type)
                 {
-                    case AlgoIface.TrackPartType.RailRoad:
+                    case Interchange.TrackPartType.RailRoad:
                         Track track = new(
                             part.Id,
                             part.Name,
                             ServiceType.None,
-                            (int)part.Length,
+                            (int)(part.Length ?? 0),
                             Side.None,
                             part.ParkingAllowed,
-                            part.SawMovementAllowed
+                            part.SawMovementAllowed,
+                            index++
                         );
-                        track.Index = index++;
                         tracks.Add(track);
                         infrastructuremap[part.Id] = track;
                         break;
-                    case AlgoIface.TrackPartType.Switch:
+                    case Interchange.TrackPartType.Switch:
                         infrastructuremap[part.Id] = new Switch(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.EnglishSwitch:
+                    case Interchange.TrackPartType.EnglishSwitch:
                         infrastructuremap[part.Id] = new EnglishSwitch(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.HalfEnglishSwitch:
+                    case Interchange.TrackPartType.HalfEnglishSwitch:
                         infrastructuremap[part.Id] = new HalfEnglishSwitch(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.Intersection:
+                    case Interchange.TrackPartType.Intersection:
                         infrastructuremap[part.Id] = new Intersection(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.Bumper:
+                    case Interchange.TrackPartType.Bumper:
                         var gateway = new GateWay(part.Id, part.Name);
                         infrastructuremap[part.Id] = gateway;
                         gateways.Add(gateway);
                         break;
                     default:
-                        break;
+                        Logging
+                            .GetLogger()
+                            .LogWarning(
+                                $"No TrackPartType set for TrackPart {part.Name} ({part.Id}); assuming RailRoad"
+                            );
+                        goto case Interchange.TrackPartType.RailRoad;
                 }
             }
             instance.Tracks = tracks.ToArray();
@@ -199,93 +249,101 @@ namespace ServiceSiteScheduling
 
                 switch (part.Type)
                 {
-                    case AlgoIface.TrackPartType.RailRoad:
+                    case Interchange.TrackPartType.RailRoad:
                         Track track = infrastructuremap[part.Id] as Track;
                         Infrastructure A = null,
                             B = null;
-                        if (part.ASide.Count > 0)
-                            infrastructuremap.TryGetValue(part.ASide.First(), out A);
-                        if (part.BSide.Count > 0)
-                            infrastructuremap.TryGetValue(part.BSide.First(), out B);
+                        if (part.ASide.Length > 0)
+                        {
+                            infrastructuremap.TryGetValue(part.ASide[0], out A);
+                        }
+                        if (part.BSide.Length > 0)
+                            infrastructuremap.TryGetValue(part.BSide[0], out B);
                         track.Connect(A, B);
 
                         break;
-                    case AlgoIface.TrackPartType.Switch:
+                    case Interchange.TrackPartType.Switch:
                         Switch @switch = infrastructuremap[part.Id] as Switch;
-                        if (part.ASide.Count == 1)
+                        if (part.ASide.Length == 1)
                         { // A side is connected to two B side infrastructure
+                            Debug.Assert(part.BSide.Length == 2);
                             @switch.Connect(
-                                infrastructuremap[part.ASide.First()],
+                                infrastructuremap[part.ASide[0]],
                                 new Infrastructure[2]
                                 {
-                                    infrastructuremap[part.BSide.First()],
-                                    infrastructuremap[part.BSide.Last()],
+                                    infrastructuremap[part.BSide[0]],
+                                    infrastructuremap[part.BSide[1]],
                                 }
                             );
                         }
                         else
                         { // B side is connected to two A side infrastructure
+                            Debug.Assert(part.ASide.Length == 2);
                             @switch.Connect(
-                                infrastructuremap[part.BSide.First()],
+                                infrastructuremap[part.BSide[0]],
                                 new Infrastructure[2]
                                 {
-                                    infrastructuremap[part.ASide.First()],
-                                    infrastructuremap[part.ASide.Last()],
+                                    infrastructuremap[part.ASide[0]],
+                                    infrastructuremap[part.ASide[1]],
                                 }
                             );
                         }
 
                         break;
-                    case AlgoIface.TrackPartType.EnglishSwitch:
+                    case Interchange.TrackPartType.EnglishSwitch:
                         EnglishSwitch englishswitch = infrastructuremap[part.Id] as EnglishSwitch;
                         englishswitch.Connect(
                             part.ASide.Select(neighbor => infrastructuremap[neighbor]).ToList(),
                             part.BSide.Select(neighbor => infrastructuremap[neighbor]).ToList()
                         );
                         break;
-                    case AlgoIface.TrackPartType.HalfEnglishSwitch:
+                    case Interchange.TrackPartType.HalfEnglishSwitch:
+                        Debug.Assert(part.ASide.Length == 2);
+                        Debug.Assert(part.BSide.Length == 2);
                         HalfEnglishSwitch halfenglishswitch =
                             infrastructuremap[part.Id] as HalfEnglishSwitch;
                         halfenglishswitch.Connect(
-                            infrastructuremap[part.ASide.First()],
-                            infrastructuremap[part.ASide.Last()],
-                            infrastructuremap[part.BSide.First()],
-                            infrastructuremap[part.BSide.Last()]
+                            infrastructuremap[part.ASide[0]],
+                            infrastructuremap[part.ASide[1]],
+                            infrastructuremap[part.BSide[0]],
+                            infrastructuremap[part.BSide[1]]
                         );
                         break;
-                    case AlgoIface.TrackPartType.Intersection:
+                    case Interchange.TrackPartType.Intersection:
+                        Debug.Assert(part.ASide.Length == 2);
+                        Debug.Assert(part.BSide.Length == 2);
                         Intersection intersection = infrastructuremap[part.Id] as Intersection;
                         intersection.Connect(
-                            infrastructuremap[part.ASide.First()],
-                            infrastructuremap[part.BSide.Last()],
-                            infrastructuremap[part.ASide.Last()],
-                            infrastructuremap[part.BSide.First()]
+                            infrastructuremap[part.ASide[0]],
+                            infrastructuremap[part.BSide[1]],
+                            infrastructuremap[part.ASide[1]],
+                            infrastructuremap[part.BSide[0]]
                         );
                         break;
-                    case AlgoIface.TrackPartType.Bumper:
+                    case Interchange.TrackPartType.Bumper:
                         GateWay gateway = infrastructuremap[part.Id] as GateWay;
 
                         if (debugLevel > 1)
                         {
                             Console.WriteLine($"gateway : {gateway}");
                         }
-                        if (part.ASide.Count != 0)
+                        if (part.ASide.Length != 0)
                         {
                             if (debugLevel > 1)
                             {
                                 Console.WriteLine($"Track part A: {part.Id}");
                                 Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
                             }
-                            gateway.Connect(infrastructuremap[part.ASide.First()]);
+                            gateway.Connect(infrastructuremap[part.ASide[0]]);
                         }
-                        else if (part.BSide.Count != 0)
+                        else if (part.BSide.Length != 0)
                         {
                             if (debugLevel > 1)
                             {
                                 Console.WriteLine($"Track part B: {part.Id}");
                                 Console.WriteLine($"Infra: {infrastructuremap[part.Id]}");
                             }
-                            gateway.Connect(infrastructuremap[part.BSide.First()]);
+                            gateway.Connect(infrastructuremap[part.BSide[0]]);
                         }
                         else
                         { // Remove gateway from gateways dict
@@ -293,7 +351,7 @@ namespace ServiceSiteScheduling
                         }
                         break;
                     default:
-                        break;
+                        goto case Interchange.TrackPartType.RailRoad;
                 }
             }
             Dictionary<GateWay, TrackSwitchContainer> gatewayconnections = [];
@@ -312,15 +370,16 @@ namespace ServiceSiteScheduling
                 }
             }
 
-            Dictionary<AlgoIface.TaskType, ServiceType> taskmap = [];
+            // LP FIXME shouldn't we also iterate over InStanding here?
+            Dictionary<Interchange.TaskType, ServiceType> taskmap = [];
             var tasktypes = scenario
-                .In.Trains.Aggregate(
-                    new List<AlgoIface.TaskType>(),
+                .In.Aggregate(
+                    new List<Interchange.TaskType>(),
                     (list, train) =>
                     {
                         list.AddRange(
                             train.Members.Aggregate(
-                                new List<AlgoIface.TaskType>(),
+                                new List<Interchange.TaskType>(),
                                 (l, unit) =>
                                 {
                                     l.AddRange(unit.Tasks.Select(task => task.Type));
@@ -361,7 +420,7 @@ namespace ServiceSiteScheduling
                 }
 
                 var facilitytracks = new List<Track>();
-                foreach (var part in facility.RelatedTrackParts)
+                foreach (var part in facility.RelatedTrackPartIDs)
                 {
                     if (infrastructuremap.TryGetValue(part, out Infrastructure infra))
                     {
@@ -382,7 +441,9 @@ namespace ServiceSiteScheduling
                     {
                         var crew = new ServiceCrew(
                             "crew " + i,
-                            facility.TaskTypes.Select(type => taskmap[type])
+                            facility
+                                .TaskTypes.AsQueryable<Interchange.TaskType>()
+                                .Select(type => taskmap[type])
                         );
                         crews.Add(crew);
                     }
@@ -431,57 +492,32 @@ namespace ServiceSiteScheduling
             List<TrainType> traintypes = [];
             List<TrainUnit> trainunits = [];
             List<ArrivalTrain> arrivals = [];
-            Dictionary<AlgoIface.TrainUnitType, TrainType> traintypemap = [];
-            Dictionary<string, TrainUnit> trainunitmap = [];
+            Dictionary<(string TypePrefix, uint Carriages), TrainType> traintypemap = [];
+            Dictionary<uint, TrainUnit> trainunitmap = [];
             instance.TrainUnitConversion = [];
             instance.GatewayConversion = [];
             var freeservicelists = new List<Service[]>();
-            foreach (var arrivaltrain in scenario.In.Trains)
+
+            foreach (var tut in scenario.TrainUnitTypes)
             {
-                var currenttrainunits = new List<TrainUnit>();
-                foreach (var unit in arrivaltrain.Members)
-                {
-                    if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType type))
-                    {
-                        var name =
-                            $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
-                        type = new(
-                            traintypes.Count,
-                            name,
-                            (int)unit.TrainUnit.Type.Length,
-                            instance.Tracks.Where(t => t.CanPark).ToArray(),
-                            (int)unit.TrainUnit.Type.BackNormTime,
-                            (int)unit.TrainUnit.Type.BackAdditionTime
-                                * (int)unit.TrainUnit.Type.Carriages,
-                            (int)unit.TrainUnit.Type.CombineDuration,
-                            (int)unit.TrainUnit.Type.SplitDuration
-                        );
-                        traintypes.Add(type);
-                        traintypemap[unit.TrainUnit.Type] = type;
-                    }
-                    TrainUnit trainunit = new(
-                        unit.TrainUnit.Id,
-                        trainunits.Count,
-                        type,
-                        unit.Tasks.Where(task =>
-                                taskmap[task.Type].LocationType == ServiceLocationType.Fixed
-                            )
-                            .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
-                            .ToArray(),
-                        instance.ServiceTypes
-                    );
-                    trainunits.Add(trainunit);
-                    currenttrainunits.Add(trainunit);
-                    trainunitmap[unit.TrainUnit.Id] = trainunit;
-                    instance.TrainUnitConversion[trainunit] = unit.TrainUnit;
-                    freeservicelists.Add(
-                        unit.Tasks.Where(task =>
-                                taskmap[task.Type].LocationType == ServiceLocationType.Free
-                            )
-                            .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
-                            .ToArray()
-                    );
-                }
+                var name = tut.TypePrefix;
+                TrainType type = new(
+                    traintypes.Count,
+                    name,
+                    (int)tut.Length,
+                    instance.Tracks.Where(t => t.CanPark).ToArray(),
+                    (int)tut.BackNormTime,
+                    (int)tut.BackAdditionTime * (int)tut.Carriages,
+                    (int)tut.CombineDuration,
+                    (int)tut.SplitDuration
+                );
+                traintypes.Add(type);
+                traintypemap[tut.TypeDisplayName()] = type;
+            }
+
+            foreach (var arrivaltrain in scenario.In)
+            {
+                var currenttrainunits = GetTrainUnits(arrivaltrain);
 
                 if (debugLevel > 1)
                 {
@@ -524,123 +560,83 @@ namespace ServiceSiteScheduling
 
             // Consider the instanding trains as arrival (incoming) trains
             // the time of arrival of these trains is set to the start time of the scenario
-            // TODO: check scenario of two instanding trains maybe conflict will happen
-            // because of the same arrival times ?
 
-            int artificialTimeScale = 0;
-            if (scenario.InStanding != null)
+            // The solver does not yet order multiple inStanding trains sharing a track
+            // (see solver#18); reject such scenarios rather than silently guessing an
+            // order that may not match the one the scenario intends.
+            foreach (var group in (scenario.InStanding ?? []).GroupBy(t => t.FirstParkingTrackPart))
             {
-                foreach (var arrivaltrain in scenario.InStanding.Trains)
+                if (group.Count() > 1)
                 {
-                    var currenttrainunits = new List<TrainUnit>();
-                    foreach (var unit in arrivaltrain.Members)
-                    {
-                        if (!traintypemap.TryGetValue(unit.TrainUnit.Type, out TrainType type))
-                        {
-                            var name =
-                                $"{unit.TrainUnit.Type.DisplayName}-{unit.TrainUnit.Type.Carriages}";
-                            type = new(
-                                traintypes.Count,
-                                name,
-                                (int)unit.TrainUnit.Type.Length,
-                                instance.Tracks.Where(t => t.CanPark).ToArray(),
-                                (int)unit.TrainUnit.Type.BackNormTime,
-                                (int)unit.TrainUnit.Type.BackAdditionTime
-                                    * (int)unit.TrainUnit.Type.Carriages,
-                                (int)unit.TrainUnit.Type.CombineDuration,
-                                (int)unit.TrainUnit.Type.SplitDuration
-                            );
-                            traintypes.Add(type);
-                            traintypemap[unit.TrainUnit.Type] = type;
-                        }
-                        TrainUnit trainunit = new(
-                            unit.TrainUnit.Id,
-                            trainunits.Count,
-                            type,
-                            unit.Tasks.Where(task =>
-                                    taskmap[task.Type].LocationType == ServiceLocationType.Fixed
-                                )
-                                .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
-                                .ToArray(),
-                            instance.ServiceTypes
-                        );
-                        trainunits.Add(trainunit);
-                        currenttrainunits.Add(trainunit);
-                        trainunitmap[unit.TrainUnit.Id] = trainunit;
-                        instance.TrainUnitConversion[trainunit] = unit.TrainUnit;
-                        freeservicelists.Add(
-                            unit.Tasks.Where(task =>
-                                    taskmap[task.Type].LocationType == ServiceLocationType.Free
-                                )
-                                .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
-                                .ToArray()
-                        );
-                    }
+                    throw new NotSupportedException(
+                        $"Track part {group.Key} has {group.Count()} inStanding trains. "
+                            + "The solver does not yet support multiple inStanding trains on the same track (see solver#18)."
+                    );
+                }
+            }
 
+            foreach (var arrivaltrain in scenario.InStanding ?? [])
+            {
+                var currenttrainunits = GetTrainUnits(arrivaltrain);
+
+                if (debugLevel > 1)
+                {
+                    Console.WriteLine(
+                        $"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}"
+                    );
+                }
+
+                if (infrastructuremap[arrivaltrain.EntryTrackPart] is GateWay gateway)
+                {
                     if (debugLevel > 1)
                     {
                         Console.WriteLine(
-                            $"Track part : {infrastructuremap[arrivaltrain.EntryTrackPart]}"
+                            $"************ Start time: {(int)instance.ScenarioStartTime}"
                         );
                     }
+                    var connection = gatewayconnections[gateway];
+                    instance.GatewayConversion[connection.Track.ID] = connection;
+                    var side = connection.Track.GetSide(
+                        connection.Path[connection.Path.Length - 2]
+                    );
+                    var train = new ArrivalTrain(
+                        currenttrainunits.ToArray(),
+                        connection.Track,
+                        Side.None,
+                        (int)instance.ScenarioStartTime,
+                        true,
+                        arrivaltrain.StandingIndex ?? 0
+                    );
+                    arrivals.Add(train);
 
-                    if (infrastructuremap[arrivaltrain.EntryTrackPart] is GateWay gateway)
+                    if (debugLevel > 1)
                     {
-                        if (debugLevel > 1)
-                        {
-                            Console.WriteLine(
-                                $"************ Start time: {(int)instance.ScenarioStartTime}"
-                            );
-                        }
-                        var connection = gatewayconnections[gateway];
-                        instance.GatewayConversion[connection.Track.ID] = connection;
-                        var side = connection.Track.GetSide(
-                            connection.Path[connection.Path.Length - 2]
-                        );
-
-                        var train = new ArrivalTrain(
-                            currenttrainunits.ToArray(),
-                            connection.Track,
-                            Side.None,
-                            (int)instance.ScenarioStartTime,
-                            true,
-                            arrivaltrain.StandingIndex
-                        );
-                        artificialTimeScale++;
-                        arrivals.Add(train);
-
-                        if (debugLevel > 1)
-                        {
-                            Console.WriteLine($"connection :{connection}");
-                            Console.WriteLine($"gateway :{gateway}");
-                            Console.WriteLine($"side :{side}");
-                            Console.WriteLine($"connection.Track :{connection.Track}");
-                        }
+                        Console.WriteLine($"connection :{connection}");
+                        Console.WriteLine($"gateway :{gateway}");
+                        Console.WriteLine($"side :{side}");
+                        Console.WriteLine($"connection.Track :{connection.Track}");
                     }
-                    else
+                }
+                else
+                {
+                    var infra = infrastructuremap[arrivaltrain.FirstParkingTrackPart] as Track;
+
+                    // Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
+                    // TODO : add switch statement for more infratype
+                    if (debugLevel > 1)
                     {
-                        var infra = infrastructuremap[arrivaltrain.FirstParkingTrackPart] as Track;
-
-                        // Switch @switch = infrastructuremap[departuretrain.LeaveTrackPart] as Switch;
-                        // TODO : add switch statement for more infratype
-                        if (debugLevel > 1)
-                        {
-                            Console.WriteLine(
-                                $">>>>> Arrival Infra Access: {infra} - {infra.Access}"
-                            );
-                        }
-
-                        var train = new ArrivalTrain(
-                            currenttrainunits.ToArray(),
-                            infra,
-                            infra.Access,
-                            (int)instance.ScenarioStartTime,
-                            true,
-                            arrivaltrain.StandingIndex
-                        );
-                        artificialTimeScale++;
-                        arrivals.Add(train);
+                        Console.WriteLine($">>>>> Arrival Infra Access: {infra} - {infra.Access}");
                     }
+
+                    var train = new ArrivalTrain(
+                        currenttrainunits.ToArray(),
+                        infra,
+                        infra.Access,
+                        (int)instance.ScenarioStartTime,
+                        true,
+                        arrivaltrain.StandingIndex ?? 0
+                    );
+                    arrivals.Add(train);
                 }
             }
 
@@ -648,130 +644,6 @@ namespace ServiceSiteScheduling
             {
                 foreach (var arrival in arrivals)
                     Console.WriteLine($"Arrival train : {arrival}");
-            }
-
-            // only for harder instances
-            TrainUnit tu9413 = null,
-                tu9414 = null;
-            if (include94139414)
-            {
-                tu9413 = new TrainUnit(
-                    "9413",
-                    trainunits.Count,
-                    traintypes[2],
-                    new Service[1] { new(instance.ServiceTypes[2], 37 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                tu9414 = new TrainUnit(
-                    "9414",
-                    trainunits.Count + 1,
-                    traintypes[2],
-                    new Service[1] { new(instance.ServiceTypes[2], 37 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                var at94139414 = new ArrivalTrain(
-                    new TrainUnit[2] { tu9413, tu9414 },
-                    instance.Tracks[15],
-                    Side.A,
-                    26 * Time.Hour + 17 * Time.Minute
-                );
-                trainunits.Add(tu9413);
-                trainunits.Add(tu9414);
-
-                arrivals.Add(at94139414);
-
-                freeservicelists.Add(Array.Empty<Service>());
-                freeservicelists.Add(Array.Empty<Service>());
-            }
-            TrainUnit tu2408 = null,
-                tu2409 = null;
-            if (include24082409)
-            {
-                tu2408 = new TrainUnit(
-                    "2408",
-                    trainunits.Count,
-                    traintypes[0],
-                    new Service[1] { new(instance.ServiceTypes[2], 15 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                tu2409 = new TrainUnit(
-                    "2409",
-                    trainunits.Count + 1,
-                    traintypes[0],
-                    new Service[1] { new(instance.ServiceTypes[2], 15 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                var at24082409 = new ArrivalTrain(
-                    new TrainUnit[2] { tu2408, tu2409 },
-                    instance.Tracks[15],
-                    Side.A,
-                    24 * Time.Hour
-                );
-                trainunits.Add(tu2408);
-                trainunits.Add(tu2409);
-
-                arrivals.Add(at24082409);
-
-                freeservicelists.Add(Array.Empty<Service>());
-                freeservicelists.Add(Array.Empty<Service>());
-            }
-            TrainUnit tu2610 = null;
-            if (include2610)
-            {
-                tu2610 = new TrainUnit(
-                    "2610",
-                    trainunits.Count,
-                    traintypes[0],
-                    new Service[1] { new(instance.ServiceTypes[2], 20 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                var at2610 = new ArrivalTrain(
-                    new TrainUnit[1] { tu2610 },
-                    instance.Tracks[15],
-                    Side.A,
-                    24 * Time.Hour + 30 * Time.Minute
-                );
-                trainunits.Add(tu2610);
-
-                arrivals.Add(at2610);
-
-                freeservicelists.Add(Array.Empty<Service>());
-            }
-            TrainUnit tu2611 = null;
-            if (include2611)
-            {
-                tu2611 = new TrainUnit(
-                    "2611",
-                    trainunits.Count,
-                    traintypes[0],
-                    new Service[1] { new(instance.ServiceTypes[2], 20 * Time.Minute) },
-                    instance.ServiceTypes
-                );
-                var at2611 = new ArrivalTrain(
-                    new TrainUnit[1] { tu2611 },
-                    instance.Tracks[15],
-                    Side.A,
-                    24 * Time.Hour + 45 * Time.Minute
-                );
-                trainunits.Add(tu2611);
-
-                arrivals.Add(at2611);
-
-                freeservicelists.Add(Array.Empty<Service>());
-            }
-
-            // No services
-            if (noservices)
-            {
-                foreach (var unit in trainunits)
-                {
-                    unit.RequiredServices = Array.Empty<Service>();
-                    for (int i = 0; i < unit.ServiceDurations.Length; i++)
-                        unit.ServiceDurations[i] = 0;
-                }
-
-                for (int i = 0; i < freeservicelists.Count; i++)
-                    freeservicelists[i] = Array.Empty<Service>();
             }
 
             instance.TrainTypes = traintypes.ToArray();
@@ -846,12 +718,12 @@ namespace ServiceSiteScheduling
             instance.FreeServices = freeservicelists.ToArray();
 
             var departures = new List<DepartureTrain>();
-            foreach (var departuretrain in scenario.Out.TrainRequests)
+            foreach (var departuretrain in scenario.Out)
             {
                 var units = departuretrain.TrainUnits.Select(unit =>
-                    unit.Id == string.Empty
-                        ? new DepartureTrainUnit(traintypemap[unit.Type])
-                        : new DepartureTrainUnit(trainunitmap[unit.Id])
+                    unit.Id is null
+                        ? new DepartureTrainUnit(traintypemap[unit.TypeDisplayName()])
+                        : new DepartureTrainUnit(trainunitmap[unit.Id.Value])
                 );
 
                 if (infrastructuremap[departuretrain.LeaveTrackPart] is GateWay gateway)
@@ -881,14 +753,15 @@ namespace ServiceSiteScheduling
             // the time of departure of these trains is set to the end time of the scenario
             // TODO: check scenario of two outstanding trains maybe conflict will happen
             // because of the same departure times ?
+            // FIXME LP: the below code sometimes does a lookup by unit.Id, but I believe this is always (and should be) null for outstanding trains.
             if (scenario.OutStanding != null)
             {
-                foreach (var departuretrain in scenario.OutStanding.TrainRequests)
+                foreach (var departuretrain in scenario.OutStanding ?? [])
                 {
                     var units = departuretrain.TrainUnits.Select(unit =>
-                        unit.Id == string.Empty
-                            ? new DepartureTrainUnit(traintypemap[unit.Type])
-                            : new DepartureTrainUnit(trainunitmap[unit.Id])
+                        unit.Id is null
+                            ? new DepartureTrainUnit(traintypemap[unit.TypeDisplayName()])
+                            : new DepartureTrainUnit(trainunitmap[unit.Id.Value])
                     );
 
                     if (infrastructuremap[departuretrain.LeaveTrackPart] is GateWay gateway)
@@ -938,48 +811,6 @@ namespace ServiceSiteScheduling
                     Console.WriteLine($"Departure train : {departure}");
             }
 
-            // only for harder instance
-            if (include94139414)
-            {
-                var dt94139414 = new DepartureTrain(
-                    31 * Time.Hour + 17 * Time.Minute,
-                    new DepartureTrainUnit[2] { new(tu9413), new(tu9414) },
-                    instance.Tracks[15],
-                    Side.A
-                );
-                departures.Add(dt94139414);
-            }
-            if (include24082409)
-            {
-                var dt24082409 = new DepartureTrain(
-                    30 * Time.Hour + 30 * Time.Minute,
-                    new DepartureTrainUnit[2] { new(tu2408), new(tu2409) },
-                    instance.Tracks[15],
-                    Side.A
-                );
-                departures.Add(dt24082409);
-            }
-            if (include2610)
-            {
-                var dt2610 = new DepartureTrain(
-                    32 * Time.Hour + 10 * Time.Minute,
-                    new DepartureTrainUnit[1] { new(tu2610) },
-                    instance.Tracks[15],
-                    Side.A
-                );
-                departures.Add(dt2610);
-            }
-            if (include2611)
-            {
-                var dt2611 = new DepartureTrain(
-                    32 * Time.Hour + 30 * Time.Minute,
-                    new DepartureTrainUnit[1] { new(tu2611) },
-                    instance.Tracks[15],
-                    Side.A
-                );
-                departures.Add(dt2611);
-            }
-
             instance.DeparturesOrdered = departures.OrderBy(departure => departure.Time).ToArray();
             instance.FillDepartures();
 
@@ -999,6 +830,40 @@ namespace ServiceSiteScheduling
                 unit.ID = id++;
 
             return instance;
+
+            /// <summary>
+            /// Extracts the train unit types in the arrival train and returns the train units.
+            /// </summary>
+            List<TrainUnit> GetTrainUnits(Interchange.IncomingTrain arrivaltrain)
+            {
+                var currenttrainunits = new List<TrainUnit>();
+                foreach (var unit in arrivaltrain.Members)
+                {
+                    TrainUnit trainunit = new(
+                        unit.Id.ToString(),
+                        trainunits.Count,
+                        traintypemap[unit.TypeDisplayName()],
+                        unit.Tasks.Where(task =>
+                                taskmap[task.Type].LocationType == ServiceLocationType.Fixed
+                            )
+                            .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
+                            .ToArray(),
+                        instance.ServiceTypes
+                    );
+                    trainunits.Add(trainunit);
+                    currenttrainunits.Add(trainunit);
+                    trainunitmap[unit.Id] = trainunit;
+                    instance.TrainUnitConversion[trainunit] = unit;
+                    freeservicelists.Add(
+                        unit.Tasks.Where(task =>
+                                taskmap[task.Type].LocationType == ServiceLocationType.Free
+                            )
+                            .Select(task => new Service(taskmap[task.Type], (int)task.Duration))
+                            .ToArray()
+                    );
+                }
+                return currenttrainunits;
+            }
         }
     }
 }

@@ -6,11 +6,24 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <PlatformTarget>x64</PlatformTarget>
+    <NoWarn>$(NoWarn);IDE0305</NoWarn>
+    <Version>2.0.0-rc.4</Version>
+  </PropertyGroup>
+  <!--
+    Assertions are normally tied to the build configuration, forcing a choice
+    between optimised-but-unchecked and checked-but-slow. The solver is a
+    wall-clock-bounded local search, so a Debug build explores far fewer
+    neighbours per second and returns different, worse plans - which makes it
+    useless for integration testing. Building Release with DEBUG defined keeps
+    the optimisation and the plans identical while leaving Debug.Assert live,
+    so e.g. PlanGraph.CheckGraphStructure still runs.
+
+    Enable with: dotnet publish -c Release -p:Assertions=true
+  -->
+  <PropertyGroup Condition="'$(Assertions)' == 'true'">
+    <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.28.3" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
     <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />

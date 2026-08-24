@@ -1,5 +1,0 @@
-*************************************************************************************************************************
-Error in generating action (Exit: [2301]): The action is invalid. The shunting unit ShuntingUnit-33333 is already active. Active Actions: Move ShuntingUnit-33333 to rail_3 (route: rail_5 - switch_21 - rail_1 - switch_20 - rail_3)
-------------------------------------RESULT------------------------------------
-Scenario failed. Invalid action: The action is invalid. Error in generating action (Exit: [2301]): The action is invalid. The shunting unit ShuntingUnit-33333 is already active. Active Actions: Move ShuntingUnit-33333 to rail_3 (route: rail_5 - switch_21 - rail_1 - switch_20 - rail_3).
-------------------------------------------------------------------------------

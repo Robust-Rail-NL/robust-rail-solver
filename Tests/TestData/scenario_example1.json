@@ -1,0 +1,103 @@
+{
+    "schemaVersion": 1,
+    "startTime": 0,
+    "endTime": 72000,
+    "trainUnitTypes": [
+        {
+            "typePrefix": "SLT",
+            "carriages": 4,
+            "length": 69.36,
+            "combineDuration": 180,
+            "splitDuration": 120,
+            "backNormTime": 120,
+            "backAdditionTime": 16
+        },
+        {
+            "typePrefix": "SLT",
+            "carriages": 6,
+            "length": 100.54,
+            "combineDuration": 180,
+            "splitDuration": 120,
+            "backNormTime": 120,
+            "backAdditionTime": 15
+        },
+        {
+            "typePrefix": "SNG",
+            "carriages": 3,
+            "length": 59.5,
+            "combineDuration": 180,
+            "splitDuration": 120,
+            "backNormTime": 0,
+            "backAdditionTime": 0
+        }
+    ],
+    "in": [
+        {
+            "entryTrackPart": 13,
+            "firstParkingTrackPart": 4,
+            "arrival": 1500,
+            "departure": 1500,
+            "id": "11111",
+            "members": [
+                {
+                    "id": "2422",
+                    "typePrefix": "SLT",
+                    "carriages": 4,
+                    "tasks": [
+                        {
+                            "type": {
+                                "other": "Reinigingsperron"
+                            },
+                            "duration": 500
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "entryTrackPart": 10,
+            "firstParkingTrackPart": 5,
+            "arrival": 4000,
+            "departure": 4000,
+            "id": "33333",
+            "members": [
+                {
+                    "id": "2301",
+                    "typePrefix": "SNG",
+                    "carriages": 3,
+                    "tasks": []
+                }
+            ]
+        }
+    ],
+    "out": [
+        {
+            "leaveTrackPart": 12,
+            "lastParkingTrackPart": 3,
+            "arrival": 4500,
+            "departure": 4500,
+            "displayName": "33334",
+            "trainUnits": [
+                {
+                    "typePrefix": "SNG",
+                    "carriages": 3
+                }
+            ],
+            "standingIndex": null
+        },
+        {
+            "leaveTrackPart": 11,
+            "lastParkingTrackPart": 2,
+            "arrival": 2300,
+            "departure": 2300,
+            "displayName": "11112",
+            "trainUnits": [
+                {
+                    "typePrefix": "SLT",
+                    "carriages": 4
+                }
+            ],
+            "standingIndex": null
+        }
+    ]
+}

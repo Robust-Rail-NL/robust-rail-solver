@@ -1,0 +1,180 @@
+{
+    "schemaVersion": 1,
+    "trackParts": [
+        {
+            "id": "10",
+            "type": "Bumper",
+            "aSide": [
+                "5"
+            ],
+            "bSide": [],
+            "length": 0.0,
+            "name": "bumper_10",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false,
+            "isElectrified": true
+        },
+        {
+            "id": "11",
+            "type": "Bumper",
+            "aSide": [],
+            "bSide": [
+                "2"
+            ],
+            "length": 0.0,
+            "name": "bumper_11",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false,
+            "isElectrified": true
+        },
+        {
+            "id": "12",
+            "type": "Bumper",
+            "aSide": [],
+            "bSide": [
+                "3"
+            ],
+            "length": 0.0,
+            "name": "bumper_12",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false,
+            "isElectrified": true
+        },
+        {
+            "id": "13",
+            "type": "Bumper",
+            "aSide": [
+                "4"
+            ],
+            "bSide": [],
+            "length": 0.0,
+            "name": "bumper_13",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false,
+            "isElectrified": true
+        },
+        {
+            "id": "1",
+            "type": "RailRoad",
+            "aSide": [
+                "20"
+            ],
+            "bSide": [
+                "21"
+            ],
+            "length": 1000.0,
+            "name": "rail_1",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true,
+            "isElectrified": true
+        },
+        {
+            "id": "2",
+            "type": "RailRoad",
+            "aSide": [
+                "11"
+            ],
+            "bSide": [
+                "20"
+            ],
+            "length": 100.0,
+            "name": "rail_2",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true,
+            "isElectrified": true
+        },
+        {
+            "id": "3",
+            "type": "RailRoad",
+            "aSide": [
+                "12"
+            ],
+            "bSide": [
+                "20"
+            ],
+            "length": 100.0,
+            "name": "rail_3",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true,
+            "isElectrified": true
+        },
+        {
+            "id": "4",
+            "type": "RailRoad",
+            "aSide": [
+                "21"
+            ],
+            "bSide": [
+                "13"
+            ],
+            "length": 100.0,
+            "name": "rail_4",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true,
+            "isElectrified": true
+        },
+        {
+            "id": "5",
+            "type": "RailRoad",
+            "aSide": [
+                "21"
+            ],
+            "bSide": [
+                "10"
+            ],
+            "length": 100.0,
+            "name": "rail_5",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true,
+            "isElectrified": true
+        },
+        {
+            "id": "20",
+            "type": "Switch",
+            "aSide": [
+                "3",
+                "2"
+            ],
+            "bSide": [
+                "1"
+            ],
+            "length": 0.0,
+            "name": "switch_20",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false,
+            "isElectrified": true
+        },
+        {
+            "id": "21",
+            "type": "Switch",
+            "aSide": [
+                "1"
+            ],
+            "bSide": [
+                "4",
+                "5"
+            ],
+            "length": 0.0,
+            "name": "switch_21",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false,
+            "isElectrified": true
+        }
+    ],
+    "facilities": [
+        {
+            "id": "22",
+            "type": "Reinigingsperron",
+            "relatedTrackPartIDs": [
+                "1"
+            ],
+            "taskTypes": [
+                {
+                    "other": "Reinigingsperron"
+                }
+            ],
+            "simultaneousUsageCount": 1
+        }
+    ],
+    "taskTypes": []
+}

@@ -5,8 +5,10 @@ using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AlgoIface;
 
+// Shares the mutable static ProblemInstance.Current with the other tests that
+// build a plan, so it must not run alongside them.
+[Collection(InPlaceSplit.PlanBuilding.Name)]
 public class TestPlan(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
@@ -20,8 +22,8 @@ public class TestPlan(ITestOutputHelper output)
 
         // Where to get the input
         var test_data_path = Path.Combine(Directory.GetCurrentDirectory(), "TestData");
-        var location_path = Path.Combine(test_data_path, "location_solver_kleine_binckhorst.json");
-        var scenario_path = Path.Combine(test_data_path, "scenario_solver_setting_A.json");
+        var location_path = Path.Combine(test_data_path, "location_simple_service.json");
+        var scenario_path = Path.Combine(test_data_path, "scenario_example1.json");
         var config_file = Path.Combine(test_data_path, "config.yaml");
 
         // Now create a plan...
@@ -55,7 +57,7 @@ public class TestPlan(ITestOutputHelper output)
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        Converters = { new JsonStringEnumConverter() },
     };
 
     private bool JsonIsSorted(string json_file)

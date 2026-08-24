@@ -50,7 +50,10 @@ namespace ServiceSiteScheduling.Routing
             this.EmptyState = new BitSet(this.bitsize);
         }
 
-        public BitSet ConstructState(Parking.TrackOccupation[] trackstates, Trains.ShuntTrain train)
+        public BitSet ConstructState(
+            IEnumerable<Parking.TrackOccupation> trackstates,
+            Trains.ShuntTrain train
+        )
         {
             BitSet result = new(bitsize);
 

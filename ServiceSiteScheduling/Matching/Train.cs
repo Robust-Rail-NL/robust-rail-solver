@@ -1,20 +1,16 @@
-﻿using System.Collections;
+﻿#nullable enable
+
+using System.Collections;
 
 namespace ServiceSiteScheduling.Matching
 {
-    class Train : IEnumerable
+    class Train(Trains.DepartureTrain train, Unit[] units) : IEnumerable
     {
-        public Unit[] Units { get; private set; }
-        public Part[] Parts { get; set; }
-        public Trains.DepartureTrain Departure { get; private set; }
-        public Tasks.DepartureTask Task { get; set; }
-        public Tasks.DepartureRoutingTask Routing { get; set; }
-
-        public Train(Trains.DepartureTrain train, Unit[] units)
-        {
-            this.Departure = train;
-            this.Units = units;
-        }
+        public Unit[] Units { get; private set; } = units;
+        public Part[] Parts { get; set; } = null!;
+        public Trains.DepartureTrain Departure { get; private set; } = train;
+        public Tasks.TrackTask? Task { get; set; }
+        public Tasks.DepartureRoutingTask? Routing { get; set; }
 
         IEnumerator IEnumerable.GetEnumerator()
         {

@@ -28,11 +28,13 @@ namespace ServiceSiteScheduling.Trains
         {
             get
             {
+#pragma warning disable CS9236
                 if (this._serviceDuration == -1)
                     this._serviceDuration = this.Units.Sum(u =>
                         u.RequiredServices.Sum(t => t.Duration)
                     );
                 return this._serviceDuration;
+#pragma warning restore CS9236
             }
         }
 
@@ -88,14 +90,7 @@ namespace ServiceSiteScheduling.Trains
             foreach (var unit in units)
                 this.UnitBits[unit.Index] = true;
 
-            if (this.InStanding)
-            {
-                this.InStanding = true;
-            }
-            else
-            {
-                this.InStanding = inStanding;
-            }
+            this.InStanding = inStanding;
         }
 
         public ShuntTrain(ShuntTrain train, bool inStanding = false)
@@ -105,14 +100,7 @@ namespace ServiceSiteScheduling.Trains
             this.ParkingLocations = train.ParkingLocations;
             this.RoutingLocations = train.RoutingLocations;
             this.UnitBits = train.UnitBits;
-            if (train.InStanding)
-            {
-                this.InStanding = true;
-            }
-            else
-            {
-                this.InStanding = inStanding;
-            }
+            this.InStanding = inStanding;
         }
 
         public IEnumerable<IEnumerable<ShuntTrainUnit>> OrderedOverlap(ShuntTrain other)
@@ -184,13 +172,6 @@ namespace ServiceSiteScheduling.Trains
                 if (this.Units[i] != other.Units[i])
                     return false;
             return true;
-        }
-
-        // Returns if the train is an outstanding one which stays in the shunting yard after the scenario ends
-        // or if the train is an outstanding one which stays in the shunting yard after the scenario ends
-        public bool IsItInStanding()
-        {
-            return this.InStanding;
         }
     }
 }

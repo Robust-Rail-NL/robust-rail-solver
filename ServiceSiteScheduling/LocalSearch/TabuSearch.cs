@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using AlgoIface;
-using Google.Protobuf;
 using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Utilities;
 
@@ -20,12 +18,6 @@ namespace ServiceSiteScheduling.LocalSearch
             var graph = Initial.SimpleHeuristic.Construct(random, debugLevel);
             graph.Cost = graph.ComputeModel();
 
-            this.Graph = graph;
-            this.random = random;
-        }
-
-        public TabuSearch(Random random, PlanGraph graph)
-        {
             this.Graph = graph;
             this.random = random;
         }

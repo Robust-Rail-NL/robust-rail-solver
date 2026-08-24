@@ -1,8 +1,10 @@
-﻿namespace ServiceSiteScheduling.Matching
+﻿#nullable enable
+
+namespace ServiceSiteScheduling.Matching
 {
-    class Part
+    class Part(Unit[] units)
     {
-        public Unit[] Units { get; private set; }
+        public Unit[] Units { get; private set; } = units;
         public Trains.TrainType[] Types
         {
             get
@@ -16,19 +18,14 @@
         {
             get { return this.Units.Any(unit => unit.IsFixed); }
         }
-        public TrainMatching Matching { get; set; }
-        public Train Train
+        public TrainMatching Matching { get; set; } = null!;
+        public Train? Train
         {
             get { return this.Units[0].Train; }
         }
         public Trains.DepartureTrain DepartureTrain
         {
             get { return this.Units[0].Departure.Train; }
-        }
-
-        public Part(Unit[] units)
-        {
-            this.Units = units;
         }
     }
 }

@@ -8,6 +8,8 @@ namespace ServiceSiteScheduling.Tasks
         Departure,
         Service,
         Parking,
+        StandIn,
+        StandOut,
     }
 
     abstract class TrackTask
@@ -22,9 +24,27 @@ namespace ServiceSiteScheduling.Tasks
         public Side? ArrivalSide { get; set; }
         public TrackTaskType TaskType
         {
-            get { return this.tasktype; }
+            get => this.tasktype;
         }
         protected readonly TrackTaskType tasktype;
+
+        /// <summary>
+        /// True for tasks in which the train simply stands on a track: regular
+        /// parking, plus the StandIn/StandOut tasks that bookend inStanding and
+        /// outStanding trains.
+        /// <para>
+        /// Use this to ask "is the train standing still here?". Do NOT use it to
+        /// decide whether a local search operator may act on a task: a StandIn or
+        /// StandOut sits on the track and at the time the scenario dictates, so
+        /// relocating one produces a plan that contradicts its own scenario. Those
+        /// operators must test <c>TaskType == TrackTaskType.Parking</c> instead.
+        /// </para>
+        /// </summary>
+        public bool IsParkingLike =>
+            this.tasktype
+                is TrackTaskType.Parking
+                    or TrackTaskType.StandIn
+                    or TrackTaskType.StandOut;
 
         private Parking.State? OriginalState { get; set; }
 
@@ -40,10 +60,21 @@ namespace ServiceSiteScheduling.Tasks
 
         public override string ToString()
         {
-            return $"{this.Start} - {this.End} : {this.Train} at {this.Track.ID}";
+            return $"{this.Start} - {this.End} : {this.Train} at {this.Track?.ID.ToString() ?? "null"}";
         }
 
         public void Arrive(Parking.TrackOccupation track)
+        {
+            this.ReclaimOwnState();
+            track.Arrive(this);
+        }
+
+        /// <summary>
+        /// Takes back the State this task owns, undoing a <see cref="Replace"/> that
+        /// handed it another task's. Anything that puts this task on a track itself,
+        /// rather than letting it share, has to do this first.
+        /// </summary>
+        public void ReclaimOwnState()
         {
             if (this.OriginalState != null)
             {
@@ -51,8 +82,6 @@ namespace ServiceSiteScheduling.Tasks
                 this.State.Reset();
                 this.OriginalState = null;
             }
-
-            track.Arrive(this);
         }
 
         public void Depart(Parking.TrackOccupation track)

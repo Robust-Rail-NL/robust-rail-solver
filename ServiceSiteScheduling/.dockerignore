@@ -1,0 +1,9 @@
+bin/
+obj/
+*.~
+*.bak
+*~
+Dockerfile
+docker-push.sh
+bump-version.sh
+.dockerignore

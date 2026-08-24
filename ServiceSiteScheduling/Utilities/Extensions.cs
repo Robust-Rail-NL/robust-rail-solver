@@ -1,7 +1,31 @@
-﻿namespace ServiceSiteScheduling.Utilities
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace ServiceSiteScheduling.Utilities
 {
     public static class Extensions
     {
+        private static readonly JsonSerializerOptions serializerOptions = new()
+        {
+            // Numbers are written as plain JSON numbers, matching the
+            // generator's Pydantic output. Reading still tolerates the
+            // old-style quoted numbers for backward compatibility.
+            NumberHandling = JsonNumberHandling.AllowReadingFromString,
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            IndentCharacter = '\t',
+            IndentSize = 1,
+            // Enum values are written using their raw PascalCase C# names
+            // ("Move", "StandIn"), not camelCased ("move", "standIn") — this
+            // is a schema requirement, not a style preference.
+            Converters = { new JsonStringEnumConverter() },
+        };
+
+        public static string SerializeJson<T>(this T obj)
+        {
+            return JsonSerializer.Serialize(obj, serializerOptions);
+        }
+
         public static T1 MinItem<T1, T>(this IList<T1> elements, Func<T1, T> selector)
             where T : IComparable
         {

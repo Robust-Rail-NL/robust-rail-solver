@@ -100,7 +100,7 @@ namespace ServiceSiteScheduling.Solutions
             {
                 switch (part.Type)
                 {
-                    case AlgoIface.TrackPartType.RailRoad:
+                    case Interchange.TrackPartType.RailRoad:
                         Track track = new(
                             part.Id,
                             part.Name,
@@ -108,24 +108,24 @@ namespace ServiceSiteScheduling.Solutions
                             (int)part.Length,
                             Side.None,
                             part.ParkingAllowed,
-                            part.SawMovementAllowed
+                            part.SawMovementAllowed,
+                            index++
                         );
-                        track.Index = index++;
                         infrastructuremap[part.Id] = track;
                         break;
-                    case AlgoIface.TrackPartType.Switch:
+                    case Interchange.TrackPartType.Switch:
                         infrastructuremap[part.Id] = new Switch(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.EnglishSwitch:
+                    case Interchange.TrackPartType.EnglishSwitch:
                         infrastructuremap[part.Id] = new EnglishSwitch(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.HalfEnglishSwitch:
+                    case Interchange.TrackPartType.HalfEnglishSwitch:
                         infrastructuremap[part.Id] = new HalfEnglishSwitch(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.Intersection:
+                    case Interchange.TrackPartType.Intersection:
                         infrastructuremap[part.Id] = new Intersection(part.Id, part.Name);
                         break;
-                    case AlgoIface.TrackPartType.Bumper:
+                    case Interchange.TrackPartType.Bumper:
                         var gateway = new GateWay(part.Id, part.Name);
                         infrastructuremap[part.Id] = gateway;
                         break;
