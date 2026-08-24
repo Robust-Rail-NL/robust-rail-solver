@@ -1234,51 +1234,61 @@ namespace ServiceSiteScheduling.Solutions
                                 * (tasks.Count() - 1);
                         }
 
-                        // Add move
-                        var moveaction = new Interchange.Action
+                        // Add move. Only when the route actually travels - a route
+                        // whose departure track/side already match the unit's
+                        // current position is Route.EmptyRoute (Arcs=[], Duration=0,
+                        // see Graph.ComputeRoute), and emitting a Move for it would
+                        // collect zero resources (its only Arcs entry, and thus the
+                        // only thing the strip below has to remove, doesn't exist).
+                        // Mirrors the arrival/general routing case above, which
+                        // uses routing.NumberOfRoutes > 0 for the same purpose - see
+                        // #24, whose root cause was this missing guard.
+                        if (route.Duration > 0)
                         {
-                            Location = route.Tracks[0].ID,
-                            TaskType = TaskType.FromPredefined(Move),
-                            StartTime = (ulong)starttime,
-                            EndTime = (ulong)(starttime + route.Duration),
-                            ShuntingUnit = shuntingunit,
-                        };
-                        // add path
-                        Infrastructure? previous = null;
-                        foreach (var arc in route.Arcs)
-                        {
-                            foreach (var infra in arc.Path.Path)
+                            var moveaction = new Interchange.Action
                             {
-                                if (infra != previous)
+                                Location = route.Tracks[0].ID,
+                                TaskType = TaskType.FromPredefined(Move),
+                                StartTime = (ulong)starttime,
+                                EndTime = (ulong)(starttime + route.Duration),
+                                ShuntingUnit = shuntingunit,
+                            };
+                            // add path
+                            Infrastructure? previous = null;
+                            foreach (var arc in route.Arcs)
+                            {
+                                foreach (var infra in arc.Path.Path)
                                 {
-                                    var resource = Resource.FromInfra(infra);
-                                    moveaction.Resources.Add(resource);
+                                    if (infra != previous)
+                                    {
+                                        var resource = Resource.FromInfra(infra);
+                                        moveaction.Resources.Add(resource);
 
-                                    previous = infra;
+                                        previous = infra;
+                                    }
                                 }
                             }
+                            // remove first - the FromTrack entry every arc's path
+                            // starts with, redundant with Location above. Kept as a
+                            // guard (rather than assumed) since #24 hasn't ruled out
+                            // every route shape collecting only that one entry.
+                            if (moveaction.Resources.Count > 0)
+                            {
+                                moveaction.Resources.RemoveAt(0);
+                            }
+                            else
+                            {
+                                logger.LogWarning(
+                                    "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it. The delivered plan does not correctly represent this move. See issue #24.",
+                                    moveaction.ShuntingUnit.Id,
+                                    moveaction.Location,
+                                    moveaction.StartTime,
+                                    moveaction.EndTime
+                                );
+                            }
+                            // add to plan
+                            actions.Add(moveaction);
                         }
-                        // remove first - same gap as the arrival/general routing case
-                        // above (see #24), just already guarded here; add the
-                        // matching diagnostic so a departure-side occurrence is
-                        // traceable the same way. This is in fact the common case -
-                        // see #24's frequency findings.
-                        if (moveaction.Resources.Count > 0)
-                        {
-                            moveaction.Resources.RemoveAt(0);
-                        }
-                        else
-                        {
-                            logger.LogWarning(
-                                "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it. The delivered plan does not correctly represent this move. See issue #24.",
-                                moveaction.ShuntingUnit.Id,
-                                moveaction.Location,
-                                moveaction.StartTime,
-                                moveaction.EndTime
-                            );
-                        }
-                        // add to plan
-                        actions.Add(moveaction);
                         starttime += route.Duration;
                     }
                     var departureshuntunit = GetShuntUnit(departurerouting.Train, trainconversion);
