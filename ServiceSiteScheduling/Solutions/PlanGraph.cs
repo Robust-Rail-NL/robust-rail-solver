@@ -1070,18 +1070,35 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
+        // Classifies why a route collected zero resources, for the
+        // diagnostics below. Route.Invalid (Dijkstra found no path at all) is
+        // the one root cause confirmed so far - see #24. A route confined to
+        // a single track (e.g. reversing in place, never reaching a Switch
+        // arc whose Path carries the far end) is structurally the same kind
+        // of gap - every arc's Path is just [track], so the resource walk in
+        // ToPlan() only ever collects that one entry - but hasn't actually
+        // been observed reaching the delivered plan; it's named here so a
+        // future occurrence is recognisable rather than lumped in as
+        // "unexplained". Anything else genuinely is unexplained.
+        private static string ClassifyZeroResourceCause(Route route)
+        {
+            if (ReferenceEquals(route, Route.Invalid))
+                return "Route.Invalid: no feasible route was found";
+            if (route.Tracks.Length == 1)
+                return "single-track route (e.g. in-place reversal): every arc's Path resolves to just that one track";
+            return "UNKNOWN CAUSE - needs fresh investigation";
+        }
+
         // Populated by ToPlan() with every Move action it emitted that has no
-        // Resources (see #24), tagged with whether the underlying route was
-        // the known Route.Invalid sentinel (no feasible route found) or
-        // something else - the latter would mean a new, as yet unexplained
-        // cause and warrants fresh investigation rather than being assumed
-        // to be the same gap.
+        // Resources (see #24), tagged with the classification above so a
+        // genuinely new cause is distinguishable from the ones already
+        // understood.
         private readonly List<(
             ulong ShuntingUnitId,
             ulong? Location,
             ulong? StartTime,
             ulong? EndTime,
-            bool RouteInvalid
+            string Cause
         )> zeroResourceMoves = [];
 
         // @validateFinal: when true (only appropriate for the actual
@@ -1099,25 +1116,16 @@ namespace ServiceSiteScheduling.Solutions
 
             if (validateFinal && this.zeroResourceMoves.Count > 0)
             {
-                int knownCause = this.zeroResourceMoves.Count(m => m.RouteInvalid);
-                int unknownCause = this.zeroResourceMoves.Count - knownCause;
                 string details = string.Join(
                     "; ",
                     this.zeroResourceMoves.Select(m =>
-                        $"shunting unit {m.ShuntingUnitId} at {m.Location} from {m.StartTime} to {m.EndTime} "
-                        + (
-                            m.RouteInvalid
-                                ? "(known cause: no feasible route was found, Route.Invalid - see #24)"
-                                : "(UNKNOWN CAUSE - needs fresh investigation)"
-                        )
+                        $"shunting unit {m.ShuntingUnitId} at {m.Location} from {m.StartTime} to {m.EndTime} ({m.Cause})"
                     )
                 );
                 logger.LogError(
-                    "Delivered plan at {FilePath} has {Count} Move action(s) with no Resources ({KnownCause} known-cause / {UnknownCause} unexplained): {Details}",
+                    "Delivered plan at {FilePath} has {Count} Move action(s) with no Resources - see #24: {Details}",
                     filePath,
                     this.zeroResourceMoves.Count,
-                    knownCause,
-                    unknownCause,
                     details
                 );
                 Environment.Exit(1);
@@ -1223,31 +1231,30 @@ namespace ServiceSiteScheduling.Solutions
                         }
                         else
                         {
-                            bool routeInvalid = ReferenceEquals(routing.Route, Route.Invalid);
+                            string cause = ClassifyZeroResourceCause(routing.Route);
                             this.zeroResourceMoves.Add(
                                 (
                                     moveaction.ShuntingUnit.Id,
                                     moveaction.Location,
                                     moveaction.StartTime,
                                     moveaction.EndTime,
-                                    routeInvalid
+                                    cause
                                 )
                             );
                             // Debug, not Warning: this fires on every ToPlan()
                             // call, including the tmp_plans/ debug snapshots
                             // TabuSearch/SimulatedAnnealing write before the
-                            // search has had a chance to route this task - a
-                            // Route.Invalid there is expected, transient
-                            // search state, not a defect. WriteJSONFile's
-                            // validateFinal escalates when it matters: the
-                            // actual delivered plan.
+                            // search has had a chance to route this task -
+                            // this is expected, transient search state, not a
+                            // defect. WriteJSONFile's validateFinal escalates
+                            // when it matters: the actual delivered plan.
                             logger.LogDebug(
-                                "Move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it (RouteInvalid={RouteInvalid}). See issue #24.",
+                                "Move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it ({Cause}). See issue #24.",
                                 moveaction.ShuntingUnit.Id,
                                 moveaction.Location,
                                 moveaction.StartTime,
                                 moveaction.EndTime,
-                                routeInvalid
+                                cause
                             );
                         }
                         // add to plan
@@ -1345,25 +1352,25 @@ namespace ServiceSiteScheduling.Solutions
                             }
                             else
                             {
-                                bool routeInvalid = ReferenceEquals(route, Route.Invalid);
+                                string cause = ClassifyZeroResourceCause(route);
                                 this.zeroResourceMoves.Add(
                                     (
                                         moveaction.ShuntingUnit.Id,
                                         moveaction.Location,
                                         moveaction.StartTime,
                                         moveaction.EndTime,
-                                        routeInvalid
+                                        cause
                                     )
                                 );
                                 // Debug, not Warning - see the matching comment
                                 // on the arrival/general routing case above.
                                 logger.LogDebug(
-                                    "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it (RouteInvalid={RouteInvalid}). See issue #24.",
+                                    "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it ({Cause}). See issue #24.",
                                     moveaction.ShuntingUnit.Id,
                                     moveaction.Location,
                                     moveaction.StartTime,
                                     moveaction.EndTime,
-                                    routeInvalid
+                                    cause
                                 );
                             }
                             // add to plan
