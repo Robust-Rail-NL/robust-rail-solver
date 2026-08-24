@@ -1175,10 +1175,12 @@ namespace ServiceSiteScheduling.Solutions
                         }
                         else
                         {
-                            logger.LogError(
-                                "Move action for {ShuntingUnit} at {Location} has NumberOfRoutes > 0 but resolved zero resources; leaving Resources empty.",
+                            logger.LogWarning(
+                                "Move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it. The delivered plan does not correctly represent this move. See issue #24.",
                                 moveaction.ShuntingUnit.Id,
-                                moveaction.Location
+                                moveaction.Location,
+                                moveaction.StartTime,
+                                moveaction.EndTime
                             );
                         }
                         // add to plan
@@ -1267,10 +1269,12 @@ namespace ServiceSiteScheduling.Solutions
                         }
                         else
                         {
-                            logger.LogError(
-                                "Departure move action for {ShuntingUnit} at {Location} has a route but resolved zero resources; leaving Resources empty.",
+                            logger.LogWarning(
+                                "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it. The delivered plan does not correctly represent this move. See issue #24.",
                                 moveaction.ShuntingUnit.Id,
-                                moveaction.Location
+                                moveaction.Location,
+                                moveaction.StartTime,
+                                moveaction.EndTime
                             );
                         }
                         // add to plan
