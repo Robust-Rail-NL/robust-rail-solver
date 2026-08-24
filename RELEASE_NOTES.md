@@ -99,12 +99,25 @@ both fixed in this release.
   explores less of the neighbourhood in the same time budget and would
   produce different plans on any unconverged scenario.
 
+### Fixed after the initial tag
+
+`v2.0.0` was moved forward once, before any `2.0.0` images were built, to
+pick up one fix:
+
+- The no-config Docker run (`docker run hip:2.0.0` with no arguments)
+  crashed with an unhandled `DirectoryNotFoundException` (exit 139). The
+  fixture directory `example_kleine_binckhorst/` was never copied into the
+  image — the Dockerfile's build context is `ServiceSiteScheduling/`, and
+  the fixture lives one level up, outside it. Fixed via a named build
+  context (`docker-push.sh` now passes `--build-context
+  fixtures=../example_kleine_binckhorst`).
+
 ### Publishing
 
 The HIP image is versioned from `HIP.csproj`'s `<Version>` element and pushed
 to `ghcr.io/robust-rail-nl/hip` via `./ServiceSiteScheduling/docker-push.sh`
-(multi-arch: `linux/amd64`, `linux/arm64`). The `hip:2.0.0` tag points at the
-same image digest already verified as `2.0.0-rc.3` — re-tagged, not rebuilt,
-so the tag names exactly the bytes that were tested. `:latest` moves to
-`2.0.0` as the first stable tag of the release; it does not move for
-`-rc.*`/`-beta.*` builds.
+(multi-arch: `linux/amd64`, `linux/arm64`). `hip:2.0.0` is a real rebuild from
+source at the `v2.0.0` tag, not a re-tag of an `-rc.*` image — earlier `rc`
+images kept reporting their own prerelease version when run even after being
+re-tagged `2.0.0`, which this avoids. `:latest` moves to `2.0.0` as the first
+stable tag of the release; it does not move for `-rc.*`/`-beta.*` builds.
