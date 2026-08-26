@@ -98,14 +98,18 @@ namespace ServiceSiteScheduling
         }
 
         // The single source of truth is HIP.csproj's <Version> element; the SDK
-        // embeds it (including any prerelease suffix) as the assembly's
-        // AssemblyInformationalVersionAttribute. Source-linked builds append a
-        // "+<git-hash>" build-metadata suffix, which is stripped here.
+        // embeds it (including any prerelease suffix and build-metadata
+        // suffix, e.g. docker-push-edge.sh's <release>-edge+<date>.<sha>) as
+        // the assembly's AssemblyInformationalVersionAttribute, printed here
+        // verbatim. HIP.csproj disables the SDK's own automatic
+        // "+<git-sha>" suffix (IncludeSourceRevisionInInformationalVersion),
+        // so this is exactly whatever <Version> (or an overriding
+        // `-p:Version=`) said, nothing appended behind the scenes.
         internal static string Version =>
             Assembly
                 .GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                ?.InformationalVersion.Split('+')[0]
+                ?.InformationalVersion
             ?? "unknown";
 
         // Input:   @location_path: path to the location (.json) file
