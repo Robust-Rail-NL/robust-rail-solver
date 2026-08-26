@@ -3,7 +3,14 @@
 #
 # The version is read from HIP.csproj's <Version> element (the single
 # source of truth — use bump-version.sh to change it) and passed into the
-# image as a build-arg, so the Dockerfile LABEL never needs a separate edit.
+# image as a build-arg, so neither the Dockerfile LABEL nor the published
+# binary's own AssemblyInformationalVersionAttribute (what Program.cs prints
+# at startup) needs a separate edit — see the Dockerfile's VERSION ARG.
+#
+# See docker-push-edge.sh for the floating :edge tag published off the edge
+# branch — a different script, not a flag here, since it computes its version
+# string differently (a date+commit suffix, not HIP.csproj's <Version>) and
+# skips the -assert build entirely. See CONTRIBUTING.md for the edge channel.
 #
 # The :latest tag is only applied to final X.Y.Z releases. Prerelease
 # versions (e.g. 2.0.0-rc.1) are pushed under their own tag only, so they
