@@ -244,3 +244,7 @@ failed to resolve source metadata for mcr.microsoft.com/dotnet/sdk:8.0: ... dial
 This typically shows up as `docker build` working fine while `docker buildx build` times out. `network=host` makes the builder container share the host's network stack, sidestepping the issue. If you already have a stale builder without this option, remove it first with `docker buildx rm robust-rail-builder`.
 
 The builder is shared across sibling `Robust-Rail-NL` projects that also need multi-arch/`network=host` builds (e.g. `robust-rail-evaluator`) — a `buildx` builder isn't tied to a specific repo, so there's no need for a separate one per project.
+
+### `edge`: running a fix before it's merged
+
+Alongside the reviewed-release tags above, `ghcr.io/robust-rail-nl/hip:edge` is a floating tag tracking the `edge` branch — a lower-ceremony channel for running a fix without waiting for its PR into `main` to be reviewed. It's published manually via [`docker-push-edge.sh`](ServiceSiteScheduling/docker-push-edge.sh). See [`CONTRIBUTING.md`](CONTRIBUTING.md) for how `edge` relates to `main`, the image's version string, and why publishing it isn't automated.
