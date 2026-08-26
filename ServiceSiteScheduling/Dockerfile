@@ -8,7 +8,20 @@ COPY . .
 # live so internal invariant violations surface. Publish those under a separate
 # tag - never as the release tag, since a failing assertion aborts the process.
 ARG ASSERTIONS=false
-RUN dotnet publish -c Release -p:Assertions=${ASSERTIONS} --no-restore -o /publish
+# Empty by default, so a bare "docker build" with no --build-arg (i.e. not
+# going through docker-push.sh/docker-push-edge.sh) still gets a sensible
+# version: whatever's checked into HIP.csproj's <Version>. When docker-push.sh
+# passes VERSION (the same value it also puts in the LABEL below), -p:Version
+# overrides that at publish time, so Program.cs's startup "HIP {Version}" line
+# - read from the built assembly's AssemblyInformationalVersionAttribute, not
+# from the LABEL, which a running container can't introspect - actually
+# matches what the image claims to be. Previously it never did: this ARG only
+# reached the LABEL, so every image printed whatever version happened to be
+# committed in HIP.csproj at build time, coincidentally correct for ordinary
+# releases and silently wrong for anything that overrides VERSION, like edge
+# builds (see docker-push-edge.sh).
+ARG VERSION=
+RUN dotnet publish -c Release -p:Assertions=${ASSERTIONS} ${VERSION:+-p:Version=${VERSION}} --no-restore -o /publish
 
 FROM mcr.microsoft.com/dotnet/runtime:8.0
 
