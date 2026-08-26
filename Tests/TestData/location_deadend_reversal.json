@@ -1,0 +1,47 @@
+{
+    "schemaVersion": 1,
+    "trackParts": [
+        {
+            "id": "0",
+            "type": "Bumper",
+            "aSide": [],
+            "bSide": ["1"],
+            "length": 0.0,
+            "name": "gate",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false
+        },
+        {
+            "id": "1",
+            "type": "RailRoad",
+            "aSide": ["0"],
+            "bSide": ["2"],
+            "length": 200.0,
+            "name": "approach",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false
+        },
+        {
+            "id": "2",
+            "type": "RailRoad",
+            "aSide": ["1"],
+            "bSide": ["3"],
+            "length": 200.0,
+            "name": "deadend",
+            "sawMovementAllowed": false,
+            "parkingAllowed": true
+        },
+        {
+            "id": "3",
+            "type": "Bumper",
+            "aSide": ["2"],
+            "bSide": [],
+            "length": 0.0,
+            "name": "cap",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false
+        }
+    ],
+    "facilities": [],
+    "taskTypes": []
+}

@@ -228,7 +228,24 @@ namespace ServiceSiteScheduling.Solutions
                     }
                     else
                     {
-                        if (routing.ToSide == Side.A)
+                        // Deque.Add() puts whichever child is Arrive()-d last
+                        // nearest the arrival side (ToSide), so the loop
+                        // direction decides which physical end unit 0 lands
+                        // on. For a plain move (one child) that doesn't matter;
+                        // for a split, it has to match which unit actually led
+                        // the train in -- see Units0Side below.
+                        bool reversed;
+                        if (routing.IsSplit)
+                        {
+                            bool? leads = UnitZeroLeads(Units0Side(routing.Previous), routing);
+                            reversed = leads.HasValue ? !leads.Value : routing.ToSide == Side.A;
+                        }
+                        else
+                        {
+                            reversed = routing.ToSide == Side.A;
+                        }
+
+                        if (reversed)
                         {
                             for (int i = routing.Next.Count - 1; i >= 0; i--)
                             {
@@ -262,6 +279,55 @@ namespace ServiceSiteScheduling.Solutions
                 }
                 move = move.NextMove;
             }
+        }
+
+        /// <summary>
+        /// Whether the train's first (index-0) unit is the one leading as
+        /// <paramref name="routing"/> arrives at its destination, given which
+        /// side of the origin track it occupied beforehand
+        /// (<paramref name="fromTrackSide"/>, from <see cref="Units0Side"/>).
+        /// A route with an even number of reversals preserves whichever unit
+        /// was already nearest the departure side; an odd number flips it.
+        /// Null (unknown) propagates from a missing route or side.
+        /// </summary>
+        private static bool? UnitZeroLeads(Side? fromTrackSide, RoutingTask routing)
+        {
+            if (
+                fromTrackSide == null
+                || routing.Route == null
+                || routing.FromSide == null
+                || routing.ToSide == null
+            )
+                return null;
+
+            return (fromTrackSide == routing.FromSide) ^ (routing.Route.TotalReversals % 2 == 1);
+        }
+
+        /// <summary>
+        /// Which side of <paramref name="task"/>'s track the train's first
+        /// (index-0) unit currently occupies, found by walking back through
+        /// its arrival/movement history. At the very first arrival (or
+        /// stand-in), unit 0 is taken to be the one that led the train in, so
+        /// it drives deepest into the track and ends up on the side opposite
+        /// the one the train entered through. Each later plain move (not a
+        /// split, not a combine) either preserves or flips that, via
+        /// <see cref="UnitZeroLeads"/>. Returns null when the history isn't
+        /// one this can reason about yet -- a combine sits somewhere
+        /// upstream -- so the caller can fall back.
+        /// </summary>
+        private static Side? Units0Side(TrackTask task)
+        {
+            if (task.Previous == null)
+                return task.ArrivalSide?.Flip;
+
+            if (task.Previous is not RoutingTask routing || routing.Next.Count != 1)
+                return null;
+
+            bool? leads = UnitZeroLeads(Units0Side(routing.Previous), routing);
+            if (leads == null)
+                return null;
+
+            return leads.Value ? routing.ToSide!.Flip : routing.ToSide;
         }
 
         public static void ComputeTime(MoveTask? start, Time time)
