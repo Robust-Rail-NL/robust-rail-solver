@@ -55,6 +55,29 @@ namespace ServiceSiteScheduling.Solutions
 
         public SolutionCost? Cost;
 
+        // Populated by ComputeLocation whenever a split-during-a-move can't
+        // determine which unit actually leads (Units0Side gives up) and has
+        // to fall back to the unproven ToSide-only heuristic. The one
+        // confirmed trigger is a split immediately following an earlier
+        // split of the same train -- a multi-way split, or a later split of
+        // one of an earlier split's parts -- since Units0Side only walks
+        // back through ordinary single-destination moves; it does not
+        // reconstruct position within a multi-way split's several
+        // simultaneously-placed parts. A combine cannot precede a split in
+        // the current model (a DepartureRoutingTask's Next is always a
+        // DepartureTask or StandOutTask, never a further stop), but the
+        // guard treats any other unrecognised history the same way, on the
+        // assumption that an unhandled case is more likely than a proof it
+        // can never occur. Reset on every ComputeModel pass, so this only ever
+        // reflects the graph as most recently computed, not stale entries
+        // from a discarded candidate. Checked only when writing the actual
+        // delivered plan (see WriteJSONFile's validateFinal) -- not here,
+        // since ComputeLocation runs on every candidate local search
+        // constructs and discards, not just the one that ships.
+        private readonly List<string> unverifiedSplitPlacements = [];
+
+        public IReadOnlyList<string> UnverifiedSplitPlacements => this.unverifiedSplitPlacements;
+
         private bool[][] FreeServiceTaskFinished;
 
         public PartialOrderSchedule? POS { get; set; }
@@ -153,6 +176,7 @@ namespace ServiceSiteScheduling.Solutions
         {
             for (int i = 0; i < this.TrackOccupations.Length; i++)
                 this.TrackOccupations[i]?.Reset();
+            this.unverifiedSplitPlacements.Clear();
 
             this.ComputeLocation(this.First, recomputestart, recomputeend);
             ComputeTime(recomputestart, recomputestart?.PreviousMove?.End ?? 0);
@@ -226,23 +250,33 @@ namespace ServiceSiteScheduling.Solutions
                             foreach (TrackTask to in routing.Next)
                                 to.Replace(routing.Previous);
                     }
-                    else
+                    else if (routing.IsSplit)
                     {
                         // Deque.Add() puts whichever child is Arrive()-d last
                         // nearest the arrival side (ToSide), so the loop
                         // direction decides which physical end unit 0 lands
-                        // on. For a plain move (one child) that doesn't matter;
-                        // for a split, it has to match which unit actually led
-                        // the train in -- see Units0Side below.
+                        // on -- it has to match which unit actually led the
+                        // train in.
+                        bool? leads = UnitZeroLeads(Units0Side(routing.Previous), routing);
                         bool reversed;
-                        if (routing.IsSplit)
+                        if (leads.HasValue)
                         {
-                            bool? leads = UnitZeroLeads(Units0Side(routing.Previous), routing);
-                            reversed = leads.HasValue ? !leads.Value : routing.ToSide == Side.A;
+                            reversed = !leads.Value;
                         }
                         else
                         {
+                            // Units0Side gave up: the history includes
+                            // something it isn't taught to reason about yet
+                            // (see unverifiedSplitPlacements). Fall back to
+                            // the old ToSide-only heuristic so this
+                            // candidate can still be built and costed during
+                            // search, but flag it as unverified -- it must
+                            // not ship as the delivered plan. See
+                            // WriteJSONFile's validateFinal.
                             reversed = routing.ToSide == Side.A;
+                            this.unverifiedSplitPlacements.Add(
+                                $"split of {routing.Train} onto track {routing.ToTrack} at {routing.Start}"
+                            );
                         }
 
                         if (reversed)
@@ -265,6 +299,17 @@ namespace ServiceSiteScheduling.Solutions
                                     to.Depart(this.TrackOccupations[to.Track.Index]);
                             }
                         }
+                    }
+                    else
+                    {
+                        // A plain move has exactly one Next task, so there is
+                        // nothing to order between children: it always ends
+                        // up as the sole occupant of whichever side it
+                        // arrives through.
+                        var to = routing.Next[0];
+                        to.Arrive(this.TrackOccupations[to.Track.Index]);
+                        if (to is DepartureTask)
+                            to.Depart(this.TrackOccupations[to.Track.Index]);
                     }
                 }
                 else
@@ -310,10 +355,13 @@ namespace ServiceSiteScheduling.Solutions
         /// stand-in), unit 0 is taken to be the one that led the train in, so
         /// it drives deepest into the track and ends up on the side opposite
         /// the one the train entered through. Each later plain move (not a
-        /// split, not a combine) either preserves or flips that, via
+        /// split) either preserves or flips that, via
         /// <see cref="UnitZeroLeads"/>. Returns null when the history isn't
-        /// one this can reason about yet -- a combine sits somewhere
-        /// upstream -- so the caller can fall back.
+        /// one this can reason about yet -- most notably when this move's
+        /// own previous track was itself reached via an earlier split
+        /// (<c>routing.Next.Count != 1</c>), since position within a
+        /// multi-way split's several simultaneously-placed parts isn't
+        /// reconstructed here -- so the caller can fall back.
         /// </summary>
         private static Side? Units0Side(TrackTask task)
         {
@@ -1136,11 +1184,28 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
-        public void WriteJSONFile(string filePath)
+        // @validateFinal: when true (only appropriate for the actual
+        // delivered plan, not the tmp_plans/ debug snapshots TabuSearch and
+        // SimulatedAnnealing write on every improving move), refuse to
+        // silently ship a plan that contains a split whose physical
+        // placement couldn't be determined and fell back to a guess (see
+        // unverifiedSplitPlacements). The file is still written first so the
+        // unverified plan remains available for inspection.
+        public void WriteJSONFile(string filePath, bool validateFinal = false)
         {
             Plan? plan = this.ToPlan();
             string jsonPlan = plan.SerializeJson();
             File.WriteAllText(filePath, jsonPlan);
+
+            if (validateFinal && this.unverifiedSplitPlacements.Count > 0)
+            {
+                throw new InvalidOperationException(
+                    "Refusing to deliver a plan containing a split whose physical placement "
+                        + "could not be verified (most likely a split immediately following an "
+                        + "earlier split of the same train, which isn't yet reasoned about): "
+                        + string.Join("; ", this.unverifiedSplitPlacements)
+                );
+            }
         }
 
         public Plan? ToPlan()
