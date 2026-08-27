@@ -3,13 +3,14 @@
 
 name: .NET
 
-# release/2.0.0 is the shared integration branch for the 2.0.0 release across
-# all five repos; it is merged and deleted when 2.0.0 ships.
+# edge is the fast/unvetted image channel (see CONTRIBUTING.md) — it only
+# ever gains work via direct `git merge --no-ff`, never a GitHub PR targeting
+# it, so it's only listed under push, not pull_request.
 on:
   push:
-    branches: [ "main", "dev", "release/2.0.0" ]
+    branches: [ "main", "dev", "edge" ]
   pull_request:
-    branches: [ "main", "dev", "release/2.0.0" ]
+    branches: [ "main", "dev" ]
   workflow_dispatch:
 
 jobs:

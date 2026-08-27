@@ -8,6 +8,19 @@
     <Nullable>disable</Nullable>
     <NoWarn>$(NoWarn);IDE0305</NoWarn>
     <Version>2.0.0</Version>
+    <!--
+      Without this, the SDK silently appends "+<40-char-git-sha>" to
+      AssemblyInformationalVersionAttribute for any build in a git repo,
+      regardless of what <Version> says — confirmed empirically, e.g. an
+      ordinary build here produces "2.0.0+d05f1a7065f9183d8227d04992fdfb781746f524".
+      Program.cs prints that attribute verbatim as the startup "HIP {Version}"
+      line, so without disabling this, every release would carry an unwanted,
+      unrelated SDK-injected hash there. Builds that *do* want a build-metadata
+      suffix (e.g. docker-push-edge.sh's <release>-edge+<date>.<short-sha>)
+      pass their own complete string via `dotnet publish -p:Version=...`,
+      which this does not affect.
+    -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   <!--
     Assertions are normally tied to the build configuration, forcing a choice
