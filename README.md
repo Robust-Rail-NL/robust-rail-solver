@@ -2,16 +2,24 @@
 Also known as Baseline HIP. 
 
 Table of contents
+- [Robust Rail Solver](#robust-rail-solver)
 - [Description](#description)
-    - [How to use?](#how-to-use)
-        - [Input parsing](#location-scenario-parsing)
-        - [Run solver with a configuration file](#create-plan-with-tabu-and-local-search-methods---from-configuration-file)
-        - [Run solver with command line arguments](#create-plan-with-tabu-and-local-search-methods)
-    - [Validated scenarios](#validated-scenarios)
-    - [Partial Order Schedule](#partial-order-schedule-pos---other-helper-functions)
-- [Building Process](#build-as-standalone-tool)
-    - [Build in Linux](#building-process---native-support-linux)
-    - [Publishing the HIP image](#publishing-the-hip-image)
+    - [robust-rail-solver](#robust-rail-solver-1)
+    - [Evaluation of the Plan](#evaluation-of-the-plan)
+    - [Scenario generation](#scenario-generation)
+  - [How To Use?](#how-to-use)
+    - [Create Plan with Tabu and Local Search methods - from configuration file](#create-plan-with-tabu-and-local-search-methods---from-configuration-file)
+    - [Create Plan with Tabu and Local Search methods](#create-plan-with-tabu-and-local-search-methods)
+    - [Location Scenario Parsing](#location-scenario-parsing)
+  - [Validated scenarios](#validated-scenarios)
+  - [Partial Order Schedule (POS) - Other helper functions](#partial-order-schedule-pos---other-helper-functions)
+    - [Helper functions:](#helper-functions)
+- [Build as standalone tool](#build-as-standalone-tool)
+  - [Building process - Native support (Linux)](#building-process---native-support-linux)
+  - [Dependencies](#dependencies)
+    - [First step:](#first-step)
+  - [Publishing the HIP image](#publishing-the-hip-image)
+    - [`edge`: running a fix before it's merged](#edge-running-a-fix-before-its-merged)
 
 
 # Description 
@@ -114,7 +122,7 @@ Test_Location_Scenario_Parsing("../example_kleine_binckhorst/location.json", "..
 
 
 ## Validated scenarios
-Some of the scenarios were successfully solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver) and the plans were validated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator). All the validated scenarios and location files are collected under [scenario-planning-inputs](https://github.com/Robust-Rail-NL/scenario-planning-inputs) repository.
+Some of the scenarios were successfully solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver) and the plans were validated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator). All the validated scenarios and location files are collected under [robust-rail-general](https://github.com/Robust-Rail-NL/robust-rail-general) repository.
 
 - [**`example_kleine_binckhorst/`**](./example_kleine_binckhorst/) - a single Kleine Binckhorst scenario (6 trains), used as the smoke-test/demo fixture by the no-`--config` run, CI, and [`config.yaml`](./ServiceSiteScheduling/config.yaml)
     - **location.json** - Kleine Binckhorst location
