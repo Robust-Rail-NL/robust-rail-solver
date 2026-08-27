@@ -7,9 +7,9 @@ name: .NET
 # all five repos; it is merged and deleted when 2.0.0 ships.
 on:
   push:
-    branches: [ "main", "dev", "release/2.0.0" ]
+    branches: [ "main", "dev", "edge" ]
   pull_request:
-    branches: [ "main", "dev", "release/2.0.0" ]
+    branches: [ "main", "dev", "edge" ]
   workflow_dispatch:
 
 jobs:
