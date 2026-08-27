@@ -1184,28 +1184,91 @@ namespace ServiceSiteScheduling.Solutions
             }
         }
 
+        // Classifies why a route collected zero resources, for the
+        // diagnostics below. Route.Invalid (Dijkstra found no path at all) is
+        // the one root cause confirmed so far - see #24. A route confined to
+        // a single track (e.g. reversing in place, never reaching a Switch
+        // arc whose Path carries the far end) is structurally the same kind
+        // of gap - every arc's Path is just [track], so the resource walk in
+        // ToPlan() only ever collects that one entry - but hasn't actually
+        // been observed reaching the delivered plan; it's named here so a
+        // future occurrence is recognisable rather than lumped in as
+        // "unexplained". Anything else genuinely is unexplained.
+        private static string ClassifyZeroResourceCause(Route route)
+        {
+            if (ReferenceEquals(route, Route.Invalid))
+                return "Route.Invalid: no feasible route was found";
+            if (route.Tracks.Length == 1)
+                return "single-track route (e.g. in-place reversal): every arc's Path resolves to just that one track";
+            return "UNKNOWN CAUSE - needs fresh investigation";
+        }
+
+        // Populated by ToPlan() with every Move action it emitted that has no
+        // Resources (see #24), tagged with the classification above so a
+        // genuinely new cause is distinguishable from the ones already
+        // understood.
+        private readonly List<(
+            ulong ShuntingUnitId,
+            ulong? Location,
+            ulong? StartTime,
+            ulong? EndTime,
+            string Cause
+        )> zeroResourceMoves = [];
+
         // @validateFinal: when true (only appropriate for the actual
         // delivered plan, not the tmp_plans/ debug snapshots TabuSearch and
         // SimulatedAnnealing write on every improving move), refuse to
-        // silently ship a plan that contains a split whose physical
-        // placement couldn't be determined and fell back to a guess (see
-        // unverifiedSplitPlacements). The file is still written first so the
-        // unverified plan remains available for inspection.
+        // silently ship a plan that either contains a Move with no Resources
+        // (see #24, zeroResourceMoves) or a split whose physical placement
+        // couldn't be determined and fell back to a guess (see #26,
+        // unverifiedSplitPlacements). Both are checked and logged before
+        // exiting, so a run that hits both isn't left reporting only one.
+        // The file is still written first so the unverified plan remains
+        // available for inspection.
         public void WriteJSONFile(string filePath, bool validateFinal = false)
         {
             Plan? plan = this.ToPlan();
             string jsonPlan = plan.SerializeJson();
             File.WriteAllText(filePath, jsonPlan);
 
-            if (validateFinal && this.unverifiedSplitPlacements.Count > 0)
+            if (!validateFinal)
+                return;
+
+            bool failed = false;
+
+            if (this.zeroResourceMoves.Count > 0)
             {
-                throw new InvalidOperationException(
-                    "Refusing to deliver a plan containing a split whose physical placement "
-                        + "could not be verified (most likely a split immediately following an "
-                        + "earlier split of the same train, which isn't yet reasoned about): "
-                        + string.Join("; ", this.unverifiedSplitPlacements)
+                string details = string.Join(
+                    "; ",
+                    this.zeroResourceMoves.Select(m =>
+                        $"shunting unit {m.ShuntingUnitId} at {m.Location} from {m.StartTime} to {m.EndTime} ({m.Cause})"
+                    )
                 );
+                logger.LogError(
+                    "Delivered plan at {FilePath} has {Count} Move action(s) with no Resources - see #24: {Details}",
+                    filePath,
+                    this.zeroResourceMoves.Count,
+                    details
+                );
+                failed = true;
             }
+
+            if (this.unverifiedSplitPlacements.Count > 0)
+            {
+                logger.LogError(
+                    "Delivered plan at {FilePath} has {Count} split(s) whose physical placement "
+                        + "could not be verified (most likely a split immediately following an "
+                        + "earlier split of the same train, which isn't yet reasoned about) - "
+                        + "see #26: {Details}",
+                    filePath,
+                    this.unverifiedSplitPlacements.Count,
+                    string.Join("; ", this.unverifiedSplitPlacements)
+                );
+                failed = true;
+            }
+
+            if (failed)
+                Environment.Exit(1);
         }
 
         public Plan? ToPlan()
@@ -1216,6 +1279,7 @@ namespace ServiceSiteScheduling.Solutions
             )
                 return null;
 
+            this.zeroResourceMoves.Clear();
             List<Interchange.Action> actions = [];
 
             Dictionary<ShuntTrain, ShuntingUnit> trainconversion = [];
@@ -1306,12 +1370,30 @@ namespace ServiceSiteScheduling.Solutions
                         }
                         else
                         {
-                            logger.LogWarning(
-                                "Move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it. The delivered plan does not correctly represent this move. See issue #24.",
+                            string cause = ClassifyZeroResourceCause(routing.Route);
+                            this.zeroResourceMoves.Add(
+                                (
+                                    moveaction.ShuntingUnit.Id,
+                                    moveaction.Location,
+                                    moveaction.StartTime,
+                                    moveaction.EndTime,
+                                    cause
+                                )
+                            );
+                            // Debug, not Warning: this fires on every ToPlan()
+                            // call, including the tmp_plans/ debug snapshots
+                            // TabuSearch/SimulatedAnnealing write before the
+                            // search has had a chance to route this task -
+                            // this is expected, transient search state, not a
+                            // defect. WriteJSONFile's validateFinal escalates
+                            // when it matters: the actual delivered plan.
+                            logger.LogDebug(
+                                "Move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it ({Cause}). See issue #24.",
                                 moveaction.ShuntingUnit.Id,
                                 moveaction.Location,
                                 moveaction.StartTime,
-                                moveaction.EndTime
+                                moveaction.EndTime,
+                                cause
                             );
                         }
                         // add to plan
@@ -1365,51 +1447,74 @@ namespace ServiceSiteScheduling.Solutions
                                 * (tasks.Count() - 1);
                         }
 
-                        // Add move
-                        var moveaction = new Interchange.Action
+                        // Add move. Only when the route actually travels - a route
+                        // whose departure track/side already match the unit's
+                        // current position is Route.EmptyRoute (Arcs=[], Duration=0,
+                        // see Graph.ComputeRoute), and emitting a Move for it would
+                        // collect zero resources (its only Arcs entry, and thus the
+                        // only thing the strip below has to remove, doesn't exist).
+                        // Mirrors the arrival/general routing case above, which
+                        // uses routing.NumberOfRoutes > 0 for the same purpose - see
+                        // #24, whose root cause was this missing guard.
+                        if (route.Duration > 0)
                         {
-                            Location = route.Tracks[0].ID,
-                            TaskType = TaskType.FromPredefined(Move),
-                            StartTime = (ulong)starttime,
-                            EndTime = (ulong)(starttime + route.Duration),
-                            ShuntingUnit = shuntingunit,
-                        };
-                        // add path
-                        Infrastructure? previous = null;
-                        foreach (var arc in route.Arcs)
-                        {
-                            foreach (var infra in arc.Path.Path)
+                            var moveaction = new Interchange.Action
                             {
-                                if (infra != previous)
+                                Location = route.Tracks[0].ID,
+                                TaskType = TaskType.FromPredefined(Move),
+                                StartTime = (ulong)starttime,
+                                EndTime = (ulong)(starttime + route.Duration),
+                                ShuntingUnit = shuntingunit,
+                            };
+                            // add path
+                            Infrastructure? previous = null;
+                            foreach (var arc in route.Arcs)
+                            {
+                                foreach (var infra in arc.Path.Path)
                                 {
-                                    var resource = Resource.FromInfra(infra);
-                                    moveaction.Resources.Add(resource);
+                                    if (infra != previous)
+                                    {
+                                        var resource = Resource.FromInfra(infra);
+                                        moveaction.Resources.Add(resource);
 
-                                    previous = infra;
+                                        previous = infra;
+                                    }
                                 }
                             }
+                            // remove first - the FromTrack entry every arc's path
+                            // starts with, redundant with Location above. Kept as a
+                            // guard (rather than assumed) since #24 hasn't ruled out
+                            // every route shape collecting only that one entry.
+                            if (moveaction.Resources.Count > 0)
+                            {
+                                moveaction.Resources.RemoveAt(0);
+                            }
+                            else
+                            {
+                                string cause = ClassifyZeroResourceCause(route);
+                                this.zeroResourceMoves.Add(
+                                    (
+                                        moveaction.ShuntingUnit.Id,
+                                        moveaction.Location,
+                                        moveaction.StartTime,
+                                        moveaction.EndTime,
+                                        cause
+                                    )
+                                );
+                                // Debug, not Warning - see the matching comment
+                                // on the arrival/general routing case above.
+                                logger.LogDebug(
+                                    "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it ({Cause}). See issue #24.",
+                                    moveaction.ShuntingUnit.Id,
+                                    moveaction.Location,
+                                    moveaction.StartTime,
+                                    moveaction.EndTime,
+                                    cause
+                                );
+                            }
+                            // add to plan
+                            actions.Add(moveaction);
                         }
-                        // remove first - same gap as the arrival/general routing case
-                        // above (see #24), just already guarded here; add the
-                        // matching diagnostic so a departure-side occurrence is
-                        // traceable the same way. This is in fact the common case -
-                        // see #24's frequency findings.
-                        if (moveaction.Resources.Count > 0)
-                        {
-                            moveaction.Resources.RemoveAt(0);
-                        }
-                        else
-                        {
-                            logger.LogWarning(
-                                "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it. The delivered plan does not correctly represent this move. See issue #24.",
-                                moveaction.ShuntingUnit.Id,
-                                moveaction.Location,
-                                moveaction.StartTime,
-                                moveaction.EndTime
-                            );
-                        }
-                        // add to plan
-                        actions.Add(moveaction);
                         starttime += route.Duration;
                     }
                     var departureshuntunit = GetShuntUnit(departurerouting.Train, trainconversion);
