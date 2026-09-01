@@ -561,20 +561,6 @@ namespace ServiceSiteScheduling
             // Consider the instanding trains as arrival (incoming) trains
             // the time of arrival of these trains is set to the start time of the scenario
 
-            // The solver does not yet order multiple inStanding trains sharing a track
-            // (see solver#18); reject such scenarios rather than silently guessing an
-            // order that may not match the one the scenario intends.
-            foreach (var group in (scenario.InStanding ?? []).GroupBy(t => t.FirstParkingTrackPart))
-            {
-                if (group.Count() > 1)
-                {
-                    throw new NotSupportedException(
-                        $"Track part {group.Key} has {group.Count()} inStanding trains. "
-                            + "The solver does not yet support multiple inStanding trains on the same track (see solver#18)."
-                    );
-                }
-            }
-
             foreach (var arrivaltrain in scenario.InStanding ?? [])
             {
                 var currenttrainunits = GetTrainUnits(arrivaltrain);
@@ -605,7 +591,7 @@ namespace ServiceSiteScheduling
                         side,
                         (int)instance.ScenarioStartTime,
                         true,
-                        arrivaltrain.StandingIndex ?? 0
+                        arrivaltrain.StandingIndex
                     );
                     arrivals.Add(train);
 
@@ -642,10 +628,37 @@ namespace ServiceSiteScheduling
                         Side.None,
                         (int)instance.ScenarioStartTime,
                         true,
-                        arrivaltrain.StandingIndex ?? 0
+                        arrivaltrain.StandingIndex
                     );
                     arrivals.Add(train);
                 }
+            }
+
+            // The solver only orders multiple inStanding trains sharing a track when
+            // standingIndex disambiguates them and they all derive the same
+            // ArrivalSide (the moveheap comparator in SimpleHeuristic.Construct relies
+            // on that as a checked invariant). Reject anything else rather than
+            // silently guessing an order that may not match the one the scenario
+            // intends.
+            foreach (var group in arrivals.Where(a => a.InStanding).GroupBy(a => a.Track.ID))
+            {
+                if (group.Count() <= 1)
+                    continue;
+
+                var indices = group.Select(a => a.StandingIndex).ToList();
+                if (indices.Any(i => i is null) || indices.Distinct().Count() != indices.Count)
+                    throw new NotSupportedException(
+                        $"Track {group.Key} has {group.Count()} inStanding trains, but standingIndex is "
+                            + "null or not mutually distinct among them. When multiple inStanding trains share a "
+                            + "track, standingIndex is required and must be distinct for each (see solver#18)."
+                    );
+
+                if (group.Select(a => a.Side).Distinct().Count() > 1)
+                    throw new NotSupportedException(
+                        $"Track {group.Key} has {group.Count()} inStanding trains that derive different "
+                            + "arrival sides (e.g. entering via gateways on opposite ends). The solver does not "
+                            + "yet support ordering trains by standingIndex in that case (see solver#18)."
+                    );
             }
 
             if (debugLevel > 1)

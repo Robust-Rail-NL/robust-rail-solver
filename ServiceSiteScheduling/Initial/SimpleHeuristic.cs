@@ -119,7 +119,12 @@ namespace ServiceSiteScheduling.Initial
                     var initialParking = new StandInTask(new ShuntTrain(shunttrain), train.Track);
                     initialParking.Start = initialParking.End = train.Time;
                     initialParking.ArrivalSide = train.Side;
-                    initialParking.StandingIndex = train.StandingIndex;
+                    // A null standingIndex only ever reaches here for a train with
+                    // no other inStanding train sharing its track (the parse-time
+                    // guard requires it otherwise), so which concrete value it
+                    // defaults to is moot: the comparator that reads it is never
+                    // invoked for a track with a single occupant.
+                    initialParking.StandingIndex = train.StandingIndex ?? 0;
                     standins.Add(initialParking);
                     firstTask = initialParking;
                 }
