@@ -83,6 +83,11 @@ namespace ServiceSiteScheduling.Initial
                     if (b.AllPrevious.Any(task => task is ArrivalTask))
                         return 1;
 
+                    var aStandIn = a.AllPrevious.OfType<StandInTask>().FirstOrDefault();
+                    var bStandIn = b.AllPrevious.OfType<StandInTask>().FirstOrDefault();
+                    if (aStandIn != null && bStandIn != null && aStandIn.Track == bStandIn.Track)
+                        return CompareStandingOrder(aStandIn, bStandIn);
+
                     if (
                         a.AllPrevious.Any(task => task is ServiceTask)
                         && b.AllPrevious.Any(task => task is ServiceTask)
@@ -114,6 +119,12 @@ namespace ServiceSiteScheduling.Initial
                     var initialParking = new StandInTask(new ShuntTrain(shunttrain), train.Track);
                     initialParking.Start = initialParking.End = train.Time;
                     initialParking.ArrivalSide = train.Side;
+                    // A null standingIndex only ever reaches here for a train with
+                    // no other inStanding train sharing its track (the parse-time
+                    // guard requires it otherwise), so which concrete value it
+                    // defaults to is moot: the comparator that reads it is never
+                    // invoked for a track with a single occupant.
+                    initialParking.StandingIndex = train.StandingIndex ?? 0;
                     standins.Add(initialParking);
                     firstTask = initialParking;
                 }
@@ -651,6 +662,30 @@ namespace ServiceSiteScheduling.Initial
                 foreach (Matching.Unit du in dt)
                     reversematching[shunttrainunits[du.Index]] = du;
             }
+        }
+
+        /// <summary>
+        /// Orders two same-track StandInTasks so that, once each is Add()-ed to the
+        /// track's Deque in the order this returns, ascending StandingIndex ends up
+        /// at the A-side, per the scenario's documented convention.
+        /// <para>
+        /// Deque.Add() always puts whichever node is added last nearest the target
+        /// side (see its doc comment, and the identical trick used for split
+        /// ordering in PlanGraph.cs). So: if the shared ArrivalSide is A, the lowest
+        /// index must be added *last* (descending arrival order); for anything else
+        /// (B, Both, or None), ascending arrival order already puts it first, which
+        /// lands it nearest that non-A side, i.e. still nearest A relative to later
+        /// arrivals - so ascending order is used as-is.
+        /// </para>
+        /// </summary>
+        internal static int CompareStandingOrder(StandInTask a, StandInTask b)
+        {
+            // The parse-time guard (ProblemInstance) rejects any scenario where
+            // trains sharing a track derive different ArrivalSide values, so this
+            // is a checked invariant, not an assumption.
+            Debug.Assert(a.ArrivalSide == b.ArrivalSide);
+            int direction = a.ArrivalSide == Side.A ? -1 : 1;
+            return direction * a.StandingIndex.CompareTo(b.StandingIndex);
         }
 
         private static void Shuffle<T>(IList<T> list, Random random)
