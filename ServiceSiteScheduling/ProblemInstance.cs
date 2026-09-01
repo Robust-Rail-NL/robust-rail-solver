@@ -602,7 +602,7 @@ namespace ServiceSiteScheduling
                     var train = new ArrivalTrain(
                         currenttrainunits.ToArray(),
                         connection.Track,
-                        Side.None,
+                        side,
                         (int)instance.ScenarioStartTime,
                         true,
                         arrivaltrain.StandingIndex ?? 0
@@ -628,10 +628,18 @@ namespace ServiceSiteScheduling
                         Console.WriteLine($">>>>> Arrival Infra Access: {infra} - {infra.Access}");
                     }
 
+                    // No genuine entry side is derivable here: unlike the gateway
+                    // branch above, this train's EntryTrackPart need not lie on any
+                    // walkable path to FirstParkingTrackPart at all (an inStanding
+                    // train often didn't "enter" anywhere in particular). Side.None
+                    // is the codebase's existing "unknown" sentinel, handled
+                    // uniformly by Deque.Add and Side.HasFlag; the track's static
+                    // Access is a topology property unrelated to this specific
+                    // train, and using it here was misleading rather than helpful.
                     var train = new ArrivalTrain(
                         currenttrainunits.ToArray(),
                         infra,
-                        infra.Access,
+                        Side.None,
                         (int)instance.ScenarioStartTime,
                         true,
                         arrivaltrain.StandingIndex ?? 0
@@ -660,58 +668,6 @@ namespace ServiceSiteScheduling
                     Console.WriteLine(item);
                 }
             }
-
-            // Change order when the standingInedex is lower!
-            // var tmpArrivals = instance.ArrivalsOrdered;
-
-            // for (int i = 0; i < tmpArrivals.Length - 1; i++)
-            // {
-            //     var tmpArrival = tmpArrivals[i];
-            //     if (tmpArrival.IsItInStanding())
-            //     {
-
-            //         for (int j = i + 1; j < tmpArrivals.Length; j++)
-            //         {
-            //             if (!tmpArrivals[j].IsItInStanding())
-            //             {
-            //                 // swap
-            //                 var tmp = tmpArrivals[j];
-            //                 tmpArrivals[j] = tmpArrivals[i];
-            //                 tmpArrivals[i] = tmp;
-            //                 break;
-            //             }
-
-            //         }
-            //     }
-
-            // }
-
-            // // for (int i = 0; i < tmpArrivals.Length-1; i++)
-            // // {
-            // //     var tmpArrival = tmpArrivals[i];
-            // //     for (int j = i + 1; j < tmpArrivals.Length; j++)
-            // //     {
-            // //         if (tmpArrivals[i].Track == tmpArrivals[j].Track)
-            // //         {
-            // //             if (tmpArrivals[i].StandingIndex > tmpArrivals[j].StandingIndex)
-            // //             {
-            // //                 var tmp = tmpArrivals[j];
-            // //                 tmpArrivals[j] = tmpArrivals[i];
-            // //                 tmpArrivals[i] = tmp;
-            // //             }
-            // //         }
-            // //     }
-            // // }
-
-            // Console.WriteLine("Arrivals Re-Ordered: ");
-            // foreach (var item in instance.ArrivalsOrdered)
-            // {
-            //     Console.WriteLine(item);
-            // }
-            // foreach (var item in tmpArrivals)
-            // {
-            //     Console.WriteLine(item);
-            // }
 
             instance.FillArrivals();
 
