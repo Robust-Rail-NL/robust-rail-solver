@@ -219,6 +219,7 @@ namespace ServiceSiteScheduling
                 if (
                     sa.Graph.Cost.ArrivalDelays
                         + sa.Graph.Cost.DepartureDelays
+                        + sa.Graph.Cost.OutStandingOverruns
                         + sa.Graph.Cost.TrackLengthViolations
                         + sa.Graph.Cost.Crossings
                         + sa.Graph.Cost.CombineOnDepartureTrack
