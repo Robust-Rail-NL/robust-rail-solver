@@ -156,6 +156,7 @@ namespace ServiceSiteScheduling.Initial
             }
             // Add departure tasks
             List<DepartureTask> departures = [];
+            List<StandOutTask> standouts = [];
             Dictionary<ShuntTrainUnit, DepartureRoutingTask> departuremapping = [];
             foreach (Matching.Train dt in matching.DepartureTrains)
             {
@@ -171,10 +172,12 @@ namespace ServiceSiteScheduling.Initial
                         dt.Departure.Track
                     );
                     finalParking.Start = finalParking.End = dt.Departure.Time;
+                    finalParking.Deadline = dt.Departure.Time;
                     finalParking.ArrivalSide =
                         dt.Departure.Track.Access == Side.Both ? Side.A : dt.Departure.Track.Access;
                     dt.Task = finalParking;
                     finalTask = finalParking;
+                    standouts.Add(finalParking);
                 }
                 else
                 {
@@ -421,7 +424,8 @@ namespace ServiceSiteScheduling.Initial
                 shunttrainunits,
                 arrivals.ToArray(),
                 departures.ToArray(),
-                standins.ToArray()
+                standins.ToArray(),
+                standouts.ToArray()
             );
 
             // Connect movetasks

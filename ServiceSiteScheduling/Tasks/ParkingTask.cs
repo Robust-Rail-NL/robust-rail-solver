@@ -46,6 +46,23 @@ namespace ServiceSiteScheduling.Tasks
     /// </summary>
     class StandOutTask : ParkingTask
     {
+        /// <summary>
+        /// The scenario end time the train must be parked by. Mirrors what
+        /// DepartureTask.ScheduledTime is for a departing train: a fixed value set
+        /// once, kept apart from <see cref="TrackTask.Start"/> because
+        /// PlanGraph.ComputeModel overwrites Start on every pass with wherever the
+        /// chain's forward move actually lands it. The two happen to coincide for a
+        /// DepartureTask, whose preceding move is scheduled backward from
+        /// ScheduledTime so it lands there whenever the rest of the chain allows;
+        /// a StandOutTask's preceding move is instead scheduled forward with no
+        /// awareness of this deadline at all ("no fixed deadline, schedule
+        /// forward" in PlanGraph.ComputeTime), so Start may legitimately land past
+        /// it. Without this separate field, Deadline would be indistinguishable
+        /// from Start and get silently overwritten the same way -- which is
+        /// exactly how solver#14 happened.
+        /// </summary>
+        public Utilities.Time Deadline { get; set; }
+
         public StandOutTask(Trains.ShuntTrain train, TrackParts.Track track)
             : base(train, track, TrackTaskType.StandOut, false) { }
     }
