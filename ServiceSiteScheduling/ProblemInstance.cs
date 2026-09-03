@@ -561,20 +561,6 @@ namespace ServiceSiteScheduling
             // Consider the instanding trains as arrival (incoming) trains
             // the time of arrival of these trains is set to the start time of the scenario
 
-            // The solver does not yet order multiple inStanding trains sharing a track
-            // (see solver#18); reject such scenarios rather than silently guessing an
-            // order that may not match the one the scenario intends.
-            foreach (var group in (scenario.InStanding ?? []).GroupBy(t => t.FirstParkingTrackPart))
-            {
-                if (group.Count() > 1)
-                {
-                    throw new NotSupportedException(
-                        $"Track part {group.Key} has {group.Count()} inStanding trains. "
-                            + "The solver does not yet support multiple inStanding trains on the same track (see solver#18)."
-                    );
-                }
-            }
-
             foreach (var arrivaltrain in scenario.InStanding ?? [])
             {
                 var currenttrainunits = GetTrainUnits(arrivaltrain);
@@ -602,10 +588,10 @@ namespace ServiceSiteScheduling
                     var train = new ArrivalTrain(
                         currenttrainunits.ToArray(),
                         connection.Track,
-                        Side.None,
+                        side,
                         (int)instance.ScenarioStartTime,
                         true,
-                        arrivaltrain.StandingIndex ?? 0
+                        arrivaltrain.StandingIndex
                     );
                     arrivals.Add(train);
 
@@ -628,16 +614,51 @@ namespace ServiceSiteScheduling
                         Console.WriteLine($">>>>> Arrival Infra Access: {infra} - {infra.Access}");
                     }
 
+                    // No genuine entry side is derivable here: unlike the gateway
+                    // branch above, this train's EntryTrackPart need not lie on any
+                    // walkable path to FirstParkingTrackPart at all (an inStanding
+                    // train often didn't "enter" anywhere in particular). Side.None
+                    // is the codebase's existing "unknown" sentinel, handled
+                    // uniformly by Deque.Add and Side.HasFlag; the track's static
+                    // Access is a topology property unrelated to this specific
+                    // train, and using it here was misleading rather than helpful.
                     var train = new ArrivalTrain(
                         currenttrainunits.ToArray(),
                         infra,
-                        infra.Access,
+                        Side.None,
                         (int)instance.ScenarioStartTime,
                         true,
-                        arrivaltrain.StandingIndex ?? 0
+                        arrivaltrain.StandingIndex
                     );
                     arrivals.Add(train);
                 }
+            }
+
+            // The solver only orders multiple inStanding trains sharing a track when
+            // standingIndex disambiguates them and they all derive the same
+            // ArrivalSide (the moveheap comparator in SimpleHeuristic.Construct relies
+            // on that as a checked invariant). Reject anything else rather than
+            // silently guessing an order that may not match the one the scenario
+            // intends.
+            foreach (var group in arrivals.Where(a => a.InStanding).GroupBy(a => a.Track.ID))
+            {
+                if (group.Count() <= 1)
+                    continue;
+
+                var indices = group.Select(a => a.StandingIndex).ToList();
+                if (indices.Any(i => i is null) || indices.Distinct().Count() != indices.Count)
+                    throw new NotSupportedException(
+                        $"Track {group.Key} has {group.Count()} inStanding trains, but standingIndex is "
+                            + "null or not mutually distinct among them. When multiple inStanding trains share a "
+                            + "track, standingIndex is required and must be distinct for each (see solver#18)."
+                    );
+
+                if (group.Select(a => a.Side).Distinct().Count() > 1)
+                    throw new NotSupportedException(
+                        $"Track {group.Key} has {group.Count()} inStanding trains that derive different "
+                            + "arrival sides (e.g. entering via gateways on opposite ends). The solver does not "
+                            + "yet support ordering trains by standingIndex in that case (see solver#18)."
+                    );
             }
 
             if (debugLevel > 1)
@@ -660,58 +681,6 @@ namespace ServiceSiteScheduling
                     Console.WriteLine(item);
                 }
             }
-
-            // Change order when the standingInedex is lower!
-            // var tmpArrivals = instance.ArrivalsOrdered;
-
-            // for (int i = 0; i < tmpArrivals.Length - 1; i++)
-            // {
-            //     var tmpArrival = tmpArrivals[i];
-            //     if (tmpArrival.IsItInStanding())
-            //     {
-
-            //         for (int j = i + 1; j < tmpArrivals.Length; j++)
-            //         {
-            //             if (!tmpArrivals[j].IsItInStanding())
-            //             {
-            //                 // swap
-            //                 var tmp = tmpArrivals[j];
-            //                 tmpArrivals[j] = tmpArrivals[i];
-            //                 tmpArrivals[i] = tmp;
-            //                 break;
-            //             }
-
-            //         }
-            //     }
-
-            // }
-
-            // // for (int i = 0; i < tmpArrivals.Length-1; i++)
-            // // {
-            // //     var tmpArrival = tmpArrivals[i];
-            // //     for (int j = i + 1; j < tmpArrivals.Length; j++)
-            // //     {
-            // //         if (tmpArrivals[i].Track == tmpArrivals[j].Track)
-            // //         {
-            // //             if (tmpArrivals[i].StandingIndex > tmpArrivals[j].StandingIndex)
-            // //             {
-            // //                 var tmp = tmpArrivals[j];
-            // //                 tmpArrivals[j] = tmpArrivals[i];
-            // //                 tmpArrivals[i] = tmp;
-            // //             }
-            // //         }
-            // //     }
-            // // }
-
-            // Console.WriteLine("Arrivals Re-Ordered: ");
-            // foreach (var item in instance.ArrivalsOrdered)
-            // {
-            //     Console.WriteLine(item);
-            // }
-            // foreach (var item in tmpArrivals)
-            // {
-            //     Console.WriteLine(item);
-            // }
 
             instance.FillArrivals();
 

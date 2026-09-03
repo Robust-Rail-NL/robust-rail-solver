@@ -29,6 +29,13 @@ namespace ServiceSiteScheduling.Tasks
     /// </summary>
     class StandInTask : ParkingTask
     {
+        /// <summary>
+        /// The scenario's requested position on the track, lower at the A-side.
+        /// Used to break ties between multiple inStanding trains sharing a track;
+        /// see the moveheap comparator in <see cref="Initial.SimpleHeuristic"/>.
+        /// </summary>
+        public int StandingIndex { get; set; }
+
         public StandInTask(Trains.ShuntTrain train, TrackParts.Track track)
             : base(train, track, TrackTaskType.StandIn, false) { }
     }
