@@ -38,6 +38,15 @@ namespace ServiceSiteScheduling.Solutions
         /// </summary>
         public ImmutableArray<StandInTask> StandInTasks { get; init; }
 
+        /// <summary>
+        /// Chain tails of outStanding trains. Not DepartureTasks -- an outStanding
+        /// train never leaves the yard -- but each still has a deadline (the
+        /// scenario end time, see <see cref="StandOutTask.Deadline"/>) that
+        /// ComputeCost must check the same way it checks DepartureTasks. See
+        /// solver#14.
+        /// </summary>
+        public ImmutableArray<StandOutTask> StandOutTasks { get; init; }
+
         public TrainMatching Matching { get; private set; }
 
         public ArrivalTask? FirstArrival
@@ -90,7 +99,8 @@ namespace ServiceSiteScheduling.Solutions
             ShuntTrainUnit[] shuntunits,
             ArrivalTask[] arrivals,
             DepartureTask[] departures,
-            StandInTask[] standins
+            StandInTask[] standins,
+            StandOutTask[] standouts
         )
         {
             this.RoutingGraph = graph;
@@ -99,6 +109,7 @@ namespace ServiceSiteScheduling.Solutions
             this.ArrivalTasks = ImmutableArray.ToImmutableArray(arrivals);
             this.DepartureTasks = ImmutableArray.ToImmutableArray(departures);
             this.StandInTasks = ImmutableArray.ToImmutableArray(standins);
+            this.StandOutTasks = ImmutableArray.ToImmutableArray(standouts);
 
             TrackOccupation[] occupations = new TrackOccupation[
                 ProblemInstance.Current.Tracks.Length
@@ -398,16 +409,15 @@ namespace ServiceSiteScheduling.Solutions
                         {
                             logger.LogDebug(
                                 ""
-                                    + "Forced shuntingunit {routing.Train} to wait after arriving at {routing.Start}, "
-                                    + "because previous routing task {routing.Previous} ends at time {time}, but arrival "
-                                    + "track {arrival.Track} cannot be used for parking.",
+                                    + "Shuntingunit {routing.Train} incorporates a delay in arriving at {routing.Start} "
+                                    + "into its Arrive action, because previous routing task {routing.Previous} "
+                                    + "ends at time {time}, but arrival track {arrival.Track} cannot be used for parking.",
                                 routing.Train,
                                 routing.Start,
                                 routing.Previous,
                                 time,
                                 arrival.Track
                             );
-                            //throw new InvalidOperationException(txt);
                         }
                     }
                     else if (routing.Previous.TaskType == TrackTaskType.Service)
@@ -788,6 +798,20 @@ namespace ServiceSiteScheduling.Solutions
                     cost.DepartureDelays++;
                     cost.DepartureDelaySum += departure.Start - departure.ScheduledTime;
                     cost.ProblemTrains |= departure.Train.UnitBits;
+                }
+
+            foreach (StandOutTask standout in this.StandOutTasks)
+                if (standout.Start > standout.Deadline)
+                {
+                    logger.LogInformation(
+                        "OutStanding overrun: {start} > {deadline} for train {train}",
+                        standout.Start,
+                        standout.Deadline,
+                        standout.Train
+                    );
+                    cost.OutStandingOverruns++;
+                    cost.OutStandingOverrunSum += standout.Start - standout.Deadline;
+                    cost.ProblemTrains |= standout.Train.UnitBits;
                 }
 
             MoveTask? move = this.First;
@@ -1762,7 +1786,14 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     var arrival = (ArrivalTask)task;
                     trackaction.TaskType = TaskType.FromPredefined(Arrive);
-                    trackaction.StartTime = trackaction.EndTime = (ulong)arrival.ScheduledTime;
+                    trackaction.StartTime = (ulong)arrival.ScheduledTime;
+                    // EndTime can exceed ScheduledTime: the unit occupies the
+                    // arrival track until its route into the yard is actually
+                    // clear, not just until it is scheduled to arrive (#13).
+                    // That gap is priced independently of this serialisation:
+                    // ComputeCost already counts it as an arrival delay off
+                    // arrival.End, the same value endtime is derived from.
+                    trackaction.EndTime = (ulong)endtime;
 
                     var gatewayconnection = ProblemInstance.Current.GatewayConversion[
                         task.Track.ID
@@ -1779,18 +1810,6 @@ namespace ServiceSiteScheduling.Solutions
                         }
                     trackaction.Resources.RemoveAt(0);
 
-                    if (endtime > arrival.ScheduledTime)
-                    {
-                        var nextparking = new Interchange.Action
-                        {
-                            Location = task.Track.ID,
-                            ShuntingUnit = GetShuntUnit(task.Train, trainconversion),
-                            TaskType = TaskType.FromPredefined(Wait),
-                            StartTime = trackaction.EndTime,
-                            EndTime = (ulong)endtime,
-                        };
-                        actions.Add(nextparking);
-                    }
                     break;
                 }
                 case TrackTaskType.Parking:
