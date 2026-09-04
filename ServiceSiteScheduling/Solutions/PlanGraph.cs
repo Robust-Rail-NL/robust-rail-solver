@@ -409,16 +409,15 @@ namespace ServiceSiteScheduling.Solutions
                         {
                             logger.LogDebug(
                                 ""
-                                    + "Forced shuntingunit {routing.Train} to wait after arriving at {routing.Start}, "
-                                    + "because previous routing task {routing.Previous} ends at time {time}, but arrival "
-                                    + "track {arrival.Track} cannot be used for parking.",
+                                    + "Shuntingunit {routing.Train} incorporates a delay in arriving at {routing.Start} "
+                                    + "into its Arrive action, because previous routing task {routing.Previous} "
+                                    + "ends at time {time}, but arrival track {arrival.Track} cannot be used for parking.",
                                 routing.Train,
                                 routing.Start,
                                 routing.Previous,
                                 time,
                                 arrival.Track
                             );
-                            //throw new InvalidOperationException(txt);
                         }
                     }
                     else if (routing.Previous.TaskType == TrackTaskType.Service)
@@ -1787,7 +1786,14 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     var arrival = (ArrivalTask)task;
                     trackaction.TaskType = TaskType.FromPredefined(Arrive);
-                    trackaction.StartTime = trackaction.EndTime = (ulong)arrival.ScheduledTime;
+                    trackaction.StartTime = (ulong)arrival.ScheduledTime;
+                    // EndTime can exceed ScheduledTime: the unit occupies the
+                    // arrival track until its route into the yard is actually
+                    // clear, not just until it is scheduled to arrive (#13).
+                    // That gap is priced independently of this serialisation:
+                    // ComputeCost already counts it as an arrival delay off
+                    // arrival.End, the same value endtime is derived from.
+                    trackaction.EndTime = (ulong)endtime;
 
                     var gatewayconnection = ProblemInstance.Current.GatewayConversion[
                         task.Track.ID
@@ -1804,18 +1810,6 @@ namespace ServiceSiteScheduling.Solutions
                         }
                     trackaction.Resources.RemoveAt(0);
 
-                    if (endtime > arrival.ScheduledTime)
-                    {
-                        var nextparking = new Interchange.Action
-                        {
-                            Location = task.Track.ID,
-                            ShuntingUnit = GetShuntUnit(task.Train, trainconversion),
-                            TaskType = TaskType.FromPredefined(Wait),
-                            StartTime = trackaction.EndTime,
-                            EndTime = (ulong)endtime,
-                        };
-                        actions.Add(nextparking);
-                    }
                     break;
                 }
                 case TrackTaskType.Parking:
