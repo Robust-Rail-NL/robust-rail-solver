@@ -67,6 +67,11 @@ docker buildx build \
     --push \
     .
 
+TAGS=(-t "$IMAGE:$VERSION-assert")
+if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    TAGS+=(-t "$IMAGE:assert")
+fi
+
 # Never tagged :latest, whatever the version shape — :latest is what someone
 # gets when they ask for the solver without thinking about it, and that should
 # never be a build that aborts on a failed assertion.
@@ -76,6 +81,6 @@ docker buildx build \
     --build-arg "VERSION=$VERSION" \
     --build-arg "ASSERTIONS=true" \
     --build-context fixtures=../example_kleine_binckhorst \
-    -t "$IMAGE:$VERSION-assert" \
+    "${TAGS[@]}" \
     --push \
     .
