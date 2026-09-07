@@ -57,3 +57,14 @@ jobs:
       run: dotnet run --no-build --verbosity normal --project HIP.csproj
     - name: Test
       run: dotnet run --no-build --project Tests/ServiceSiteScheduling.Tests.csproj
+    # Coverage is reported, not gated: it runs the suite a second time under
+    # the VSTest/coverlet collector (the xunit.v3 native runner above can't
+    # collect coverage), then prints a per-assembly summary to the job
+    # summary so a drop is visible in review without failing the build.
+    - name: Coverage
+      if: matrix.runner == 'ubuntu-latest'
+      run: |
+        dotnet tool restore
+        dotnet test --no-build --collect:"XPlat Code Coverage" --results-directory ./coverage Tests/ServiceSiteScheduling.Tests.csproj
+        dotnet tool run reportgenerator "-reports:./coverage/**/coverage.cobertura.xml" "-targetdir:./coverage/report" "-reporttypes:MarkdownSummaryGithub"
+        cat ./coverage/report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
