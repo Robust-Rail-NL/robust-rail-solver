@@ -549,6 +549,13 @@ namespace ServiceSiteScheduling
                         Console.WriteLine($"connection.Track :{connection.Track}");
                     }
                 }
+                else
+                {
+                    throw new ArgumentException(
+                        $"Arriving train {arrivaltrain.Id} enters through track part "
+                            + $"{infrastructuremap[arrivaltrain.EntryTrackPart]}, which is not a gateway."
+                    );
+                }
                 if (debugLevel > 1)
                 {
                     foreach (var arrival in arrivals)
@@ -712,6 +719,13 @@ namespace ServiceSiteScheduling
 
                     foreach (var unit in units)
                         unit.Train = train;
+                }
+                else
+                {
+                    throw new ArgumentException(
+                        $"Departing train {departuretrain.Id} leaves through track part "
+                            + $"{infrastructuremap[departuretrain.LeaveTrackPart]}, which is not a gateway."
+                    );
                 }
 
                 // foreach (var departure in departures)
