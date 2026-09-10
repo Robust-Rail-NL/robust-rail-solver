@@ -23,6 +23,45 @@
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   <!--
+    Local dev builds (a bare `dotnet run`/`dotnet build`, which default to
+    Debug) get their own build-metadata-suffixed InformationalVersion,
+    computed automatically so nobody has to remember to touch it - e.g.
+    "2.0.0-local+20260910.a1b2c3d" for Program.cs's startup "HIP {Version}"
+    line. Mirrors docker-push-edge.sh's <release>-edge+<date>.<sha> scheme,
+    with "local" instead of "edge".
+
+    Gated on Configuration==Debug because that's the one signal that
+    distinguishes "somebody just ran the app locally" from every other build
+    path: docker-push.sh and docker-push-edge.sh both always build Release
+    AND pass their own -p:Version explicitly (which wins regardless), and a
+    local `dotnet publish -c Release` is close enough to a real release
+    build that it should show the plain <Version> too.
+
+    Falls back to "nogit" for the sha if git isn't available (e.g. building
+    from a source tarball with no .git) rather than failing the build.
+  -->
+  <Target Name="ComputeLocalInformationalVersion" BeforeTargets="GetAssemblyAttributes" Condition="'$(Configuration)' == 'Debug'">
+    <Exec Command="git rev-parse --short HEAD"
+          ConsoleToMSBuild="true"
+          StandardOutputImportance="low"
+          ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_GitShortSha" />
+    </Exec>
+    <PropertyGroup>
+      <_GitShortSha Condition="'$(_GitShortSha)' == ''">nogit</_GitShortSha>
+      <_VersionDashIndex>$(Version.IndexOf('-'))</_VersionDashIndex>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(_VersionDashIndex)' != '-1'">
+      <_ReleaseVersion>$(Version.Substring(0, $(_VersionDashIndex)))</_ReleaseVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(_VersionDashIndex)' == '-1'">
+      <_ReleaseVersion>$(Version)</_ReleaseVersion>
+    </PropertyGroup>
+    <PropertyGroup>
+      <InformationalVersion>$(_ReleaseVersion)-local+$([System.DateTime]::UtcNow.ToString('yyyyMMdd')).$(_GitShortSha)</InformationalVersion>
+    </PropertyGroup>
+  </Target>
+  <!--
     Assertions are normally tied to the build configuration, forcing a choice
     between optimised-but-unchecked and checked-but-slow. The solver is a
     wall-clock-bounded local search, so a Debug build explores far fewer
