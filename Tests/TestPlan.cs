@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ServiceSiteScheduling.Interchange;
 
 // Shares the mutable static ProblemInstance.Current with the other tests that
 // build a plan, so it must not run alongside them.
@@ -53,6 +54,25 @@ public class TestPlan(ITestOutputHelper output)
         temp_dir.Delete();
     }
 
+    // Guards TaskTypeOrder.ORDER's completeness: a value missing from it
+    // doesn't fail loudly on its own - TestJsonSorted only turns up the gap
+    // when CreatePlan's unseeded random search happens to produce a plan
+    // containing the missing value, so it can pass for a long time before
+    // failing intermittently (this is exactly how Break/NonService/StandIn/
+    // StandOut/Setback were found missing, back when ORDER lived alongside a
+    // local copy of PredefinedTaskType that had gone stale - see the removal
+    // of that copy in favor of the real ServiceSiteScheduling.Interchange
+    // enum). Comparing the full enum, not just spot-checking recently-added
+    // values, so this catches the next omission too.
+    [Fact]
+    public void PredefinedTaskType_AllValuesHaveATieBreakOrder()
+    {
+        var allValues = Enum.GetValues<PredefinedTaskType>();
+
+        Assert.Equal(allValues.Length, TaskTypeOrder.ORDER.Length);
+        Assert.Equal(allValues.OrderBy(v => v), TaskTypeOrder.ORDER.OrderBy(v => v));
+    }
+
     readonly JsonSerializerOptions options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -68,7 +88,7 @@ public class TestPlan(ITestOutputHelper output)
         Plan? plan = JsonSerializer.Deserialize<Plan>(json_text, options);
         long lastStartTime = long.MinValue;
         long lastEndTime = long.MinValue;
-        PredefinedTaskType? lastPTT = TaskType.ORDER[0];
+        PredefinedTaskType? lastPTT = TaskTypeOrder.ORDER[0];
         string? lastOTT = null;
         foreach (Task task in plan?.Actions ?? [])
         {
@@ -115,8 +135,8 @@ public class TestPlan(ITestOutputHelper output)
         {
             if (lastPTT != null)
             {
-                return Array.IndexOf(TaskType.ORDER, lastPTT)
-                    - Array.IndexOf(TaskType.ORDER, task.TaskType.Predefined);
+                return Array.IndexOf(TaskTypeOrder.ORDER, lastPTT)
+                    - Array.IndexOf(TaskTypeOrder.ORDER, task.TaskType.Predefined);
             }
             else
             {
@@ -127,6 +147,12 @@ public class TestPlan(ITestOutputHelper output)
     }
 }
 
+// A deliberately narrow view of the real Plan/Action shape: only the fields
+// this file's sortedness check actually reads. System.Text.Json ignores the
+// JSON members that don't map to a property here (ShuntingUnit, Resources,
+// Location, ...), so there's nothing to keep in sync as those evolve - unlike
+// TaskType/PredefinedTaskType below, which mirror the real thing exactly and
+// so used to be their own, driftable copy.
 public class Plan
 {
     public required Task[] Actions { get; set; }
@@ -139,28 +165,34 @@ public class Task
     public required TaskType TaskType { get; set; }
 }
 
-public class TaskType
+// Test-only tie-break order for actions sharing both StartTime and EndTime;
+// there's no production equivalent to reuse here, since real plans never
+// need to break a tie between two actions on the same shunting unit at the
+// same instant - only this test's monotonicity check does.
+internal static class TaskTypeOrder
 {
+    // StandIn/StandOut are the standing-train equivalents of Arrive/Exit, so
+    // placed immediately alongside them; Walking is placed with the other
+    // movement types, and Break/NonService at the end. Unlike the original
+    // six (Arrive, Move, Wait, Split, Combine, Exit), this placement for the
+    // five newer values is a reasonable default, not a verified business
+    // requirement - revisit if a real scenario ever exercises a tie-break
+    // between any of them and something else.
+    // PredefinedTaskType_AllValuesHaveATieBreakOrder above only guards
+    // completeness (every value appears exactly once), not that the order
+    // itself is correct.
     public static readonly PredefinedTaskType[] ORDER =
     [
         PredefinedTaskType.Arrive,
+        PredefinedTaskType.StandIn,
         PredefinedTaskType.Move,
+        PredefinedTaskType.Walking,
         PredefinedTaskType.Wait,
         PredefinedTaskType.Split,
         PredefinedTaskType.Combine,
         PredefinedTaskType.Exit,
+        PredefinedTaskType.StandOut,
+        PredefinedTaskType.Break,
+        PredefinedTaskType.NonService,
     ];
-
-    public PredefinedTaskType? Predefined { get; set; }
-    public string? Other { get; set; }
-}
-
-public enum PredefinedTaskType
-{
-    Move,
-    Split,
-    Combine,
-    Wait,
-    Arrive,
-    Exit,
 }
