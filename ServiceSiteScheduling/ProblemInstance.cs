@@ -387,10 +387,10 @@ namespace ServiceSiteScheduling
                 }
             }
 
-            // LP FIXME shouldn't we also iterate over InStanding here?
             Dictionary<Interchange.TaskType, ServiceType> taskmap = [];
             var tasktypes = scenario
-                .In.Aggregate(
+                .In.Concat(scenario.InStanding ?? [])
+                .Aggregate(
                     new List<Interchange.TaskType>(),
                     (list, train) =>
                     {
