@@ -905,7 +905,10 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     if (train != null)
                     {
-                        Debug.Assert(previous != null && first != null && last != null);
+                        Debug.Assert(
+                            previous != null && first != null && last != null,
+                            $"previous/first/last must be set together with train for departure {task}"
+                        );
                         this.computeDepartureRoute(task, train, previous.Track, first, last);
                     }
                     train = null;
@@ -941,7 +944,10 @@ namespace ServiceSiteScheduling.Solutions
             }
             if (train != null)
             {
-                Debug.Assert(previous != null && first != null && last != null);
+                Debug.Assert(
+                    previous != null && first != null && last != null,
+                    $"previous/first/last must be set together with train for departure {task}"
+                );
                 this.computeDepartureRoute(task, train, previous.Track, first, last);
             }
 
@@ -1573,7 +1579,10 @@ namespace ServiceSiteScheduling.Solutions
                         a.StartTime,
                         a.EndTime
                     );
-                    Debug.Assert(waitAction != null);
+                    Debug.Assert(
+                        waitAction != null,
+                        $"First wait action seen for {a.ShuntingUnit} was already a merge candidate"
+                    );
                     waitAction.EndTime = a.EndTime;
                     toDelete.Add(a);
                 }
@@ -1901,7 +1910,10 @@ namespace ServiceSiteScheduling.Solutions
                     break;
                 }
             }
-            Debug.Assert(trackaction.TaskType != null);
+            Debug.Assert(
+                trackaction.TaskType != null,
+                $"Unhandled TrackTaskType {task.TaskType} on track {task.Track} for train {task.Train} left trackaction.TaskType unset"
+            );
             actions.Add(trackaction);
         }
 
@@ -1940,12 +1952,15 @@ namespace ServiceSiteScheduling.Solutions
             HashSet<TrackTask> seen_tt = [];
             Dictionary<MoveTask, int> seen_mt = [];
 
-            Debug.Assert(CheckGraphStructure(seen_mt, seen_tt));
+            Debug.Assert(CheckGraphStructure(seen_mt, seen_tt), "Task graph structure is broken");
 
             // Check other well-formedness criteria
             foreach (var tt in seen_tt)
             {
-                Debug.Assert(tt.Track != null);
+                Debug.Assert(
+                    tt.Track != null,
+                    $"TrackTask {tt} (train {tt.Train}) has no Track set"
+                );
             }
 
             // Check the linked list of MoveTask_s
@@ -2002,7 +2017,7 @@ namespace ServiceSiteScheduling.Solutions
                 while (queue_mt.Count != 0)
                 {
                     MoveTask mt = queue_mt.Dequeue();
-                    Debug.Assert(mt != null);
+                    Debug.Assert(mt != null, "Queued MoveTask must not be null");
                     seen_mt.TryGetValue(mt, out int value);
                     value++;
                     seen_mt[mt] = value;
@@ -2016,16 +2031,35 @@ namespace ServiceSiteScheduling.Solutions
                     // first, when sibling branches may still be in flight.
                     if (value == mt.AllPrevious.Count)
                     {
-                        Debug.Assert(mt.AllNext.Count > 0 && mt.AllPrevious.Count > 0);
+                        Debug.Assert(
+                            mt.AllNext.Count > 0 && mt.AllPrevious.Count > 0,
+                            $"MoveTask {mt} (train {mt.Train}) must have at least one predecessor and one successor TrackTask"
+                        );
                         foreach (TrackTask tt in mt.AllPrevious)
                         {
-                            Debug.Assert(tt != null);
-                            Debug.Assert(seen_tt.Contains(tt));
-                            Debug.Assert(tt.Next == mt);
+                            Debug.Assert(
+                                tt != null,
+                                $"MoveTask {mt}: AllPrevious contains a null TrackTask"
+                            );
+                            Debug.Assert(
+                                seen_tt.Contains(tt),
+                                $"MoveTask {mt} (train {mt.Train}) reached its final predecessor edge, but predecessor TrackTask {tt} (train {tt.Train}, type {tt.TaskType}) was never visited by the traversal"
+                            );
+                            Debug.Assert(
+                                tt.Next == mt,
+                                $"TrackTask {tt} (train {tt.Train}) lists MoveTask {mt} as predecessor, but tt.Next points elsewhere ({tt.Next})"
+                            );
                         }
                         foreach (TrackTask tt in mt.AllNext)
                         {
-                            Debug.Assert(tt != null && tt.Previous == mt);
+                            Debug.Assert(
+                                tt != null,
+                                $"MoveTask {mt}: AllNext contains a null TrackTask"
+                            );
+                            Debug.Assert(
+                                tt.Previous == mt,
+                                $"MoveTask {mt} (train {mt.Train}): successor TrackTask {tt} does not point back via Previous ({tt.Previous})"
+                            );
                             queue_tt.Enqueue(tt);
                         }
                     }
@@ -2033,29 +2067,36 @@ namespace ServiceSiteScheduling.Solutions
                 while (queue_tt.Count != 0)
                 {
                     TrackTask tt = queue_tt.Dequeue();
-                    Debug.Assert(!seen_tt.Contains(tt));
+                    Debug.Assert(
+                        !seen_tt.Contains(tt),
+                        $"TrackTask {tt} (train {tt.Train}, type {tt.TaskType}) was reached twice by the traversal"
+                    );
                     seen_tt.Add(tt);
-                    Debug.Assert(tt.Previous != null); // this was actually already asserted when enqueueing `tt`
+                    // this was actually already asserted when enqueueing `tt`
+                    Debug.Assert(
+                        tt.Previous != null,
+                        $"TrackTask {tt} (train {tt.Train}, type {tt.TaskType}) has no Previous MoveTask"
+                    );
                     if (tt.Next == null)
                     {
                         Debug.Assert(
                             tt.TaskType == TrackTaskType.Departure || tt.IsParkingLike,
-                            "Only DepartureTask, ParkingTask or StandOutTask may have Next unset"
+                            $"Only DepartureTask, ParkingTask or StandOutTask may have Next unset, but TrackTask {tt} (train {tt.Train}, type {tt.TaskType}) does"
                         );
                         Debug.Assert(
                             tt.Previous.TaskType == MoveTaskType.Departure,
-                            "Departure preceded by regular MoveTask"
+                            $"TrackTask {tt} (train {tt.Train}) has no Next, so its Previous MoveTask {tt.Previous} must be a Departure move"
                         );
                     }
                     else
                     {
                         Debug.Assert(
                             tt.TaskType != TrackTaskType.Departure,
-                            "DepartureTask must not have Next set"
+                            $"DepartureTask {tt} (train {tt.Train}) must not have Next set, but has Next={tt.Next}"
                         );
                         Debug.Assert(
                             tt.Previous.TaskType != MoveTaskType.Departure,
-                            "DepartureMove followed by non-Departure"
+                            $"TrackTask {tt} (train {tt.Train}) has a Next set, so its Previous MoveTask {tt.Previous} must not be a Departure move"
                         );
                         queue_mt.Enqueue(tt.Next);
                     }
@@ -2065,7 +2106,10 @@ namespace ServiceSiteScheduling.Solutions
             // Check that the counts are correct
             foreach (var kvp in seen_mt)
             {
-                Debug.Assert(kvp.Key.AllPrevious.Count == kvp.Value);
+                Debug.Assert(
+                    kvp.Key.AllPrevious.Count == kvp.Value,
+                    $"MoveTask {kvp.Key} (train {kvp.Key.Train}) was visited {kvp.Value} time(s), expected {kvp.Key.AllPrevious.Count} (its AllPrevious.Count)"
+                );
             }
 
             return true;
