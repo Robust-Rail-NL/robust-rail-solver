@@ -42,6 +42,7 @@
 # robust-rail-evaluator) that need the same multi-arch/network=host setup
 # — a buildx builder isn't tied to a specific repo or Dockerfile.
 set -euo pipefail
+cd "$(dirname "$0")"
 
 docker login ghcr.io
 

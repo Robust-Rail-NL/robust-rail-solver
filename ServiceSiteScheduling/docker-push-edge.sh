@@ -31,6 +31,7 @@
 # Requires the same buildx builder as docker-push.sh — see its header comment
 # for why (network=host, shared with sibling Robust-Rail-NL projects).
 set -euo pipefail
+cd "$(dirname "$0")"
 
 docker login ghcr.io
 
