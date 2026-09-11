@@ -2028,13 +2028,19 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     MoveTask mt = queue_mt.Dequeue();
                     Debug.Assert(mt != null);
-                    if (seen_mt.TryGetValue(mt, out int value))
+                    seen_mt.TryGetValue(mt, out int value);
+                    value++;
+                    seen_mt[mt] = value;
+
+                    // A multi-predecessor merge (e.g. a departure combine) is enqueued once
+                    // per predecessor edge, but its sibling chains may reach it at different
+                    // graph depths (e.g. one sibling passes through a ServiceTask and the
+                    // other doesn't). So only run the consistency checks and continue the
+                    // traversal past `mt` on its LAST enqueued occurrence, once every
+                    // predecessor is guaranteed to have been visited already - not on the
+                    // first, when sibling branches may still be in flight.
+                    if (value == mt.AllPrevious.Count)
                     {
-                        value++;
-                    }
-                    else
-                    {
-                        value = 1;
                         Debug.Assert(mt.AllNext.Count > 0 && mt.AllPrevious.Count > 0);
                         foreach (TrackTask tt in mt.AllPrevious)
                         {
@@ -2048,7 +2054,6 @@ namespace ServiceSiteScheduling.Solutions
                             queue_tt.Enqueue(tt);
                         }
                     }
-                    seen_mt[mt] = value;
                 }
                 while (queue_tt.Count != 0)
                 {
