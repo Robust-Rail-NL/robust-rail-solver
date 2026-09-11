@@ -40,11 +40,17 @@
     Falls back to "nogit" for the sha if git isn't available (e.g. building
     from a source tarball with no .git) rather than failing the build.
   -->
-  <Target Name="ComputeLocalInformationalVersion" BeforeTargets="GetAssemblyAttributes" Condition="'$(Configuration)' == 'Debug'">
-    <Exec Command="git rev-parse --short HEAD"
-          ConsoleToMSBuild="true"
-          StandardOutputImportance="low"
-          ContinueOnError="WarnAndContinue">
+  <Target
+    Name="ComputeLocalInformationalVersion"
+    BeforeTargets="GetAssemblyAttributes"
+    Condition="'$(Configuration)' == 'Debug'"
+  >
+    <Exec
+      Command="git rev-parse --short HEAD"
+      ConsoleToMSBuild="true"
+      StandardOutputImportance="low"
+      ContinueOnError="WarnAndContinue"
+    >
       <Output TaskParameter="ConsoleOutput" PropertyName="_GitShortSha" />
     </Exec>
     <PropertyGroup>
