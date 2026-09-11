@@ -132,7 +132,10 @@ namespace ServiceSiteScheduling.Matching
             foreach (var kvp in trainparts)
                 kvp.Key.Parts = kvp.Value.ToArray();
 
-            Debug.Assert(departuretrains.All(t => t.Parts != null));
+            Debug.Assert(
+                departuretrains.All(t => t.Parts != null),
+                $"Departure train(s) missing Parts: {string.Join(", ", departuretrains.Where(t => t.Parts == null))}"
+            );
             TrainMatching result = new(departuretrains, shunttrainunits);
             return result;
         }

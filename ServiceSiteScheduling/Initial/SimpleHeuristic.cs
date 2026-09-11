@@ -344,7 +344,10 @@ namespace ServiceSiteScheduling.Initial
                     }
 
                 // Add it to the machine
-                Debug.Assert(resource != null);
+                Debug.Assert(
+                    resource != null,
+                    $"No resource found for service type {selected.Type} (train {selected.Train}) - selected.Type.Resources must be non-empty"
+                );
                 var machineschedule = schedule[resource];
                 selected.Start = Math.Max(t, selected.Previous.End);
                 if (earlieststart.TryGetValue(selected.Train, out Time value))
@@ -433,7 +436,10 @@ namespace ServiceSiteScheduling.Initial
                     graph.First = current;
                 prev = current;
             }
-            Debug.Assert(prev != null);
+            Debug.Assert(
+                prev != null,
+                "moveheap was empty - no move tasks were added; graph must have at least one MoveTask"
+            );
             graph.Last = prev;
 
             routings.Sort((a, b) => a.MoveOrder.CompareTo(b.MoveOrder));
@@ -631,7 +637,7 @@ namespace ServiceSiteScheduling.Initial
                         $"Set parking track on routing {routing} to parking track {parkingtrack}"
                     );
             }
-            Debug.Assert(graph.IsWellFormed());
+            Debug.Assert(graph.IsWellFormed(), "Constructed initial plan graph is not well-formed");
             return graph;
 
             static void GenerateMatching(

@@ -266,7 +266,10 @@ namespace ServiceSiteScheduling
                         Switch @switch = infrastructuremap[part.Id] as Switch;
                         if (part.ASide.Length == 1)
                         { // A side is connected to two B side infrastructure
-                            Debug.Assert(part.BSide.Length == 2);
+                            Debug.Assert(
+                                part.BSide.Length == 2,
+                                $"Switch {part.Id}: ASide has 1 connection, so BSide must have exactly 2, but has {part.BSide.Length}"
+                            );
                             @switch.Connect(
                                 infrastructuremap[part.ASide[0]],
                                 new Infrastructure[2]
@@ -278,7 +281,10 @@ namespace ServiceSiteScheduling
                         }
                         else
                         { // B side is connected to two A side infrastructure
-                            Debug.Assert(part.ASide.Length == 2);
+                            Debug.Assert(
+                                part.ASide.Length == 2,
+                                $"Switch {part.Id}: BSide has 1 connection, so ASide must have exactly 2, but has {part.ASide.Length}"
+                            );
                             @switch.Connect(
                                 infrastructuremap[part.BSide[0]],
                                 new Infrastructure[2]
@@ -298,8 +304,14 @@ namespace ServiceSiteScheduling
                         );
                         break;
                     case Interchange.TrackPartType.HalfEnglishSwitch:
-                        Debug.Assert(part.ASide.Length == 2);
-                        Debug.Assert(part.BSide.Length == 2);
+                        Debug.Assert(
+                            part.ASide.Length == 2,
+                            $"HalfEnglishSwitch {part.Id} must have exactly 2 ASide connections, has {part.ASide.Length}"
+                        );
+                        Debug.Assert(
+                            part.BSide.Length == 2,
+                            $"HalfEnglishSwitch {part.Id} must have exactly 2 BSide connections, has {part.BSide.Length}"
+                        );
                         HalfEnglishSwitch halfenglishswitch =
                             infrastructuremap[part.Id] as HalfEnglishSwitch;
                         halfenglishswitch.Connect(
@@ -310,8 +322,14 @@ namespace ServiceSiteScheduling
                         );
                         break;
                     case Interchange.TrackPartType.Intersection:
-                        Debug.Assert(part.ASide.Length == 2);
-                        Debug.Assert(part.BSide.Length == 2);
+                        Debug.Assert(
+                            part.ASide.Length == 2,
+                            $"Intersection {part.Id} must have exactly 2 ASide connections, has {part.ASide.Length}"
+                        );
+                        Debug.Assert(
+                            part.BSide.Length == 2,
+                            $"Intersection {part.Id} must have exactly 2 BSide connections, has {part.BSide.Length}"
+                        );
                         Intersection intersection = infrastructuremap[part.Id] as Intersection;
                         intersection.Connect(
                             infrastructuremap[part.ASide[0]],

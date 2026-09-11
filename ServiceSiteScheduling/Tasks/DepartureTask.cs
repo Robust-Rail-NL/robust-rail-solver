@@ -29,7 +29,10 @@ namespace ServiceSiteScheduling.Tasks
 
         public DepartureRoutingTask GetDepartureRoutingTask()
         {
-            Debug.Assert(Previous.TaskType == MoveTaskType.Departure);
+            Debug.Assert(
+                Previous.TaskType == MoveTaskType.Departure,
+                $"DepartureTask {this} (train {Train}): Previous move must be a Departure move, but is {Previous.TaskType}"
+            );
             return (DepartureRoutingTask)this.Previous;
         }
     }
