@@ -10,12 +10,11 @@ lockstep release with generator/evaluator.
 Both fixtures called out in 2.0.0 as expected-to-fail now produce valid
 plans:
 
-- **solver#13** — a delayed Arrival now gets a real duration instead of a
-  trailing Wait, fixing `6t_custom_example3`'s non-parking-track parking
-  behavior.
-- **solver#14** — outStanding trains are now costed against the scenario end
-  time, so the solver no longer produces free-overrun plans that used to trip
-  a diagnostic-quality bug on the evaluator side (evaluator#6).
+- **#13** — a delayed Arrival now gets a real duration instead of a trailing
+  Wait, fixing `6t_custom_example3`'s non-parking-track parking behavior.
+- **#14** — outStanding trains are now costed against the scenario end time,
+  so the solver no longer produces free-overrun plans that used to trip a
+  diagnostic-quality bug on the evaluator side (evaluator#6).
 
 ### standingIndex is now honoured (#18)
 
@@ -33,6 +32,10 @@ genuinely unsafe multi-inStanding-per-track cases.
   delivered.
 - **#32** — task types are now registered from inStanding trains, not just
   arriving ones.
+- **#31** — an arriving or departing train whose entry/exit track part isn't
+  actually a `GateWay` (e.g. a typo'd ID pointing at an ordinary RailRoad or
+  Switch) used to silently vanish from the problem instance instead of
+  failing to parse. Now throws, naming the offending train and track part.
 
 ### Config: SimulatedAnnealing key rename (#30)
 
