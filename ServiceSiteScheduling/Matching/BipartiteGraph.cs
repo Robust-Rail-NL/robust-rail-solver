@@ -186,7 +186,10 @@ namespace ServiceSiteScheduling.Matching
                         arrival.Adjacent.Add(this.Departures[j]);
                 if (arrival.Adjacent.Count > 0)
                 {
-                    Debug.Assert(arrival.Adjacent.Count > 1);
+                    Trace.Assert(
+                        arrival.Adjacent.Count > 1,
+                        $"ArrivalVertex {arrival} has exactly 1 adjacent departure - should have been resolved as a fixed match already"
+                    );
                     vertices.Add(arrival);
                 }
             }
@@ -285,9 +288,15 @@ namespace ServiceSiteScheduling.Matching
                 if (!active)
                 {
                     // This is a fixed match
-                    Debug.Assert(this.fixedMatches.Any(m => m.Arrival == arrival));
+                    Trace.Assert(
+                        this.fixedMatches.Any(m => m.Arrival == arrival),
+                        $"Arrival {arrival} has no adjacency-matrix candidates but isn't recorded in fixedMatches"
+                    );
                     // if the following is indeed true, this is a quicker way to check than iterating over the adjacency matrix:
-                    Debug.Assert(arrival.Adjacent.Count == 0);
+                    Trace.Assert(
+                        arrival.Adjacent.Count == 0,
+                        $"Arrival {arrival} is a fixed match but still has {arrival.Adjacent.Count} adjacent departures"
+                    );
                     continue;
                 }
 
@@ -296,7 +305,10 @@ namespace ServiceSiteScheduling.Matching
                 list.Add(arrival);
             }
             // For each type, we have at least two arrivals. Otherwise, it would have resulted in a fixed match.
-            Debug.Assert(arrivalsbytype.Values.All(v => v.Count > 1));
+            Trace.Assert(
+                arrivalsbytype.Values.All(v => v.Count > 1),
+                $"Train type(s) with fewer than 2 free arrivals should have been fixed matches: {string.Join(", ", arrivalsbytype.Where(kvp => kvp.Value.Count <= 1).Select(kvp => $"{kvp.Key}={kvp.Value.Count}"))}"
+            );
 
             int[] matching = new int[this.Arrivals.Length];
             foreach (var match in initialmatching)
@@ -410,7 +422,10 @@ namespace ServiceSiteScheduling.Matching
             foreach (var kvp in trainparts)
                 kvp.Key.Parts = kvp.Value.ToArray();
 
-            Debug.Assert(departuretrains.All(t => t.Parts != null));
+            Trace.Assert(
+                departuretrains.All(t => t.Parts != null),
+                $"Departure train(s) missing Parts: {string.Join(", ", departuretrains.Where(t => t.Parts == null))}"
+            );
             TrainMatching result = new(this.departuretrains, shunttrainunits);
             return result;
         }

@@ -99,12 +99,9 @@ namespace ServiceSiteScheduling.Interchange
 
     public enum PredefinedTaskType
     {
-        // Movement
         Move,
         Split,
         Combine,
-
-        // Special
         Wait,
         Arrive,
         Exit,

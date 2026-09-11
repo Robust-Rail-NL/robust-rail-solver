@@ -39,7 +39,10 @@ namespace ServiceSiteScheduling.Matching
                     part.Matching = this;
                 }
             }
-            Debug.Assert(bytype.All(l => l.All(p => p.Matching != null)));
+            Debug.Assert(
+                bytype.All(l => l.All(p => p.Matching != null)),
+                "Every Part must have Matching set to this TrainMatching after grouping by type"
+            );
             this.DeparturePartsByType = bytype.ToArray();
         }
 

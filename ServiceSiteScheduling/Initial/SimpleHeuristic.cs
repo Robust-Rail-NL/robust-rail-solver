@@ -358,7 +358,11 @@ namespace ServiceSiteScheduling.Initial
                     }
 
                 // Add it to the machine
-                Debug.Assert(resource != null);
+                if (resource == null)
+                    throw new InvalidOperationException(
+                        $"No resource configured for service type '{selected.Type}', required by train {selected.Train}. "
+                            + "Check that location.json defines a facility handling this service type."
+                    );
                 var machineschedule = schedule[resource];
                 selected.Start = Math.Max(t, selected.Previous.End);
                 if (earlieststart.TryGetValue(selected.Train, out Time value))
@@ -448,7 +452,10 @@ namespace ServiceSiteScheduling.Initial
                     graph.First = current;
                 prev = current;
             }
-            Debug.Assert(prev != null);
+            if (prev == null)
+                throw new InvalidOperationException(
+                    "Scenario contains no trains to plan (no arrival, departure, inStanding or outStanding trains)."
+                );
             graph.Last = prev;
 
             routings.Sort((a, b) => a.MoveOrder.CompareTo(b.MoveOrder));
@@ -646,7 +653,7 @@ namespace ServiceSiteScheduling.Initial
                         $"Set parking track on routing {routing} to parking track {parkingtrack}"
                     );
             }
-            Debug.Assert(graph.IsWellFormed());
+            Debug.Assert(graph.IsWellFormed(), "Constructed initial plan graph is not well-formed");
             return graph;
 
             static void GenerateMatching(

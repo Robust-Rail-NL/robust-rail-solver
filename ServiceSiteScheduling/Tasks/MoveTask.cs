@@ -84,7 +84,11 @@ namespace ServiceSiteScheduling.Tasks
 
             if (this.NextMove == null)
             {
-                Debug.Assert(this.PreviousMove != null); // Otherwise, would have thrown InvalidOperationException above
+                // Otherwise, would have thrown InvalidOperationException above
+                Trace.Assert(
+                    this.PreviousMove != null,
+                    $"MoveTask {this}: PreviousMove must be non-null here (PreviousMove == null && NextMove == null already threw above)"
+                );
                 this.Graph.Last = this.PreviousMove;
             }
             else
@@ -98,12 +102,18 @@ namespace ServiceSiteScheduling.Tasks
 
             if (this == this.Graph.First)
             {
-                Debug.Assert(this.NextMove != null);
+                Debug.Assert(
+                    this.NextMove != null,
+                    $"MoveTask {this} is Graph.First but has no NextMove - graph must have at least one other MoveTask"
+                );
                 this.Graph.First = this.NextMove;
             }
             if (this == this.Graph.Last)
             {
-                Debug.Assert(this.PreviousMove != null);
+                Debug.Assert(
+                    this.PreviousMove != null,
+                    $"MoveTask {this} is Graph.Last but has no PreviousMove - graph must have at least one other MoveTask"
+                );
                 this.Graph.Last = this.PreviousMove;
             }
 
@@ -310,7 +320,10 @@ namespace ServiceSiteScheduling.Tasks
                     result = task.Previous;
                 }
             }
-            Debug.Assert(result != null);
+            Debug.Assert(
+                result != null,
+                $"MoveTask {this}: LatestPrevious found no predecessor - AllPrevious.Count={this.AllPrevious.Count}"
+            );
             return result;
         }
 
@@ -326,7 +339,10 @@ namespace ServiceSiteScheduling.Tasks
                     result = task.Next;
                 }
             }
-            Debug.Assert(result != null);
+            Debug.Assert(
+                result != null,
+                $"MoveTask {this}: EarliestNext found no successor - AllNext.Count={this.AllNext.Count}"
+            );
             return result;
         }
 
@@ -342,7 +358,10 @@ namespace ServiceSiteScheduling.Tasks
                     result = task.Previous;
                 }
             }
-            Debug.Assert(result != null);
+            Debug.Assert(
+                result != null,
+                $"MoveTask {this}: EarliestPrevious found no predecessor - AllPrevious.Count={this.AllPrevious.Count}"
+            );
             return result;
         }
 
@@ -358,7 +377,10 @@ namespace ServiceSiteScheduling.Tasks
                     result = task.Next;
                 }
             }
-            Debug.Assert(result != null);
+            Debug.Assert(
+                result != null,
+                $"MoveTask {this}: LatestNext found no successor - AllNext.Count={this.AllNext.Count}"
+            );
             return result;
         }
     }
