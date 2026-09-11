@@ -14,7 +14,11 @@ namespace ServiceSiteScheduling.Trains
 
         public bool InStanding { get; set; }
 
-        public int StandingIndex { get; set; }
+        // Null means the scenario did not specify one; see solver#18. Left as-is
+        // rather than defaulted here, since a non-inStanding arrival train ignores
+        // it entirely, and the sole consumer (SimpleHeuristic.Construct) is the
+        // right place to decide what an absent index means.
+        public int? StandingIndex { get; set; }
 
         public ArrivalTrain(
             TrainUnit[] units,
@@ -22,7 +26,7 @@ namespace ServiceSiteScheduling.Trains
             Side side,
             Time time,
             bool inStanding = false,
-            int standingIndex = 0
+            int? standingIndex = null
         )
         {
             this.Units = units;

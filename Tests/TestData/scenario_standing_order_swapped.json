@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "trainUnitTypes": [
+    {
+      "typePrefix": "SLT",
+      "carriages": 4,
+      "length": 69.36,
+      "combineDuration": 180,
+      "splitDuration": 120,
+      "backNormTime": 120,
+      "backAdditionTime": 16,
+      "travelSpeed": 10,
+      "startUpTime": 0,
+      "needsLoco": false,
+      "isLoco": false,
+      "needsElectricity": true,
+      "idPrefix": null
+    }
+  ],
+  "in": [],
+  "inStanding": [
+    {
+      "entryTrackPart": 56,
+      "firstParkingTrackPart": 1,
+      "arrival": 0,
+      "departure": 0,
+      "id": 6000,
+      "members": [
+        { "typePrefix": "SLT", "carriages": 4, "id": 6401, "tasks": [] }
+      ],
+      "standingIndex": 1
+    },
+    {
+      "entryTrackPart": 56,
+      "firstParkingTrackPart": 1,
+      "arrival": 0,
+      "departure": 0,
+      "id": 6001,
+      "members": [
+        { "typePrefix": "SLT", "carriages": 4, "id": 6402, "tasks": [] }
+      ],
+      "standingIndex": 0
+    }
+  ],
+  "out": [],
+  "outStanding": [
+    {
+      "leaveTrackPart": 71,
+      "lastParkingTrackPart": 1,
+      "arrival": 0,
+      "departure": 0,
+      "trainUnits": [
+        { "typePrefix": "SLT", "carriages": 4, "id": null, "tasks": null }
+      ],
+      "standingIndex": null,
+      "id": 6002
+    },
+    {
+      "leaveTrackPart": 71,
+      "lastParkingTrackPart": 1,
+      "arrival": 0,
+      "departure": 0,
+      "trainUnits": [
+        { "typePrefix": "SLT", "carriages": 4, "id": null, "tasks": null }
+      ],
+      "standingIndex": null,
+      "id": 6003
+    }
+  ],
+  "startTime": 0,
+  "endTime": 3600,
+  "nonServiceTraffic": [],
+  "disabledTrackPart": [],
+  "workers": []
+}
