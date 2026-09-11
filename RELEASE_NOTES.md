@@ -1,5 +1,67 @@
 # Release notes
 
+## 2.1.0 — 2026-09-11
+
+A fix-focused release. No interchange-format changes — this is not a
+lockstep release with generator/evaluator.
+
+### Two of 2.0.0's known limitations are fixed
+
+Both fixtures called out in 2.0.0 as expected-to-fail now produce valid
+plans:
+
+- **solver#13** — a delayed Arrival now gets a real duration instead of a
+  trailing Wait, fixing `6t_custom_example3`'s non-parking-track parking
+  behavior.
+- **solver#14** — outStanding trains are now costed against the scenario end
+  time, so the solver no longer produces free-overrun plans that used to trip
+  a diagnostic-quality bug on the evaluator side (evaluator#6).
+
+### standingIndex is now honoured (#18)
+
+2.0.0 read `standingIndex` off the wire but didn't act on it. Multiple
+inStanding trains sharing a track are now ordered by it, narrowed to only the
+genuinely unsafe multi-inStanding-per-track cases.
+
+### Other fixes
+
+- **#24** — a departure Move action is no longer emitted for an empty route;
+  a genuinely resourceless Move is now a hard failure on the final delivered
+  plan rather than a silent no-op.
+- **#26** — fixed split-during-a-move placing units on the wrong track side;
+  a plan with an unverified split placement is now refused rather than
+  delivered.
+- **#32** — task types are now registered from inStanding trains, not just
+  arriving ones.
+
+### Config: SimulatedAnnealing key rename (#30)
+
+`IterationsUntilReset` held the hard iteration cap and `Reset` held the
+no-improvement reset threshold — backwards from what they suggested, and
+inconsistent with TabuSearch's naming. Renamed to `MaxIterations` /
+`IterationsUntilReset` respectively. `Config.ReadFrom` still accepts the old
+pair with a deprecation warning; a config setting all three keys is rejected
+as ambiguous.
+
+### Hardening
+
+Internal invariant violations are exceptions with descriptive messages now,
+not bare asserts — including a fixed spurious assertion failure in
+`PlanGraph.CheckGraphStructure` for uneven-depth combines.
+
+### Repo hygiene
+
+- Added the `edge` image channel (`docker-push-edge.sh`) for running
+  not-yet-reviewed fixes without waiting on a `main` PR — see
+  `CONTRIBUTING.md`.
+- CI now reports test coverage, without gating on it.
+- Startup now prints the full version specifier, including build metadata.
+
+### Publishing
+
+Unchanged from 2.0.0: versioned from `HIP.csproj`'s `<Version>`, pushed to
+`ghcr.io/robust-rail-nl/hip` via `docker-push.sh`.
+
 ## 2.0.0 — 2026-08-20
 
 This is the solver's (HIP's) slice of the shared 2.0.0 release: the same
