@@ -4,3 +4,4 @@ obj
 **/tmp_plans/
 megalinter-reports*/
 .vscode/
+coverage/
