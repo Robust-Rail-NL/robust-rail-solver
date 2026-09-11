@@ -9,6 +9,8 @@ namespace ServiceSiteScheduling.Solutions
         public int ArrivalDelaySum;
         public int DepartureDelays;
         public int DepartureDelaySum;
+        public int OutStandingOverruns;
+        public int OutStandingOverrunSum;
         public int TrackLengthViolations;
         public int TrackLengthViolationSum;
         public double ShuntMoves;
@@ -21,6 +23,8 @@ namespace ServiceSiteScheduling.Solutions
         public static double ArrivalDelaySumWeight = 0.03;
         public static double DepartureDelayWeight = 50;
         public static double DepartureDelaySumWeight = 0.05;
+        public static double OutStandingOverrunWeight = 50;
+        public static double OutStandingOverrunSumWeight = 0.05;
         public static double TrackWeight = 15;
         public static double TrackSumWeight = 0.05;
         public static double ShuntWeight = 0.02;
@@ -38,6 +42,7 @@ namespace ServiceSiteScheduling.Solutions
                 return this.Crossings
                         + this.ArrivalDelays
                         + this.DepartureDelays
+                        + this.OutStandingOverruns
                         + this.TrackLengthViolations
                         + this.CombineOnDepartureTrack
                     == 0;
@@ -57,6 +62,10 @@ namespace ServiceSiteScheduling.Solutions
                 return CrossingWeight * this.Crossings
                     + DepartureDelayWeight * this.DepartureDelays
                     + DepartureDelaySumWeight * this.DepartureDelaySum / (this.DepartureDelays + 1)
+                    + OutStandingOverrunWeight * this.OutStandingOverruns
+                    + OutStandingOverrunSumWeight
+                        * this.OutStandingOverrunSum
+                        / (this.OutStandingOverruns + 1)
                     + ArrivalDelayWeight * this.ArrivalDelays
                     + ArrivalDelaySumWeight * this.ArrivalDelaySum / (this.ArrivalDelays + 1)
                     + TrackWeight * this.TrackLengthViolations
@@ -72,6 +81,10 @@ namespace ServiceSiteScheduling.Solutions
                 return CrossingWeight * this.Crossings
                     + DepartureDelayWeight * this.DepartureDelays
                     + DepartureDelaySumWeight * this.DepartureDelaySum / (this.DepartureDelays + 1)
+                    + OutStandingOverrunWeight * this.OutStandingOverruns
+                    + OutStandingOverrunSumWeight
+                        * this.OutStandingOverrunSum
+                        / (this.OutStandingOverruns + 1)
                     + ArrivalDelayWeight * this.ArrivalDelays
                     + ArrivalDelaySumWeight * this.ArrivalDelaySum / (this.ArrivalDelays + 1)
                     + TrackWeight * this.TrackLengthViolations
@@ -91,7 +104,7 @@ namespace ServiceSiteScheduling.Solutions
         public override string ToString()
         {
             return string.Format(
-                "Cost = {0} : {8} | cr={1}, dd={2}, da={3}, tlv={4}, sm={5}, rd={6}, cd={7}, um={9}",
+                "Cost = {0} : {8} | cr={1}, dd={2}, da={3}, tlv={4}, sm={5}, rd={6}, cd={7}, um={9}, oo={10}",
                 this.BaseCost.ToString("N1"),
                 this.Crossings,
                 this.DepartureDelays,
@@ -101,7 +114,8 @@ namespace ServiceSiteScheduling.Solutions
                 (this.RoutingDurationSum / this.ShuntMoves).ToString("N2"),
                 this.CombineOnDepartureTrack,
                 this.FullCost.ToString("N2"),
-                this.UnplannedMaintenance
+                this.UnplannedMaintenance,
+                this.OutStandingOverruns
             );
         }
     }
