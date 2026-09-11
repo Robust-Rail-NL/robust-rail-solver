@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using ServiceSiteScheduling.Utilities;
 using YamlDotNet.Serialization;
 
@@ -183,11 +184,11 @@ namespace ServiceSiteScheduling
                     sa.Run(
                         new Time(config.SimulatedAnnealing.MaxDuration),
                         config.SimulatedAnnealing.StopWhenFeasible,
-                        config.SimulatedAnnealing.IterationsUntilReset,
+                        config.SimulatedAnnealing.MaxIterations ?? 0,
                         config.SimulatedAnnealing.T,
                         config.SimulatedAnnealing.A,
                         config.SimulatedAnnealing.Q,
-                        config.SimulatedAnnealing.Reset,
+                        config.SimulatedAnnealing.IterationsUntilReset,
                         config.SimulatedAnnealing.Bias,
                         debugLevel,
                         config.SimulatedAnnealing.IntensifyOnImprovement,
@@ -423,13 +424,56 @@ namespace ServiceSiteScheduling
         {
             public int MaxDuration { get; set; }
             public bool StopWhenFeasible { get; set; }
+
+            // `MaxIterations` and `IterationsUntilReset` are the current schema. Prior to
+            // solver#30 these were misnamed `IterationsUntilReset` (holding the hard
+            // iteration cap) and `Reset` (holding the actual no-improvement reset
+            // threshold) respectively - `Reset` and `MaxIterations` are nullable purely so
+            // ResolveIterationKeys() can tell "not present in the YAML" apart from an
+            // explicit 0 when deciding which schema a config file is using.
+            public int? MaxIterations { get; set; }
             public int IterationsUntilReset { get; set; }
+            public int? Reset { get; set; }
+
             public int T { get; set; }
             public float A { get; set; }
             public int Q { get; set; }
-            public int Reset { get; set; }
             public float Bias { get; set; }
             public bool IntensifyOnImprovement { get; set; }
+
+            // Reconciles the deprecated (IterationsUntilReset, Reset) key pair - where
+            // IterationsUntilReset means the opposite of what it means in the current
+            // schema - into (MaxIterations, IterationsUntilReset). See solver#30.
+            //
+            // The logger is a parameter so that tests can read back what was written,
+            // following ProblemInstance.WarnOnSchemaVersionMismatch's convention.
+            internal void ResolveIterationKeys(ILogger logger = null)
+            {
+                if (MaxIterations.HasValue && Reset.HasValue)
+                {
+                    Console.Error.WriteLine(
+                        "Error: config_solver.yaml's SimulatedAnnealing section contains "
+                            + "MaxIterations, IterationsUntilReset and Reset. Please use only "
+                            + "MaxIterations and IterationsUntilReset. 'Reset' is deprecated."
+                    );
+                    Environment.Exit(1);
+                }
+
+                if (Reset.HasValue)
+                {
+                    logger ??= Logging.GetLogger();
+                    logger.LogWarning(
+                        "config_solver.yaml: combining SimulatedAnnealing.IterationsUntilReset "
+                            + "with .Reset is deprecated and will be rejected in a future "
+                            + "version. The total iteration cap is now called 'MaxIterations' "
+                            + "instead of 'IterationsUntilReset', and the actual "
+                            + "iterations-until-reset threshold is called 'IterationsUntilReset' "
+                            + "instead of 'Reset'. Please update your config file."
+                    );
+                    MaxIterations = IterationsUntilReset;
+                    IterationsUntilReset = Reset.Value;
+                }
+            }
         }
 
         public int Seed { get; set; }
@@ -452,7 +496,9 @@ namespace ServiceSiteScheduling
             string yaml = File.ReadAllText(config_file);
             var deserializer = new Deserializer();
             // The config has a debugLevel value: 0=only important info, 1=some info, 2=all info
-            return deserializer.Deserialize<Config>(new StringReader(yaml));
+            Config config = deserializer.Deserialize<Config>(new StringReader(yaml));
+            config.SimulatedAnnealing?.ResolveIterationKeys();
+            return config;
         }
     }
 }
