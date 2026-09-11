@@ -186,7 +186,7 @@ namespace ServiceSiteScheduling.Matching
                         arrival.Adjacent.Add(this.Departures[j]);
                 if (arrival.Adjacent.Count > 0)
                 {
-                    Debug.Assert(
+                    Trace.Assert(
                         arrival.Adjacent.Count > 1,
                         $"ArrivalVertex {arrival} has exactly 1 adjacent departure - should have been resolved as a fixed match already"
                     );
@@ -288,12 +288,12 @@ namespace ServiceSiteScheduling.Matching
                 if (!active)
                 {
                     // This is a fixed match
-                    Debug.Assert(
+                    Trace.Assert(
                         this.fixedMatches.Any(m => m.Arrival == arrival),
                         $"Arrival {arrival} has no adjacency-matrix candidates but isn't recorded in fixedMatches"
                     );
                     // if the following is indeed true, this is a quicker way to check than iterating over the adjacency matrix:
-                    Debug.Assert(
+                    Trace.Assert(
                         arrival.Adjacent.Count == 0,
                         $"Arrival {arrival} is a fixed match but still has {arrival.Adjacent.Count} adjacent departures"
                     );
@@ -305,7 +305,7 @@ namespace ServiceSiteScheduling.Matching
                 list.Add(arrival);
             }
             // For each type, we have at least two arrivals. Otherwise, it would have resulted in a fixed match.
-            Debug.Assert(
+            Trace.Assert(
                 arrivalsbytype.Values.All(v => v.Count > 1),
                 $"Train type(s) with fewer than 2 free arrivals should have been fixed matches: {string.Join(", ", arrivalsbytype.Where(kvp => kvp.Value.Count <= 1).Select(kvp => $"{kvp.Key}={kvp.Value.Count}"))}"
             );
@@ -422,7 +422,7 @@ namespace ServiceSiteScheduling.Matching
             foreach (var kvp in trainparts)
                 kvp.Key.Parts = kvp.Value.ToArray();
 
-            Debug.Assert(
+            Trace.Assert(
                 departuretrains.All(t => t.Parts != null),
                 $"Departure train(s) missing Parts: {string.Join(", ", departuretrains.Where(t => t.Parts == null))}"
             );

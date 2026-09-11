@@ -85,7 +85,7 @@ namespace ServiceSiteScheduling.Tasks
             if (this.NextMove == null)
             {
                 // Otherwise, would have thrown InvalidOperationException above
-                Debug.Assert(
+                Trace.Assert(
                     this.PreviousMove != null,
                     $"MoveTask {this}: PreviousMove must be non-null here (PreviousMove == null && NextMove == null already threw above)"
                 );
