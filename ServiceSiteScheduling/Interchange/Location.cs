@@ -67,7 +67,7 @@ namespace ServiceSiteScheduling.Interchange
 
     public record TaskType
     {
-        public PredefinedTaskType? Predefined { get; set; }
+        public PredefinedTaskType? Predefined { get; init; }
         public string? Other { get; init; }
 
         public TaskType(PredefinedTaskType? predefined, string? other)
