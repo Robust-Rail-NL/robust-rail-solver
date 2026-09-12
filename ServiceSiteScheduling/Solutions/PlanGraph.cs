@@ -87,6 +87,11 @@ namespace ServiceSiteScheduling.Solutions
 
         public IReadOnlyList<string> UnverifiedSplitPlacements => this.unverifiedSplitPlacements;
 
+        // Populated by CheckSplitTiming - see there for why this exists.
+        private readonly List<string> splitsNotAtArrival = [];
+
+        public IReadOnlyList<string> SplitsNotAtArrival => this.splitsNotAtArrival;
+
         private bool[][] FreeServiceTaskFinished;
 
         public PartialOrderSchedule? POS { get; set; }
@@ -1257,6 +1262,8 @@ namespace ServiceSiteScheduling.Solutions
         // available for inspection.
         public void WriteJSONFile(string filePath, bool validateFinal = false)
         {
+            this.CheckSplitTiming();
+
             Plan? plan = this.ToPlan();
             string jsonPlan = plan.SerializeJson();
             File.WriteAllText(filePath, jsonPlan);
@@ -1960,6 +1967,40 @@ namespace ServiceSiteScheduling.Solutions
                 return _shuntingunit;
             }
             return shuntingunit;
+        }
+
+        /// <summary>
+        /// Logs a warning for every split that doesn't happen immediately
+        /// after its train's arrival/stand-in. Today, every split is created
+        /// in one place (SimpleHeuristic.Construct), right after arrival,
+        /// so this can't currently fire - it's a tripwire for code
+        /// Units0Side (#26) was never taught to reason about, not a fix for
+        /// an observed bug. Called by <see cref="WriteJSONFile"/> on every
+        /// write rather than once at construction, so it stays correct even
+        /// if local search someday adds a branch to an existing routing
+        /// task. Recomputes <see cref="splitsNotAtArrival"/> from scratch
+        /// each call, mirroring <see cref="unverifiedSplitPlacements"/>.
+        /// </summary>
+        public void CheckSplitTiming()
+        {
+            this.splitsNotAtArrival.Clear();
+
+            for (MoveTask? move = this.First; move != null; move = move.NextMove)
+            {
+                if (move is not RoutingTask { IsSplit: true } routing)
+                    continue;
+
+                if (routing.Previous.TaskType is TrackTaskType.Arrival or TrackTaskType.StandIn)
+                    continue;
+
+                string message =
+                    $"Split of {routing.Train} happens after a {routing.Previous.TaskType} "
+                    + $"task on track {routing.Previous.Track}, not immediately after an "
+                    + "arrival/stand-in - this timing has never been reasoned about or "
+                    + "tested, see PlanGraph.SplitsNotAtArrival";
+                this.splitsNotAtArrival.Add(message);
+                logger.LogWarning("{Message}", message);
+            }
         }
 
         /// <summary>
