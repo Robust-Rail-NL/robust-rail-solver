@@ -52,7 +52,9 @@ public class TestSchemaVersion
         string warning = Assert.Single(logger.Warnings);
         Assert.Contains("Location", warning);
         Assert.Contains("missing", warning);
-        Assert.Contains(InterchangeSchema.ExpectedVersion.ToString(), warning);
+        // Pinned to the phrase it appears in rather than a bare number: a bare
+        // number could coincidentally match something else in the message.
+        Assert.Contains($"assuming {InterchangeSchema.ExpectedVersion}", warning);
     }
 
     [Fact]

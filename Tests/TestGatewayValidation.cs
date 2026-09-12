@@ -38,7 +38,10 @@ public class GatewayValidationTests
         var exception = Assert.Throws<ArgumentException>(() =>
             ProblemInstance.Parse(location, scenario)
         );
-        Assert.Contains(arrivingTrain.Id.ToString()!, exception.Message);
+        // Pinned to the phrase it appears in ("Arriving train {Id} enters
+        // through track part..."), not a bare number that could coincidentally
+        // match something else in the message.
+        Assert.Contains($"Arriving train {arrivingTrain.Id}", exception.Message);
         Assert.Contains("track part 4", exception.Message);
     }
 
