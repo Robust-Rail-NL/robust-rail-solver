@@ -416,7 +416,9 @@ namespace ServiceSiteScheduling.Initial
             // Add routing task before departure/final-parking (from null track)
             foreach (Matching.Train dt in matching.DepartureTrains)
             {
-                DepartureRoutingTask routing = dt.Routing;
+                // Always set: every dt in matching.DepartureTrains got its
+                // Routing assigned unconditionally in the loop above.
+                DepartureRoutingTask routing = dt.Routing!;
                 foreach (TrackTask previous in routing.Previous)
                     routing.Start = routing.End = Math.Max(routing.End, previous.Previous.End);
                 moveheap.Insert(routing);

@@ -24,7 +24,8 @@ public class TestSchemaVersion
     {
         public readonly List<string> Warnings = new();
 
-        public IDisposable BeginScope<TState>(TState state) => null;
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
 
         public bool IsEnabled(LogLevel logLevel) => true;
 
@@ -32,8 +33,8 @@ public class TestSchemaVersion
             LogLevel logLevel,
             EventId eventId,
             TState state,
-            Exception exception,
-            Func<TState, Exception, string> formatter
+            Exception? exception,
+            Func<TState, Exception?, string> formatter
         )
         {
             if (logLevel == LogLevel.Warning)
