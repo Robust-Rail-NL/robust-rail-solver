@@ -172,7 +172,7 @@ public class Task
 internal static class TaskTypeOrder
 {
     // StandIn/StandOut are the standing-train equivalents of Arrive/Exit, so
-    // placed immediately alongside them; Walking is placed with the other
+    // placed immediately alongside them; Setback is placed with the other
     // movement types, and Break/NonService at the end. Unlike the original
     // six (Arrive, Move, Wait, Split, Combine, Exit), this placement for the
     // five newer values is a reasonable default, not a verified business
@@ -186,7 +186,7 @@ internal static class TaskTypeOrder
         PredefinedTaskType.Arrive,
         PredefinedTaskType.StandIn,
         PredefinedTaskType.Move,
-        PredefinedTaskType.Walking,
+        PredefinedTaskType.Setback,
         PredefinedTaskType.Wait,
         PredefinedTaskType.Split,
         PredefinedTaskType.Combine,

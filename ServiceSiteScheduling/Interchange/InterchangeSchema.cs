@@ -9,6 +9,6 @@ namespace ServiceSiteScheduling.Interchange
     // version.
     public static class InterchangeSchema
     {
-        public const int ExpectedVersion = 1;
+        public const int ExpectedVersion = 2;
     }
 }
