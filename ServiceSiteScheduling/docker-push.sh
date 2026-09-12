@@ -41,12 +41,24 @@
 # BUILDER_NAME is shared with sibling Robust-Rail-NL projects (e.g.
 # robust-rail-evaluator) that need the same multi-arch/network=host setup
 # — a buildx builder isn't tied to a specific repo or Dockerfile.
+#
+# --cache-to/--cache-from push and pull the build cache through a dedicated
+# ":buildcache" tag on the same image (see robust-rail-planner's docker-push.sh
+# for the mechanism; ghcr.io/robust-rail-nl is public, so this costs no
+# storage/bandwidth quota). This mainly benefits `dotnet restore` here, not
+# `dotnet publish` - VERSION is baked directly into the publish command
+# (-p:Version=${VERSION}), so that step's cache key changes every release
+# regardless of source, the same limitation robust-rail-evaluator has for its
+# compile step. Unlike the evaluator, no ccache-equivalent cache mount has
+# been added for that here - MSBuild's incremental build state (obj/) would
+# be the analogous fix, but wasn't part of what was asked for.
 set -euo pipefail
 cd "$(dirname "$0")"
 
 docker login ghcr.io
 
 IMAGE="ghcr.io/robust-rail-nl/hip"
+CACHE_REF="$IMAGE:buildcache"
 BUILDER_NAME="robust-rail-builder"
 
 VERSION=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' HIP.csproj)
@@ -67,6 +79,8 @@ docker buildx build \
     --build-arg "VERSION=$VERSION" \
     --build-context fixtures=../example_kleine_binckhorst \
     "${TAGS[@]}" \
+    --cache-to "type=registry,ref=$CACHE_REF,mode=max" \
+    --cache-from "type=registry,ref=$CACHE_REF" \
     --push \
     .
 
@@ -85,5 +99,7 @@ docker buildx build \
     --build-arg "ASSERTIONS=true" \
     --build-context fixtures=../example_kleine_binckhorst \
     "${TAGS[@]}" \
+    --cache-to "type=registry,ref=$CACHE_REF,mode=max" \
+    --cache-from "type=registry,ref=$CACHE_REF" \
     --push \
     .
