@@ -4,6 +4,10 @@ namespace ServiceSiteScheduling.Tasks
 {
     class RoutingTask : MoveTask
     {
+        // Deliberately singular, never a collection: a plain RoutingTask
+        // must never represent a combine (see DepartureRoutingTask.Previous).
+        // PlanGraph.Units0Side (#26) depends on that; a reflection test pins
+        // this shape.
         public TrackTask Previous { get; set; }
         public List<TrackTask> Next { get; set; }
 

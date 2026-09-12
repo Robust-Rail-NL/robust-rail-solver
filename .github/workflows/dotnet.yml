@@ -8,9 +8,9 @@ name: .NET
 # it, so it's only listed under push, not pull_request.
 on:
   push:
-    branches: [ "main", "dev", "edge" ]
+    branches: [ "main", "edge" ]
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:

@@ -29,12 +29,17 @@
 # be wanted anyway.
 #
 # Requires the same buildx builder as docker-push.sh — see its header comment
-# for why (network=host, shared with sibling Robust-Rail-NL projects).
+# for why (network=host, shared with sibling Robust-Rail-NL projects), and for
+# why this also shares docker-push.sh's :buildcache ref — edge and release
+# builds hit the same restore/publish layers, so each warms the cache for
+# the other.
 set -euo pipefail
+cd "$(dirname "$0")"
 
 docker login ghcr.io
 
 IMAGE="ghcr.io/robust-rail-nl/hip"
+CACHE_REF="$IMAGE:buildcache"
 BUILDER_NAME="robust-rail-builder"
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -59,6 +64,8 @@ docker buildx build \
     --build-arg "VERSION=$EDGE_VERSION" \
     --build-context fixtures=../example_kleine_binckhorst \
     -t "$IMAGE:edge" \
+    --cache-to "type=registry,ref=$CACHE_REF,mode=max" \
+    --cache-from "type=registry,ref=$CACHE_REF" \
     --push \
     .
 
