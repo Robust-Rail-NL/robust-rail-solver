@@ -1,11 +1,8 @@
-// A nested namespace, rather than the top-level `Tests` namespace: this used
-// to avoid a real shadowing hazard, since TestPlan.cs declared its own
-// PredefinedTaskType/TaskType directly in `Tests` that would otherwise hide
-// the wire-format types of the same name used here. That local copy is gone
-// now (TestPlan.cs uses ServiceSiteScheduling.Interchange's directly), so the
-// hazard no longer applies - left nested regardless, since it's still a
-// reasonable grouping for this file's Phase 1 tests and moving it back
-// wasn't asked for.
+// Nested, not the top-level `Tests` namespace: TestPlan.cs declares its own
+// Plan/Task classes directly in `Tests` (a deliberately narrow wire-format
+// view, see TestPlan.cs), which would otherwise shadow the real types of
+// the same name from ServiceSiteScheduling.Interchange used unqualified
+// here (e.g. `Plan` below).
 namespace Tests.UnifiedSchema;
 
 using System.Text.Json;

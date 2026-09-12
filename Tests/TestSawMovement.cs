@@ -1,11 +1,8 @@
-// A nested namespace with its own scoped usings below (not the top-level
-// `Tests` namespace): this used to be required to dodge a real shadowing
-// hazard - TestPlan.cs declared its own Plan/TaskType/PredefinedTaskType
-// directly in `Tests`, which would otherwise have hidden the wire-format
-// types of the same name used here (see TestUnifiedSchema.cs's matching
-// comment). That local copy is gone now, so the hazard no longer applies;
-// left nested regardless; usings still placed after the namespace line as a
-// harmless habit, not because it's load-bearing anymore.
+// Nested, not the top-level `Tests` namespace: TestPlan.cs declares its own
+// Plan/Task classes directly in `Tests` (a deliberately narrow wire-format
+// view, see TestPlan.cs), which would otherwise shadow the real types of
+// the same name from ServiceSiteScheduling.Interchange used unqualified
+// here (see TestUnifiedSchema.cs's matching comment).
 namespace Tests.SawMovement;
 
 using ServiceSiteScheduling;
@@ -16,15 +13,11 @@ using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using Tests.InPlaceSplit;
 
-// Exercises PlanGraph.BuildMoveActionsWithSetbacks (internal - see
-// AssemblyInfo.cs's InternalsVisibleTo) directly against a real Route
-// containing a genuine ArcType.Reverse arc, obtained via
-// RoutingGraph.ComputeRoute rather than the full heuristic search: the
-// search actively avoids reversals (they cost more), and arrival/departure
-// are separate MoveTasks that don't appear to carry a reversal requirement
-// across their boundary in this model, so relying on the search to produce
-// one organically is unreliable. Calling ComputeRoute directly with
-// departure/arrival sides that force a reversal sidesteps that entirely.
+// Exercises PlanGraph.BuildMoveActionsWithSetbacks directly against a real
+// Route containing a genuine ArcType.Reverse arc, obtained via
+// RoutingGraph.ComputeRoute rather than the full heuristic search, which
+// actively avoids reversals. Calls ComputeRoute directly to sidestep search
+// entirely.
 //
 // Same collection as TestPlan/TestInPlaceSplit/TestSplitDuringMoveOrder:
 // all of them mutate the shared static ProblemInstance.Current, which races
