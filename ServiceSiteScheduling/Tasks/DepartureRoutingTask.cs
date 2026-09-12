@@ -10,6 +10,12 @@ namespace ServiceSiteScheduling.Tasks
         private Dictionary<Trains.ShuntTrain, Stack<RoutingTask>> routetoskippedparkings;
         private Dictionary<Trains.ShuntTrain, Stack<ParkingTask>> skippedparkings;
 
+        // The only place a combine can exist (RoutingTask.Previous is
+        // singular). Next is singular too, always leading straight to a
+        // Departure/StandOut (PlanGraph.CheckGraphStructure), never a
+        // further stop that could split again. PlanGraph.Units0Side (#26)
+        // depends on both halves holding; a reflection test pins these
+        // shapes.
         public List<TrackTask> Previous { get; set; }
         public TrackTask Next { get; set; }
 
