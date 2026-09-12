@@ -1238,6 +1238,196 @@ namespace ServiceSiteScheduling.Solutions
             return "UNKNOWN CAUSE - needs fresh investigation";
         }
 
+        // Splits a route containing one or more in-place reversals into an
+        // alternating Move/Setback/Move/... action sequence, instead of
+        // folding the reversal(s) into a single Move's resource path (see
+        // schemaVersion 2, SCHEMA_CHANGELOG.md in robust-rail-general).
+        //
+        // Approximate on purpose, for output only - flag this if it ever
+        // needs to be more precise:
+        // - `endTime` is the one number the rest of the scheduling engine
+        //   already trusts for this whole route (routing.End for the
+        //   arrival/general case, starttime + route.Duration for departure)
+        //   and is always preserved exactly - the last piece absorbs
+        //   whatever integer-rounding remainder is left. Everything *inside*
+        //   that span - where a Move ends and the next Setback begins - is
+        //   reconstructed after the fact by weighting each piece by its own
+        //   share of the summed per-arc Duration (Arc.ComputeCost, real
+        //   per-arc-type costs, including TrackCrossingTime +
+        //   train.ReversalDuration for a Reverse arc), not from a real
+        //   per-segment scheduling decision: the scheduling engine
+        //   (RoutingTask/MoveTask) still only knows one contiguous span for
+        //   the whole route. Deliberately not the same thing as summing
+        //   arc.Duration directly and trusting that total instead of
+        //   endTime: Route.Duration (ComputeDuration's own formula) and the
+        //   sum of individual arc.Duration values are not guaranteed equal,
+        //   and drifting from what the caller already advanced its own time
+        //   cursor by would desync the rest of the plan's timeline.
+        // - A Reverse arc's own Duration bundles an extra TrackCrossingTime
+        //   alongside train.ReversalDuration (see Arc.ComputeCost); that
+        //   whole weight is attributed to the Setback action rather than
+        //   split between it and the adjacent Moves, which may overstate the
+        //   Setback's share of the (correctly-totalled) span slightly
+        //   relative to a true per-segment schedule.
+        // internal rather than private: exercised directly by
+        // Tests/TestSawMovement.cs against a hand-obtained Route, since
+        // relying on the heuristic search to organically produce a route
+        // with a reversal is unreliable (the search actively avoids them).
+
+        internal List<Interchange.Action> BuildMoveActionsWithSetbacks(
+            IReadOnlyList<Arc> arcs,
+            ulong startTime,
+            ulong endTime,
+            Track fromTrack,
+            ShuntingUnit shuntingUnit
+        )
+        {
+            // Step 1: group into alternating non-reversal segments and
+            // single-arc reversal points, preserving order.
+            var pieces = GroupIntoPieces(arcs);
+
+            // Step 2: build one action per piece, apportioning
+            // [startTime, endTime] across them by each piece's share of
+            // total arc Duration - see the approximation notes above.
+            var result = new List<Interchange.Action>();
+            long totalWeight = arcs.Sum(arc => (long)arc.Duration);
+            ulong totalDuration = endTime - startTime;
+            Track segmentFrom = fromTrack;
+            ulong time = startTime;
+
+            for (int i = 0; i < pieces.Count; i++)
+            {
+                var (isReversal, pieceArcs) = pieces[i];
+
+                // Step 2a: this piece's end time.
+                long pieceWeight = pieceArcs.Sum(arc => (long)arc.Duration);
+                bool isLast = i == pieces.Count - 1;
+                ulong pieceEnd;
+                if (isLast)
+                    pieceEnd = endTime;
+                else if (totalWeight == 0)
+                    pieceEnd = time;
+                else
+                    pieceEnd = time + (ulong)((long)totalDuration * pieceWeight / totalWeight);
+
+                // Step 2b: emit the Setback or Move action for this piece.
+                if (isReversal)
+                {
+                    Track reversalTrack = pieceArcs[0].ReversalTrack;
+                    result.Add(
+                        new Interchange.Action
+                        {
+                            Location = reversalTrack.ID,
+                            TaskType = TaskType.FromPredefined(Setback),
+                            StartTime = time,
+                            EndTime = pieceEnd,
+                            ShuntingUnit = shuntingUnit,
+                        }
+                    );
+                    segmentFrom = reversalTrack;
+                }
+                else
+                {
+                    var moveaction = new Interchange.Action
+                    {
+                        Location = segmentFrom.ID,
+                        TaskType = TaskType.FromPredefined(Move),
+                        StartTime = time,
+                        EndTime = pieceEnd,
+                        ShuntingUnit = shuntingUnit,
+                    };
+
+                    moveaction.Resources = CollectResources(pieceArcs);
+                    // remove first - same convention as the non-reversal Move
+                    // blocks in ToPlan() below: the FromTrack entry every
+                    // arc's path starts with, redundant with Location above.
+                    // See either of those comments for why this is a guard,
+                    // not an assumption (#24).
+                    if (moveaction.Resources.Count > 0)
+                    {
+                        moveaction.Resources.RemoveAt(0);
+                        result.Add(moveaction);
+                    }
+                    else
+                    {
+                        // Same known edge case as the whole-route version
+                        // (see ClassifyZeroResourceCause/#24), but not
+                        // classified with a cause here: ClassifyZeroResourceCause
+                        // takes a whole Route (it checks e.g. route.Tracks.Length),
+                        // and here we only have pieceArcs, a sub-range of one -
+                        // there's no Route to hand it. Log without a cause and
+                        // skip rather than emit an empty Move.
+                        logger.LogDebug(
+                            "Move segment for shunting unit {ShuntingUnitId} at {Location} starting at {StartTime} has a route but does not specify it (post-reversal split). See issue #24.",
+                            shuntingUnit.Id,
+                            moveaction.Location,
+                            moveaction.StartTime
+                        );
+                    }
+                }
+
+                // Step 2c: advance to the next piece's start.
+                time = pieceEnd;
+            }
+
+            return result;
+        }
+
+        // Groups arcs into alternating non-reversal segments and single-arc
+        // reversal points, preserving order - e.g. [Track, Switch, Reverse,
+        // Track] becomes [(false, [Track, Switch]), (true, [Reverse]),
+        // (false, [Track])].
+        private static List<(bool IsReversal, List<Arc> Arcs)> GroupIntoPieces(
+            IReadOnlyList<Arc> arcs
+        )
+        {
+            var pieces = new List<(bool IsReversal, List<Arc> Arcs)>();
+            var segment = new List<Arc>();
+            foreach (var arc in arcs)
+            {
+                if (arc.Type == ArcType.Reverse)
+                {
+                    if (segment.Count > 0)
+                    {
+                        pieces.Add((false, segment));
+                        segment = [];
+                    }
+                    pieces.Add((true, [arc]));
+                }
+                else
+                {
+                    segment.Add(arc);
+                }
+            }
+            if (segment.Count > 0)
+                pieces.Add((false, segment));
+            return pieces;
+        }
+
+        // Collects the Resources visited by a sequence of arcs' paths, in
+        // order, skipping consecutive duplicates (adjacent arcs sharing a
+        // track-part boundary revisit the same infrastructure entry). Used
+        // by every Move action's resource walk (both here and in ToPlan()) -
+        // the caller removes the first entry, see the comments at each call
+        // site for why (#24).
+        private static List<Resource> CollectResources(IEnumerable<Arc> arcs)
+        {
+            var resources = new List<Resource>();
+            Infrastructure? previous = null;
+            foreach (var arc in arcs)
+            {
+                foreach (var infra in arc.Path.Path)
+                {
+                    if (infra != previous)
+                    {
+                        resources.Add(Resource.FromInfra(infra));
+                        previous = infra;
+                    }
+                }
+            }
+            return resources;
+        }
+
         // Populated by ToPlan() with every Move action it emitted that has no
         // Resources (see #24), tagged with the classification above so a
         // genuinely new cause is distinguishable from the ones already
@@ -1368,73 +1558,75 @@ namespace ServiceSiteScheduling.Solutions
                     // test for "this routing traverses a route".
                     if (routing.NumberOfRoutes > 0)
                     {
-                        var moveaction = new Interchange.Action
+                        if (routing.Route.Arcs.Any(arc => arc.Type == ArcType.Reverse))
                         {
-                            Location = routing.FromTrack.ID,
-                            TaskType = TaskType.FromPredefined(Move),
-                            StartTime = (ulong)routing.Start,
-                            EndTime = endtime,
-                            ShuntingUnit = GetShuntUnit(move.Train, trainconversion),
-                        };
-
-                        Infrastructure? previous = null;
-                        foreach (var arc in routing.Route.Arcs)
-                        {
-                            foreach (var infra in arc.Path.Path)
-                            {
-                                if (infra != previous)
-                                {
-                                    var resource = Resource.FromInfra(infra);
-                                    moveaction.Resources.Add(resource);
-
-                                    previous = infra;
-                                }
-                            }
-                        }
-                        // remove first
-                        //
-                        // NumberOfRoutes > 0 is meant to guarantee at least one
-                        // resource was added above, but doesn't always hold - a
-                        // route whose arcs all resolve to the same infrastructure
-                        // as `previous` (observed on short/single-hop routes, e.g.
-                        // solver known_problems/invalid_endmove, seed 5) collapses
-                        // to zero resources. Skip rather than crash so the rest of
-                        // the plan still gets written; the resulting action having
-                        // no resources is a real gap, not fixed here - see #24.
-                        if (moveaction.Resources.Count > 0)
-                        {
-                            moveaction.Resources.RemoveAt(0);
+                            actions.AddRange(
+                                BuildMoveActionsWithSetbacks(
+                                    routing.Route.Arcs,
+                                    (ulong)routing.Start,
+                                    endtime,
+                                    routing.FromTrack,
+                                    GetShuntUnit(move.Train, trainconversion)
+                                )
+                            );
                         }
                         else
                         {
-                            string cause = ClassifyZeroResourceCause(routing.Route);
-                            this.zeroResourceMoves.Add(
-                                (
+                            var moveaction = new Interchange.Action
+                            {
+                                Location = routing.FromTrack.ID,
+                                TaskType = TaskType.FromPredefined(Move),
+                                StartTime = (ulong)routing.Start,
+                                EndTime = endtime,
+                                ShuntingUnit = GetShuntUnit(move.Train, trainconversion),
+                            };
+
+                            moveaction.Resources = CollectResources(routing.Route.Arcs);
+                            // remove first
+                            //
+                            // NumberOfRoutes > 0 is meant to guarantee at least one
+                            // resource was added above, but doesn't always hold - a
+                            // route whose arcs all resolve to the same infrastructure
+                            // as `previous` (observed on short/single-hop routes, e.g.
+                            // solver known_problems/invalid_endmove, seed 5) collapses
+                            // to zero resources. Skip rather than crash so the rest of
+                            // the plan still gets written; the resulting action having
+                            // no resources is a real gap, not fixed here - see #24.
+                            if (moveaction.Resources.Count > 0)
+                            {
+                                moveaction.Resources.RemoveAt(0);
+                            }
+                            else
+                            {
+                                string cause = ClassifyZeroResourceCause(routing.Route);
+                                this.zeroResourceMoves.Add(
+                                    (
+                                        moveaction.ShuntingUnit.Id,
+                                        moveaction.Location,
+                                        moveaction.StartTime,
+                                        moveaction.EndTime,
+                                        cause
+                                    )
+                                );
+                                // Debug, not Warning: this fires on every ToPlan()
+                                // call, including the tmp_plans/ debug snapshots
+                                // TabuSearch/SimulatedAnnealing write before the
+                                // search has had a chance to route this task -
+                                // this is expected, transient search state, not a
+                                // defect. WriteJSONFile's validateFinal escalates
+                                // when it matters: the actual delivered plan.
+                                logger.LogDebug(
+                                    "Move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it ({Cause}). See issue #24.",
                                     moveaction.ShuntingUnit.Id,
                                     moveaction.Location,
                                     moveaction.StartTime,
                                     moveaction.EndTime,
                                     cause
-                                )
-                            );
-                            // Debug, not Warning: this fires on every ToPlan()
-                            // call, including the tmp_plans/ debug snapshots
-                            // TabuSearch/SimulatedAnnealing write before the
-                            // search has had a chance to route this task -
-                            // this is expected, transient search state, not a
-                            // defect. WriteJSONFile's validateFinal escalates
-                            // when it matters: the actual delivered plan.
-                            logger.LogDebug(
-                                "Move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it ({Cause}). See issue #24.",
-                                moveaction.ShuntingUnit.Id,
-                                moveaction.Location,
-                                moveaction.StartTime,
-                                moveaction.EndTime,
-                                cause
-                            );
+                                );
+                            }
+                            // add to plan
+                            actions.Add(moveaction);
                         }
-                        // add to plan
-                        actions.Add(moveaction);
                     }
 
                     // Add task
@@ -1495,62 +1687,64 @@ namespace ServiceSiteScheduling.Solutions
                         // #24, whose root cause was this missing guard.
                         if (route.Duration > 0)
                         {
-                            var moveaction = new Interchange.Action
+                            if (route.Arcs.Any(arc => arc.Type == ArcType.Reverse))
                             {
-                                Location = route.Tracks[0].ID,
-                                TaskType = TaskType.FromPredefined(Move),
-                                StartTime = (ulong)starttime,
-                                EndTime = (ulong)(starttime + route.Duration),
-                                ShuntingUnit = shuntingunit,
-                            };
-                            // add path
-                            Infrastructure? previous = null;
-                            foreach (var arc in route.Arcs)
-                            {
-                                foreach (var infra in arc.Path.Path)
-                                {
-                                    if (infra != previous)
-                                    {
-                                        var resource = Resource.FromInfra(infra);
-                                        moveaction.Resources.Add(resource);
-
-                                        previous = infra;
-                                    }
-                                }
-                            }
-                            // remove first - the FromTrack entry every arc's path
-                            // starts with, redundant with Location above. Kept as a
-                            // guard (rather than assumed) since #24 hasn't ruled out
-                            // every route shape collecting only that one entry.
-                            if (moveaction.Resources.Count > 0)
-                            {
-                                moveaction.Resources.RemoveAt(0);
+                                actions.AddRange(
+                                    BuildMoveActionsWithSetbacks(
+                                        route.Arcs,
+                                        (ulong)starttime,
+                                        (ulong)(starttime + route.Duration),
+                                        route.Tracks[0],
+                                        shuntingunit
+                                    )
+                                );
                             }
                             else
                             {
-                                string cause = ClassifyZeroResourceCause(route);
-                                this.zeroResourceMoves.Add(
-                                    (
+                                var moveaction = new Interchange.Action
+                                {
+                                    Location = route.Tracks[0].ID,
+                                    TaskType = TaskType.FromPredefined(Move),
+                                    StartTime = (ulong)starttime,
+                                    EndTime = (ulong)(starttime + route.Duration),
+                                    ShuntingUnit = shuntingunit,
+                                };
+                                // add path
+                                moveaction.Resources = CollectResources(route.Arcs);
+                                // remove first - the FromTrack entry every arc's path
+                                // starts with, redundant with Location above. Kept as a
+                                // guard (rather than assumed) since #24 hasn't ruled out
+                                // every route shape collecting only that one entry.
+                                if (moveaction.Resources.Count > 0)
+                                {
+                                    moveaction.Resources.RemoveAt(0);
+                                }
+                                else
+                                {
+                                    string cause = ClassifyZeroResourceCause(route);
+                                    this.zeroResourceMoves.Add(
+                                        (
+                                            moveaction.ShuntingUnit.Id,
+                                            moveaction.Location,
+                                            moveaction.StartTime,
+                                            moveaction.EndTime,
+                                            cause
+                                        )
+                                    );
+                                    // Debug, not Warning - see the matching comment
+                                    // on the arrival/general routing case above.
+                                    logger.LogDebug(
+                                        "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it ({Cause}). See issue #24.",
                                         moveaction.ShuntingUnit.Id,
                                         moveaction.Location,
                                         moveaction.StartTime,
                                         moveaction.EndTime,
                                         cause
-                                    )
-                                );
-                                // Debug, not Warning - see the matching comment
-                                // on the arrival/general routing case above.
-                                logger.LogDebug(
-                                    "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it ({Cause}). See issue #24.",
-                                    moveaction.ShuntingUnit.Id,
-                                    moveaction.Location,
-                                    moveaction.StartTime,
-                                    moveaction.EndTime,
-                                    cause
-                                );
+                                    );
+                                }
+                                // add to plan
+                                actions.Add(moveaction);
                             }
-                            // add to plan
-                            actions.Add(moveaction);
                         }
                         starttime += route.Duration;
                     }
