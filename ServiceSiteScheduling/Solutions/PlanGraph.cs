@@ -1775,7 +1775,26 @@ namespace ServiceSiteScheduling.Solutions
                 move = move.NextMove;
             }
 
-            return ActionsToPlan(actions);
+            Plan plan = ActionsToPlan(actions);
+
+            // this.Cost is only null before the first ComputeModel() call, which
+            // has always run by the time a plan is actually written (see
+            // SimulatedAnnealing's/TabuSearch's constructors) - guarded anyway
+            // since the field itself is nullable.
+            if (this.Cost == null)
+                return plan;
+
+            return plan with
+            {
+                // Mirrors the fullcost switch TabuSearch/SimulatedAnnealing
+                // already use elsewhere: once a solution is feasible, its
+                // reported cost is the full weighted total rather than just
+                // the hard-constraint-violation base cost.
+                Feasibility = this.Cost.IsFeasible ? Feasibility.Feasible : Feasibility.Infeasible,
+                Producer = $"robust-rail-solver {Program.Version}",
+                Cost = this.Cost.Cost(this.Cost.IsFeasible),
+                CostDetails = this.Cost.ToString(),
+            };
         }
 
         /// <summary>
