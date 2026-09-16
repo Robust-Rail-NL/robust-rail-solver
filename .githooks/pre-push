@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Enable with `git config core.hooksPath .githooks` (see CONTRIBUTING.md) --
+# not automatic, since git deliberately never runs a repo's tracked hooks
+# without that explicit opt-in.
+#
+# Refuses to push directly to main. A client-side backstop after an
+# accidental direct push to robust-rail-planner's main once bypassed its
+# require-PR branch protection (enforce_admins was off, so the server let it
+# through) -- not a substitute for server-side protection:
+# `git push --no-verify` skips it entirely.
+protected_branch='refs/heads/main'
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "$protected_branch" ]; then
+    echo "error: refusing to push directly to '$protected_branch'." >&2
+    echo "  Push a feature branch and open a PR instead." >&2
+    echo "  (Deliberate override: git push --no-verify)" >&2
+    exit 1
+  fi
+done
+
+exit 0
