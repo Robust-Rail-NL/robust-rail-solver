@@ -19,15 +19,18 @@ namespace ServiceSiteScheduling.Solutions
         }
 
         // This is the Adjacency List for POS Movements: Each UnusedPOSMoveTask maps to a list of connected UnusedPOSMoveTask
-        public Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> POSadjacencyList { get; private set; }
-
-        // This is the Adjacency List for POS Movements using the same infrastructure: Each UnusedPOSMoveTask maps to a list of connected UnusedPOSMoveTask
-        // (dashed arcs dependency links)
-        public Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> POSadjacencyListForInfrastructure
+        public Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> POSadjacencyList
         {
             get;
             private set;
         }
+
+        // This is the Adjacency List for POS Movements using the same infrastructure: Each UnusedPOSMoveTask maps to a list of connected UnusedPOSMoveTask
+        // (dashed arcs dependency links)
+        public Dictionary<
+            UnusedPOSMoveTask,
+            List<UnusedPOSMoveTask>
+        > POSadjacencyListForInfrastructure { get; private set; }
 
         // This is the Adjacency List for POS Movements using the same Train Unit: Each UnusedPOSMoveTask maps to a list of connected UnusedPOSMoveTask
         // (solid arcs dependency links)
@@ -159,7 +162,9 @@ namespace ServiceSiteScheduling.Solutions
         }
 
         // Returns list of the IDs of the train units used by a UnusedPOSTrackTask (UnusedPOSTrackTask)
-        public static List<int> GetIDListOfTrainUnitUsedPOSTrackTask(UnusedPOSTrackTask posTrackTask)
+        public static List<int> GetIDListOfTrainUnitUsedPOSTrackTask(
+            UnusedPOSTrackTask posTrackTask
+        )
         {
             List<int> trainUnits = [];
 
@@ -956,13 +961,16 @@ namespace ServiceSiteScheduling.Solutions
         // a common UnusedPOSTrackTask
         public List<UnusedPOSTrackTask> CreatePOSTrackTaskList()
         {
-            Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> POSadjacencyList = this.POSadjacencyList;
+            Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> POSadjacencyList =
+                this.POSadjacencyList;
             List<UnusedPOSTrackTask> listPOSTrackTask = [];
 
             int id = 0;
 
             // Study all the UnusedPOSMoveTask moves
-            foreach (KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> element in POSadjacencyList)
+            foreach (
+                KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> element in POSadjacencyList
+            )
             {
                 UnusedPOSMoveTask POSmove = element.Key;
 
@@ -1100,14 +1108,18 @@ namespace ServiceSiteScheduling.Solutions
 
         public void LinkPOSMovesWithPOSTrackTasks()
         {
-            Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> POSadjacencyList = this.POSadjacencyList;
+            Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> POSadjacencyList =
+                this.POSadjacencyList;
 
-            foreach (KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> element in POSadjacencyList)
+            foreach (
+                KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> element in POSadjacencyList
+            )
             {
                 UnusedPOSMoveTask POSmove = element.Key;
 
                 List<UnusedPOSMoveTask> SuccessorsByTrainUnit = POSmove.SuccessorMovesByTrainUnits;
-                List<UnusedPOSMoveTask> PredecessorsByTrainUnit = POSmove.PredecessorMovesByTrainUnits;
+                List<UnusedPOSMoveTask> PredecessorsByTrainUnit =
+                    POSmove.PredecessorMovesByTrainUnits;
 
                 List<UnusedPOSMoveTask> SuccessorsByInfrastructure =
                     POSmove.SuccessorMovesByInfrastructure;
@@ -1118,13 +1130,18 @@ namespace ServiceSiteScheduling.Solutions
 
         public void AddSuccessorsAndPredecessors()
         {
-            Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> posAdjacencyList = this.POSadjacencyList;
-            Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> posAdjacencyListForInfrastructure =
-                this.POSadjacencyListForInfrastructure;
+            Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> posAdjacencyList =
+                this.POSadjacencyList;
+            Dictionary<
+                UnusedPOSMoveTask,
+                List<UnusedPOSMoveTask>
+            > posAdjacencyListForInfrastructure = this.POSadjacencyListForInfrastructure;
             Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> posAdjacencyListForTrainUnit =
                 this.POSadjacencyListForTrainUnit;
 
-            foreach (KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> element in posAdjacencyList)
+            foreach (
+                KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> element in posAdjacencyList
+            )
             {
                 UnusedPOSMoveTask POSmove = element.Key;
                 foreach (
@@ -1190,8 +1207,10 @@ namespace ServiceSiteScheduling.Solutions
         {
             List<UnusedPOSTrackTask> listOfPOSTrackTasks = this.ListOfPOSTrackTasks;
 
-            Dictionary<UnusedPOSTrackTask, List<UnusedPOSTrackTask>> posAdjacencyListForInfrastructure =
-                this.POSTrackTaskadjacencyListForInfrastructure;
+            Dictionary<
+                UnusedPOSTrackTask,
+                List<UnusedPOSTrackTask>
+            > posAdjacencyListForInfrastructure = this.POSTrackTaskadjacencyListForInfrastructure;
             Dictionary<UnusedPOSTrackTask, List<UnusedPOSTrackTask>> posAdjacencyListForTrainUnit =
                 this.POSTrackTaskadjacencyListForTrainUsed;
 
@@ -1261,8 +1280,10 @@ namespace ServiceSiteScheduling.Solutions
         // in the Partial Order Schedule graph
         public void AddInfrastructurePredecessorSuccessorLinksToPOSMoves()
         {
-            Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> posAdjacencyListForInfrastructure =
-                this.POSadjacencyListForInfrastructure;
+            Dictionary<
+                UnusedPOSMoveTask,
+                List<UnusedPOSMoveTask>
+            > posAdjacencyListForInfrastructure = this.POSadjacencyListForInfrastructure;
 
             foreach (
                 KeyValuePair<
@@ -1302,7 +1323,10 @@ namespace ServiceSiteScheduling.Solutions
                 this.POSadjacencyListForTrainUnit;
 
             foreach (
-                KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> element in posAdjacencyListForTrainUnit
+                KeyValuePair<
+                    UnusedPOSMoveTask,
+                    List<UnusedPOSMoveTask>
+                > element in posAdjacencyListForTrainUnit
             )
             {
                 // Add successors to each POSMoves contained by the adjacency list
@@ -1333,7 +1357,12 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("|            From POS Movement Links               |");
             Console.WriteLine("---------------------------------------------------");
 
-            foreach (KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> element in this.POSadjacencyList)
+            foreach (
+                KeyValuePair<
+                    UnusedPOSMoveTask,
+                    List<UnusedPOSMoveTask>
+                > element in this.POSadjacencyList
+            )
             {
                 Console.WriteLine(element.Key);
             }
@@ -1383,7 +1412,9 @@ namespace ServiceSiteScheduling.Solutions
             Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> POSadjacencyList
         )
         {
-            foreach (KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> pair in POSadjacencyList)
+            foreach (
+                KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> pair in POSadjacencyList
+            )
             {
                 if (pair.Key.ID == ID)
                     return pair.Key;
@@ -1400,7 +1431,9 @@ namespace ServiceSiteScheduling.Solutions
         {
             List<UnusedPOSMoveTask> PredecessorsOfPOSMove = [];
 
-            foreach (KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> pair in POSadjacencyList)
+            foreach (
+                KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> pair in POSadjacencyList
+            )
             {
                 foreach (UnusedPOSMoveTask move in pair.Value)
                 {
@@ -1423,7 +1456,9 @@ namespace ServiceSiteScheduling.Solutions
         {
             List<UnusedPOSTrackTask> PredecessorsOfPOStrackTask = [];
 
-            foreach (KeyValuePair<UnusedPOSTrackTask, List<UnusedPOSTrackTask>> pair in POSadjacencyList)
+            foreach (
+                KeyValuePair<UnusedPOSTrackTask, List<UnusedPOSTrackTask>> pair in POSadjacencyList
+            )
             {
                 foreach (UnusedPOSTrackTask trackTask in pair.Value)
                 {
@@ -1466,7 +1501,12 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("------------------------------------------------------------");
             Console.WriteLine($"|         All information about- move id : {moveID}        |");
             Console.WriteLine("------------------------------------------------------------");
-            foreach (KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> item in this.POSadjacencyList)
+            foreach (
+                KeyValuePair<
+                    UnusedPOSMoveTask,
+                    List<UnusedPOSMoveTask>
+                > item in this.POSadjacencyList
+            )
             {
                 if (item.Key.ID == moveID)
                     Console.Write(item.Key);
@@ -1782,9 +1822,12 @@ namespace ServiceSiteScheduling.Solutions
             Console.WriteLine("|          All POS Movement Links          |");
             Console.WriteLine("--------------------------------------------");
 
-            Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> posAdjacencyList = this.POSadjacencyList;
+            Dictionary<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> posAdjacencyList =
+                this.POSadjacencyList;
 
-            foreach (KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> pair in posAdjacencyList)
+            foreach (
+                KeyValuePair<UnusedPOSMoveTask, List<UnusedPOSMoveTask>> pair in posAdjacencyList
+            )
             {
                 Console.Write($"Move{pair.Key.ID} --> ");
                 foreach (UnusedPOSMoveTask element in pair.Value)
@@ -1843,9 +1886,10 @@ namespace ServiceSiteScheduling.Solutions
         // POS Adjacency list is used to track the links between the UnusedPOSTrackTask nodes
         // of the POS graph. The POS Adjacency list is actually a dictionary
         // => {UnusedPOSTrackTask : List[UnusedPOSTrackTask, ...]}
-        public Dictionary<UnusedPOSTrackTask, List<UnusedPOSTrackTask>> CreatePOSAdjacencyListTrackTask(
-            Dictionary<int, List<int>> POSTrackTaskLinks
-        )
+        public Dictionary<
+            UnusedPOSTrackTask,
+            List<UnusedPOSTrackTask>
+        > CreatePOSAdjacencyListTrackTask(Dictionary<int, List<int>> POSTrackTaskLinks)
         {
             Dictionary<UnusedPOSTrackTask, List<UnusedPOSTrackTask>> posAdjacencyList = [];
 
