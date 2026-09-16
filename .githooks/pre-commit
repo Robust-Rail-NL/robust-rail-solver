@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Enable with `git config core.hooksPath .githooks` (see CONTRIBUTING.md) --
+# not automatic, since git deliberately never runs a repo's tracked hooks
+# without that explicit opt-in.
+#
+# Refuses to commit directly to edge, after a direct commit landed on edge
+# despite the documented no-direct-commit convention (see CONTRIBUTING.md) --
+# knowing the convention didn't stop it from happening, so this makes it a
+# fact of the environment instead. main is deliberately not covered here:
+# commits land there often enough, for good reason, that blocking them would
+# just get in the way. This is a client-side backstop, not a substitute for
+# care: `git commit --no-verify` skips it entirely.
+protected_branches='^(edge)$'
+
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+if [[ "$current_branch" =~ $protected_branches ]]; then
+  echo "error: refusing to commit directly to '$current_branch'." >&2
+  echo "  Create a feature branch (see CONTRIBUTING.md), then" >&2
+  echo "  'git merge --no-ff' it into edge instead." >&2
+  echo "  (Deliberate override: git commit --no-verify)" >&2
+  exit 1
+fi
+
+# CSharpier: format staged .cs/.csproj files in place, mirroring what CI's
+# `dotnet csharpier check` enforces (.github/workflows/dotnet.yml). If
+# formatting changed anything, abort so the reformatted content doesn't slip
+# past unreviewed: re-add the file(s) and retry the commit. (Also skipped by
+# `git commit --no-verify`, same as the check above.)
+staged_files=()
+while IFS= read -r -d '' file; do
+  staged_files+=("$file")
+done < <(git diff --cached --name-only --diff-filter=ACMR -z -- '*.cs' '*.csproj')
+
+if [[ ${#staged_files[@]} -gt 0 ]]; then
+  if ! dotnet csharpier format "${staged_files[@]}"; then
+    echo "error: csharpier failed to run -- is the 'csharpier' local tool restored ('dotnet tool restore')?" >&2
+    exit 1
+  fi
+
+  if ! git diff --quiet -- "${staged_files[@]}"; then
+    echo "error: csharpier reformatted staged file(s):" >&2
+    git diff --name-only -- "${staged_files[@]}" >&2
+    echo "  Re-add them and retry the commit." >&2
+    exit 1
+  fi
+fi
+
+exit 0

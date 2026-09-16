@@ -1,5 +1,23 @@
 # Contributing
 
+## Local git hooks
+
+A pre-commit check (refuses direct commits to `edge`; runs
+`dotnet csharpier format` on staged `.cs`/`.csproj` files, aborting if it
+changes anything so the reformatted content doesn't slip past unreviewed)
+and a pre-push check (refuses direct pushes to `main`) are tracked under
+[`.githooks/`](.githooks). Git deliberately never runs a repo's tracked
+hooks without an explicit opt-in — cloning a repo shouldn't be able to
+execute arbitrary code on its own — so enable them once per clone with:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+Both are client-side backstops for mistakes, not a substitute for care or
+for CI/branch protection: `git commit --no-verify` / `git push --no-verify`
+skip them entirely.
+
 ## Image channels: `stable` and `edge`
 
 The HIP solver image is published under two channels:

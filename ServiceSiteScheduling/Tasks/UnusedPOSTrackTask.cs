@@ -10,15 +10,15 @@ namespace ServiceSiteScheduling.Tasks
         Combine,
     }
 
-    class POSTrackTask
+    class UnusedPOSTrackTask
     {
         public TrackTask CorrespondingTrackTask { get; set; }
 
         public int ID { get; set; }
 
-        public List<POSMoveTask> previousMoves { get; set; }
+        public List<UnusedPOSMoveTask> previousMoves { get; set; }
 
-        public List<POSMoveTask> nextMoves { get; set; }
+        public List<UnusedPOSMoveTask> nextMoves { get; set; }
 
         public POSTrackTaskType TaskType { get; set; }
 
@@ -26,15 +26,15 @@ namespace ServiceSiteScheduling.Tasks
 
         public TrackParts.Track Track { get; set; }
 
-        public List<POSTrackTask> SuccessorTrackTaskByTrainUnits { get; set; }
+        public List<UnusedPOSTrackTask> SuccessorTrackTaskByTrainUnits { get; set; }
 
-        public List<POSTrackTask> PredecessorTrackTaskByTrainUnits { get; set; }
+        public List<UnusedPOSTrackTask> PredecessorTrackTaskByTrainUnits { get; set; }
 
-        public List<POSTrackTask> SuccessorTrackTaskByInfrastructure { get; set; }
+        public List<UnusedPOSTrackTask> SuccessorTrackTaskByInfrastructure { get; set; }
 
-        public List<POSTrackTask> PredecessorTrackTaskByInfrastructure { get; set; }
+        public List<UnusedPOSTrackTask> PredecessorTrackTaskByInfrastructure { get; set; }
 
-        public POSTrackTask(TrackTask correspondingTrackTask)
+        public UnusedPOSTrackTask(TrackTask correspondingTrackTask)
         {
             this.CorrespondingTrackTask = correspondingTrackTask;
 
@@ -85,44 +85,44 @@ namespace ServiceSiteScheduling.Tasks
 
         public void displayLinksByInfrastructure()
         {
-            Console.Write($"POSTrackTask {this.ID}\n");
+            Console.Write($"UnusedPOSTrackTask {this.ID}\n");
             Console.Write("|  Direct Sucessors | ");
             Console.Write("[ ");
 
-            foreach (POSTrackTask item in SuccessorTrackTaskByInfrastructure)
+            foreach (UnusedPOSTrackTask item in SuccessorTrackTaskByInfrastructure)
             {
-                Console.Write($"POSTrackTask {item.ID}, ");
+                Console.Write($"UnusedPOSTrackTask {item.ID}, ");
             }
             Console.WriteLine(" ]");
 
             Console.Write("|  Direct Predeccessors | ");
             Console.Write("[ ");
 
-            foreach (POSTrackTask item in PredecessorTrackTaskByInfrastructure)
+            foreach (UnusedPOSTrackTask item in PredecessorTrackTaskByInfrastructure)
             {
-                Console.Write($"POSTrackTask {item.ID}, ");
+                Console.Write($"UnusedPOSTrackTask {item.ID}, ");
             }
             Console.WriteLine(" ]\n");
         }
 
         public void displayLinksByTrainUnits()
         {
-            Console.Write($"POSTrackTask {this.ID}\n");
+            Console.Write($"UnusedPOSTrackTask {this.ID}\n");
             Console.Write("|  Direct Sucessors | ");
             Console.Write("[ ");
 
-            foreach (POSTrackTask item in SuccessorTrackTaskByTrainUnits)
+            foreach (UnusedPOSTrackTask item in SuccessorTrackTaskByTrainUnits)
             {
-                Console.Write($"POSTrackTask {item.ID}, ");
+                Console.Write($"UnusedPOSTrackTask {item.ID}, ");
             }
             Console.WriteLine(" ]");
 
             Console.Write("|  Direct Predeccessors | ");
             Console.Write("[ ");
 
-            foreach (POSTrackTask item in PredecessorTrackTaskByTrainUnits)
+            foreach (UnusedPOSTrackTask item in PredecessorTrackTaskByTrainUnits)
             {
-                Console.Write($"POSTrackTask {item.ID}, ");
+                Console.Write($"UnusedPOSTrackTask {item.ID}, ");
             }
             Console.WriteLine(" ]\n");
         }
@@ -132,15 +132,15 @@ namespace ServiceSiteScheduling.Tasks
             string str = "";
             str = str + "TrackTask Links by same Train Unit used :\n";
             str = str + "|Direct successors|: [";
-            foreach (POSTrackTask item in SuccessorTrackTaskByInfrastructure)
+            foreach (UnusedPOSTrackTask item in SuccessorTrackTaskByInfrastructure)
             {
-                str = str + "POSTrackTask " + item.ID + ", ";
+                str = str + "UnusedPOSTrackTask " + item.ID + ", ";
             }
             str = str + "]\n|Direct predeccessors|: [";
 
-            foreach (POSTrackTask item in PredecessorTrackTaskByInfrastructure)
+            foreach (UnusedPOSTrackTask item in PredecessorTrackTaskByInfrastructure)
             {
-                str = str + "POSTrackTask " + item.ID + ", ";
+                str = str + "UnusedPOSTrackTask " + item.ID + ", ";
             }
 
             str = str + "]\n";
@@ -152,37 +152,37 @@ namespace ServiceSiteScheduling.Tasks
             string str = "";
             str = str + "TrackTask Links by same Infrastructure used :\n";
             str = str + "|Direct successors: [";
-            foreach (POSTrackTask item in SuccessorTrackTaskByTrainUnits)
+            foreach (UnusedPOSTrackTask item in SuccessorTrackTaskByTrainUnits)
             {
-                str = str + "POSTrackTask " + item.ID + ", ";
+                str = str + "UnusedPOSTrackTask " + item.ID + ", ";
             }
             str = str + "]\n|Direct predeccessors|: [";
 
-            foreach (POSTrackTask item in PredecessorTrackTaskByTrainUnits)
+            foreach (UnusedPOSTrackTask item in PredecessorTrackTaskByTrainUnits)
             {
-                str = str + "POSTrackTask " + item.ID + ", ";
+                str = str + "UnusedPOSTrackTask " + item.ID + ", ";
             }
 
             str = str + "]\n";
             return str;
         }
 
-        public void AddNewSuccessorByTrainUnits(POSTrackTask successor)
+        public void AddNewSuccessorByTrainUnits(UnusedPOSTrackTask successor)
         {
             this.SuccessorTrackTaskByTrainUnits.Add(successor);
         }
 
-        public void AddNewPredecessorByTrainUnits(POSTrackTask predeccessor)
+        public void AddNewPredecessorByTrainUnits(UnusedPOSTrackTask predeccessor)
         {
             this.PredecessorTrackTaskByTrainUnits.Add(predeccessor);
         }
 
-        public void AddNewSuccessorByInfrastructure(POSTrackTask successor)
+        public void AddNewSuccessorByInfrastructure(UnusedPOSTrackTask successor)
         {
             this.SuccessorTrackTaskByInfrastructure.Add(successor);
         }
 
-        public void AddNewPredecessorByInfrastructure(POSTrackTask predeccessor)
+        public void AddNewPredecessorByInfrastructure(UnusedPOSTrackTask predeccessor)
         {
             this.PredecessorTrackTaskByInfrastructure.Add(predeccessor);
         }
@@ -228,7 +228,7 @@ namespace ServiceSiteScheduling.Tasks
             }
 
             string str =
-                "POSTrackTask "
+                "UnusedPOSTrackTask "
                 + this.ID
                 + " - "
                 + POStype
@@ -237,16 +237,16 @@ namespace ServiceSiteScheduling.Tasks
                 + " at "
                 + Track.ID
                 + ":\n";
-            str = str + "|POSMoveTask Successors: [";
+            str = str + "|UnusedPOSMoveTask Successors: [";
 
-            foreach (POSMoveTask successor in nextMoves)
+            foreach (UnusedPOSMoveTask successor in nextMoves)
             {
                 str = str + "Move " + successor.ID + " , ";
             }
 
-            str = str + "]\n|POSMoveTask Predeccessors|: [";
+            str = str + "]\n|UnusedPOSMoveTask Predeccessors|: [";
 
-            foreach (POSMoveTask predeccessor in previousMoves)
+            foreach (UnusedPOSMoveTask predeccessor in previousMoves)
             {
                 str = str + "Move " + predeccessor.ID + ", ";
             }
