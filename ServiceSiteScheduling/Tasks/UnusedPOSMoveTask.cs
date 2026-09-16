@@ -1,10 +1,10 @@
 namespace ServiceSiteScheduling.Tasks
 {
-    class POSMoveTask
+    class UnusedPOSMoveTask
     {
-        // public Solutions.PartialOrderSchedule POSPlanGraph { get; set; }
+        // public Solutions.UnusedPartialOrderSchedule POSPlanGraph { get; set; }
 
-        // A POSMoveTask has a MoveTask that is used in the Totaly Ordered Solution
+        // A UnusedPOSMoveTask has a MoveTask that is used in the Totaly Ordered Solution
         // even if the order and linking of the POS moves are changing it will not have an effect
         // on the MoveTasks' order (Solutions.PlanGraph) and vica versa, nevertheless this reference is needed
         // because the MoveTasks moves contain important relations with other tasks. @CorrespondingMoveTask is
@@ -13,21 +13,21 @@ namespace ServiceSiteScheduling.Tasks
 
         // Specified according to the order of the Totaly Ordered Solution
         public int ID { get; set; }
-        public List<POSMoveTask> LinkedMoves { get; set; }
+        public List<UnusedPOSMoveTask> LinkedMoves { get; set; }
 
-        public List<POSMoveTask> SuccessorMovesByTrainUnits { get; set; }
+        public List<UnusedPOSMoveTask> SuccessorMovesByTrainUnits { get; set; }
 
-        public List<POSMoveTask> PredecessorMovesByTrainUnits { get; set; }
+        public List<UnusedPOSMoveTask> PredecessorMovesByTrainUnits { get; set; }
 
-        public List<POSMoveTask> SuccessorMovesByInfrastructure { get; set; }
+        public List<UnusedPOSMoveTask> SuccessorMovesByInfrastructure { get; set; }
 
-        public List<POSMoveTask> PredecessorMovesByInfrastructure { get; set; }
+        public List<UnusedPOSMoveTask> PredecessorMovesByInfrastructure { get; set; }
 
-        public List<POSTrackTask> SuccessorTrackTasks { get; set; }
+        public List<UnusedPOSTrackTask> SuccessorTrackTasks { get; set; }
 
-        public List<POSTrackTask> PredecessorTrackTasks { get; set; }
+        public List<UnusedPOSTrackTask> PredecessorTrackTasks { get; set; }
 
-        public POSMoveTask(MoveTask correspondingMoveTask, int id)
+        public UnusedPOSMoveTask(MoveTask correspondingMoveTask, int id)
         {
             // this.POSPlanGraph = posGraph;
             this.CorrespondingMoveTask = correspondingMoveTask;
@@ -42,24 +42,24 @@ namespace ServiceSiteScheduling.Tasks
             this.PredecessorTrackTasks = [];
         }
 
-        public static void InsertAfter(POSMoveTask posMoveTask) { }
+        public static void InsertAfter(UnusedPOSMoveTask posMoveTask) { }
 
-        public void AddNewSuccessorByTrainUnits(POSMoveTask successor)
+        public void AddNewSuccessorByTrainUnits(UnusedPOSMoveTask successor)
         {
             this.SuccessorMovesByTrainUnits.Add(successor);
         }
 
-        public void AddNewPredecessorByTrainUnits(POSMoveTask predeccessor)
+        public void AddNewPredecessorByTrainUnits(UnusedPOSMoveTask predeccessor)
         {
             this.PredecessorMovesByTrainUnits.Add(predeccessor);
         }
 
-        public void AddNewSuccessorByInfrastructure(POSMoveTask successor)
+        public void AddNewSuccessorByInfrastructure(UnusedPOSMoveTask successor)
         {
             this.SuccessorMovesByInfrastructure.Add(successor);
         }
 
-        public void AddNewPredecessorByInfrastructure(POSMoveTask predeccessor)
+        public void AddNewPredecessorByInfrastructure(UnusedPOSMoveTask predeccessor)
         {
             this.PredecessorMovesByInfrastructure.Add(predeccessor);
         }
@@ -70,13 +70,13 @@ namespace ServiceSiteScheduling.Tasks
             str = str + "Movement Links by same Train Unit used :\n";
             str = str + "|Direct successors: [";
 
-            foreach (POSMoveTask successor in SuccessorMovesByTrainUnits)
+            foreach (UnusedPOSMoveTask successor in SuccessorMovesByTrainUnits)
             {
                 str = str + "Move " + successor.ID + " , ";
             }
             str = str + "]\n|Direct predeccessors|: [";
 
-            foreach (POSMoveTask predeccessor in PredecessorMovesByTrainUnits)
+            foreach (UnusedPOSMoveTask predeccessor in PredecessorMovesByTrainUnits)
             {
                 str = str + "Move " + predeccessor.ID + ", ";
             }
@@ -85,13 +85,13 @@ namespace ServiceSiteScheduling.Tasks
             str = str + "Movement Links by same Infrastructure used :\n";
             str = str + "|Direct successors: [";
 
-            foreach (POSMoveTask successor in SuccessorMovesByInfrastructure)
+            foreach (UnusedPOSMoveTask successor in SuccessorMovesByInfrastructure)
             {
                 str = str + "Move " + successor.ID + " , ";
             }
             str = str + "]\n|Direct predeccessors|: [";
 
-            foreach (POSMoveTask predeccessor in PredecessorMovesByInfrastructure)
+            foreach (UnusedPOSMoveTask predeccessor in PredecessorMovesByInfrastructure)
             {
                 str = str + "Move " + predeccessor.ID + ", ";
             }
@@ -100,13 +100,13 @@ namespace ServiceSiteScheduling.Tasks
             str = str + "Track Task Links :\n";
             str = str + "|Direct successors: [";
 
-            foreach (POSTrackTask successor in SuccessorTrackTasks)
+            foreach (UnusedPOSTrackTask successor in SuccessorTrackTasks)
             {
                 str = str + "Track Task " + successor.ID + " , ";
             }
             str = str + "]\n|Direct predeccessors|: [";
 
-            foreach (POSTrackTask predeccessor in PredecessorTrackTasks)
+            foreach (UnusedPOSTrackTask predeccessor in PredecessorTrackTasks)
             {
                 str = str + "Track Task " + predeccessor.ID + ", ";
             }

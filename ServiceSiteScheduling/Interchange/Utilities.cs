@@ -2,8 +2,9 @@
 
 namespace ServiceSiteScheduling.Interchange
 {
-    // Represents a single time interval.
-    public readonly record struct TimeInterval(double Start, double End);
+    // Represents a single time interval. Unused: declared but never
+    // constructed or referenced anywhere.
+    public readonly record struct UnusedTimeInterval(double Start, double End);
 
     public enum SolverBackend
     {

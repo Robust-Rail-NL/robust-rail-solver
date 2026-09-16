@@ -94,7 +94,7 @@ namespace ServiceSiteScheduling.Solutions
 
         private bool[][] FreeServiceTaskFinished;
 
-        public PartialOrderSchedule? POS { get; set; }
+        public UnusedPartialOrderSchedule? POS { get; set; }
 
         public int testIndex { get; set; }
 
