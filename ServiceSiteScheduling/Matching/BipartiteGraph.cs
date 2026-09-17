@@ -166,7 +166,7 @@ namespace ServiceSiteScheduling.Matching
                         for (int j = 0; j < matchCount; j++)
                             if (this.adjacencyMatrix[j, i])
                             {
-                                this.fixedMatches.Add(new Match(arrivals[i], departures[j]));
+                                this.fixedMatches.Add(new Match(arrivals[j], departures[i]));
                                 for (int k = 0; k < matchCount; k++)
                                     this.adjacencyMatrix[j, k] = false;
                                 break;
