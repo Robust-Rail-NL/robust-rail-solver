@@ -54,6 +54,52 @@ public class TestPlan(ITestOutputHelper output)
         temp_dir.Delete();
     }
 
+    // Guards PlanGraph.ToPlan() actually wiring Feasibility/Producer/Cost/
+    // CostDetails from the graph's own SolutionCost, rather than shipping the
+    // schema-only defaults (Unknown/null/null/null) added in 3883c65.
+    [Fact]
+    public void CreatePlan_PopulatesFeasibilityAndCostFromSolutionCost()
+    {
+        DirectoryInfo temp_dir = Directory.CreateTempSubdirectory("robust_test_");
+        var plan_path = Path.GetTempFileName();
+
+        var test_data_path = Path.Combine(Directory.GetCurrentDirectory(), "TestData");
+        var location_path = Path.Combine(test_data_path, "location_simple_service.json");
+        var scenario_path = Path.Combine(test_data_path, "scenario_example1.json");
+        var config_file = Path.Combine(test_data_path, "config.yaml");
+
+        var config = ServiceSiteScheduling.Config.ReadFrom(config_file);
+        ServiceSiteScheduling.Program.CreatePlan(
+            location_path,
+            scenario_path,
+            plan_path,
+            config,
+            0,
+            temp_dir.ToString()
+        );
+
+        // Not deserialized into the real ServiceSiteScheduling.Interchange.Plan
+        // (unlike this file's other tests): its nested types (e.g.
+        // ShuntingUnit) don't have a JSON-deserializable constructor, since
+        // production code only ever serializes a Plan, never reads one back.
+        // Reading the top-level scalars via JsonDocument sidesteps that.
+        string json_text = File.ReadAllText(plan_path);
+        using JsonDocument doc = JsonDocument.Parse(json_text);
+        JsonElement root = doc.RootElement;
+
+        Assert.NotEqual("Unknown", root.GetProperty("feasibility").GetString());
+        Assert.True(double.IsFinite(root.GetProperty("cost").GetDouble()));
+        Assert.False(string.IsNullOrEmpty(root.GetProperty("costDetails").GetString()));
+        Assert.Contains("robust-rail-solver", root.GetProperty("producer").GetString());
+
+        File.Delete(plan_path);
+        foreach (FileInfo file in temp_dir.GetFiles())
+        {
+            file.Delete();
+        }
+        temp_dir.Delete();
+    }
+
     // Guards TaskTypeOrder.ORDER's completeness: a value missing from it
     // doesn't fail loudly on its own - TestJsonSorted only turns up the gap
     // when CreatePlan's unseeded random search happens to produce a plan
@@ -172,7 +218,7 @@ public class Task
 internal static class TaskTypeOrder
 {
     // StandIn/StandOut are the standing-train equivalents of Arrive/Exit, so
-    // placed immediately alongside them; Walking is placed with the other
+    // placed immediately alongside them; Setback is placed with the other
     // movement types, and Break/NonService at the end. Unlike the original
     // six (Arrive, Move, Wait, Split, Combine, Exit), this placement for the
     // five newer values is a reasonable default, not a verified business
@@ -186,7 +232,7 @@ internal static class TaskTypeOrder
         PredefinedTaskType.Arrive,
         PredefinedTaskType.StandIn,
         PredefinedTaskType.Move,
-        PredefinedTaskType.Walking,
+        PredefinedTaskType.Setback,
         PredefinedTaskType.Wait,
         PredefinedTaskType.Split,
         PredefinedTaskType.Combine,
