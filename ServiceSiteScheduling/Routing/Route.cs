@@ -15,6 +15,11 @@ namespace ServiceSiteScheduling.Routing
         public Time Duration { get; private set; }
         public int Crossings { get; private set; }
         public int DepartureCrossings { get; set; }
+
+        // Which side of Tracks[0] this route's path actually leaves through --
+        // discovered from the path (Graph.Dijkstra), not supplied by the caller: the
+        // search always starts from the train's true resting vertex, and is free to
+        // reach either side, including via a leading Reverse arc.
         public Side DepartureSide { get; private set; }
         public RoutingGraph Graph { get; private set; }
         public BitSet CrossingTracks { get; private set; }
