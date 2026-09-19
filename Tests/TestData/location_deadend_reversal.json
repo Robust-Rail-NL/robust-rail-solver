@@ -28,7 +28,7 @@
             "bSide": ["3"],
             "length": 200.0,
             "name": "deadend",
-            "sawMovementAllowed": false,
+            "sawMovementAllowed": true,
             "parkingAllowed": true
         },
         {

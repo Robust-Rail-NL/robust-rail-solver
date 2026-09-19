@@ -46,5 +46,25 @@ public class SplitDuringMoveOrderTests
             "the leading unit's forced early departure should register as a crossing, "
                 + "since the trailing unit is physically in its way"
         );
+
+        // The regression this fixture was really built for (#46): departing
+        // the dead end always requires reversing in place first (it's the
+        // only way out), so that reversal must show up as a real, correctly
+        // costed Reverse action -- not be silently absorbed as a Wait/delay
+        // with no action to represent it at all.
+        var plan = tabuSearch.Graph.ToPlan();
+        Assert.NotNull(plan);
+        var setbacks = plan
+            .Actions.Where(a =>
+                a.TaskType.Predefined
+                == ServiceSiteScheduling.Interchange.PredefinedTaskType.Reverse
+            )
+            .ToList();
+        Assert.NotEmpty(setbacks);
+        foreach (var setback in setbacks)
+            Assert.True(
+                setback.EndTime > setback.StartTime,
+                "a Reverse must reflect the train's real reversal cost, not stand in as a zero-width marker"
+            );
     }
 }
