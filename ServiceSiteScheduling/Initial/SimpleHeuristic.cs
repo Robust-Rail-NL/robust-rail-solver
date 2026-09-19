@@ -496,34 +496,23 @@ namespace ServiceSiteScheduling.Initial
                 else
                 {
                     // Find track with maximal space
+                    // The train's true resting side on routing.Previous.Track is
+                    // already known -- no need to hypothesise both.
+                    Side trueoriginside = routing.Previous.ArrivalSide!;
                     var reachable = routing
                         .Train.ParkingLocations.Where(track =>
                             (
                                 routinggraph.RoutePossible(
                                     routing.Train,
                                     routing.Previous.Track,
-                                    Side.A,
+                                    trueoriginside,
                                     track,
                                     Side.A
                                 )
                                 || routinggraph.RoutePossible(
                                     routing.Train,
                                     routing.Previous.Track,
-                                    Side.B,
-                                    track,
-                                    Side.A
-                                )
-                                || routinggraph.RoutePossible(
-                                    routing.Train,
-                                    routing.Previous.Track,
-                                    Side.A,
-                                    track,
-                                    Side.B
-                                )
-                                || routinggraph.RoutePossible(
-                                    routing.Train,
-                                    routing.Previous.Track,
-                                    Side.B,
+                                    trueoriginside,
                                     track,
                                     Side.B
                                 )
@@ -584,17 +573,7 @@ namespace ServiceSiteScheduling.Initial
                         routinggraph.RoutePossible(
                             routing.Train,
                             routing.FromTrack,
-                            Side.A,
-                            parkingtrack,
-                            Side.A
-                        )
-                    )
-                        side = Side.A;
-                    else if (
-                        routinggraph.RoutePossible(
-                            routing.Train,
-                            routing.FromTrack,
-                            Side.B,
+                            routing.Previous.ArrivalSide!,
                             parkingtrack,
                             Side.A
                         )
@@ -624,18 +603,14 @@ namespace ServiceSiteScheduling.Initial
                         side = Side.None;
                         if (departure.Next.Track.Access == Side.Both)
                         {
+                            // task.ArrivalSide was just fixed above (task.ArrivalSide =
+                            // side, before this loop's own reuse of `side`) -- that's
+                            // parkingtrack's true resting side, not a hypothesis.
                             if (
                                 routinggraph.RoutePossible(
                                     task.Train,
                                     parkingtrack,
-                                    Side.A,
-                                    departure.Next.Track,
-                                    Side.A
-                                )
-                                || routinggraph.RoutePossible(
-                                    task.Train,
-                                    parkingtrack,
-                                    Side.B,
+                                    task.ArrivalSide!,
                                     departure.Next.Track,
                                     Side.A
                                 )
