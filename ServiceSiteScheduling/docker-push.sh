@@ -56,6 +56,12 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 docker login ghcr.io
+# Only the push needs auth; ghcr.io/robust-rail-nl is public for reads. Log
+# out again once this script exits (success or failure) rather than leaving
+# the credential sitting in the credential store, where every unrelated
+# docker pull against ghcr.io (e.g. run_experiment.py's) ends up decrypting
+# it for no reason.
+trap 'docker logout ghcr.io' EXIT
 
 IMAGE="ghcr.io/robust-rail-nl/hip"
 CACHE_REF="$IMAGE:buildcache"
