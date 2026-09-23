@@ -29,11 +29,14 @@ namespace ServiceSiteScheduling.Routing
                 ProblemInstance.Current.Tracks.Length,
                 ProblemInstance.Current.Tracks.Length
             ];
+            var (storageIndices, storageBitSize) = Storage.ComputeIndices();
             for (int i = 0; i < ProblemInstance.Current.Tracks.Length; i++)
             for (int j = 0; j < ProblemInstance.Current.Tracks.Length; j++)
                 this.storages[i, j] = new Storage(
                     ProblemInstance.Current.Tracks[i],
-                    ProblemInstance.Current.Tracks[j]
+                    ProblemInstance.Current.Tracks[j],
+                    storageIndices,
+                    storageBitSize
                 );
 
             this.Vertices = new Vertex[4 * supervertices.Length];
