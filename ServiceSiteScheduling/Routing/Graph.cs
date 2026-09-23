@@ -88,33 +88,20 @@ namespace ServiceSiteScheduling.Routing
                     var w = this.Vertices[j];
 
                     var route = this.Dijkstra(train, w, v, false);
-                    PreWarm(w, v, j, i, route);
+                    RecordCounts(j, i, route);
 
                     route = this.Dijkstra(train, v, w, false);
-                    PreWarm(v, w, i, j, route);
+                    RecordCounts(i, j, route);
                 }
             }
 
-            void PreWarm(Vertex start, Vertex end, int startIndex, int endIndex, Route route)
+            void RecordCounts(int startIndex, int endIndex, Route route)
             {
                 // Count matrices are indexed [endIndex][startIndex], matching the
                 // assignments above this function replaces.
                 this.ReversalCount[endIndex][startIndex] = route.TotalReversals;
                 this.SwitchCount[endIndex][startIndex] = route.TotalSwitches;
                 this.TrackCount[endIndex][startIndex] = route.Tracks.Length;
-
-                // Pre-warm the empty-occupation cache only for the vertex pairs
-                // ComputeRoute actually queries: both ends must be a true resting
-                // vertex (AA/BB, ArrivalSide==TrackSide) -- ComputeRoute never
-                // starts a search from a departure-ready vertex (AB/BA) any more.
-                if (start.ArrivalSide == start.TrackSide && end.ArrivalSide == end.TrackSide)
-                {
-                    var storage = this.storages[
-                        start.SuperVertex.Track.Index,
-                        end.SuperVertex.Track.Index
-                    ];
-                    storage.Add(start.TrackSide, end.TrackSide, storage.EmptyState, route);
-                }
             }
         }
 
