@@ -8,15 +8,15 @@ namespace ServiceSiteScheduling.Routing
 {
     class RoutingGraph
     {
-        public SuperVertex[] SuperVertices;
-        public Vertex[] Vertices;
-        public int[][] TrackCount;
-        public int[][] ReversalCount;
-        public int[][] SwitchCount;
-        public Arc[,] ArcMatrix;
+        private SuperVertex[] SuperVertices;
+        private Vertex[] Vertices;
+        private int[][] TrackCount;
+        private int[][] ReversalCount;
+        private int[][] SwitchCount;
+        private Arc[,] ArcMatrix;
 
-        protected FastPriorityQueue<Vertex> priorityqueue;
-        protected Storage[,] storages;
+        private FastPriorityQueue<Vertex> priorityqueue;
+        private Storage[,] storages;
 
         // Vertices touched (Discovered) by the most recent `Dijkstra` call, so the next
         // call can reset just those instead of sweeping all Vertices -- see `Dijkstra`.
@@ -268,6 +268,9 @@ namespace ServiceSiteScheduling.Routing
             return new RoutingGraph(supervertices);
         }
 
+        public void SetTrackOccupation(Track track, Parking.TrackOccupation occupation) =>
+            this.SuperVertices[track.Index].TrackOccupation = occupation;
+
         // The Vertex a Track+Side pair actually refers to for routing purposes:
         // the train's true resting vertex (AA/BB, ArrivalSide==TrackSide), never
         // a departure-ready one (AB/BA) -- see this branch's fix.
@@ -363,7 +366,7 @@ namespace ServiceSiteScheduling.Routing
                 < Settings.SwitchesIfInvalidRoute;
         }
 
-        protected Route Dijkstra(
+        private Route Dijkstra(
             ShuntTrain train,
             Vertex start,
             Vertex end,
@@ -537,7 +540,7 @@ namespace ServiceSiteScheduling.Routing
             );
         }
 
-        protected static Time ComputeEstimate(
+        private static Time ComputeEstimate(
             ShuntTrain train,
             int index,
             int[] switchcount,

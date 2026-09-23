@@ -128,7 +128,7 @@ namespace ServiceSiteScheduling.Solutions
 
                 TrackOccupation occupation = new SimpleTrackOccupation(track);
                 occupations[i] = occupation;
-                this.RoutingGraph.SuperVertices[track.Index].TrackOccupation = occupation;
+                this.RoutingGraph.SetTrackOccupation(track, occupation);
 
                 if (
                     ProblemInstance
