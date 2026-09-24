@@ -65,7 +65,7 @@ public class TestUnifiedSchema
     }
 
     [Theory]
-    [InlineData(PredefinedTaskType.Setback)]
+    [InlineData(PredefinedTaskType.Reverse)]
     [InlineData(PredefinedTaskType.Break)]
     [InlineData(PredefinedTaskType.NonService)]
     [InlineData(PredefinedTaskType.StandIn)]

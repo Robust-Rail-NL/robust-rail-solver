@@ -10,11 +10,11 @@ namespace ServiceSiteScheduling.Interchange
         }
     }
 
-    // A producer's own verdict on whether its submitted Plan satisfies all
-    // hard constraints - not a claim about whether some other plan for the
-    // same Scenario might exist. Unknown is the default for a producer that
-    // doesn't compute this (or a plan predating this field), not a third
-    // kind of "maybe".
+    // Whether this Plan, as submitted by its Origin, satisfies all hard
+    // constraints - not a claim about whether some other plan for the same
+    // Scenario might exist. `Unknown` is the default when the Origin does
+    // not set this (or for a plan predating this field), not a third kind of
+    // "maybe".
     public enum Feasibility
     {
         Unknown,
@@ -39,16 +39,16 @@ namespace ServiceSiteScheduling.Interchange
         // Free text identifying what produced this plan, e.g.
         // "robust-rail-solver 2.0.0-edge+20260826.a1b2c3d" - for a human
         // debugging a failed evaluation, not for programmatic parsing.
-        public string? Producer { get; init; }
+        public string? Origin { get; init; }
 
-        // This producer's own total objective/cost value for this plan, in
-        // whatever units and scale it uses - not comparable across
-        // different producers.
+        // This Plan's Origin's own total objective/cost value for this plan,
+        // in whatever units and scale it uses - not comparable across
+        // different Origins.
         public double? Cost { get; init; }
 
         // Free-form human-readable breakdown of Cost, e.g.
         // SolutionCost.ToString()'s output. Deliberately not structured: the
-        // term breakdown is producer-specific, unlike the total itself.
+        // term breakdown is Origin-specific, unlike the total itself.
         public string? CostDetails { get; init; }
     }
 
