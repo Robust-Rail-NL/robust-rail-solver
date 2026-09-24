@@ -102,10 +102,16 @@ namespace ServiceSiteScheduling.Interchange
         Move,
         Split,
         Combine,
+
+        // A shunting unit reversing direction in place (no track change). Its
+        // duration includes the crew's walk to the other end, but the action
+        // represents the unit's reversal, not the walk itself - hence
+        // "Reverse", not "Walking".
+        Reverse,
+
         Wait,
         Arrive,
         Exit,
-        Walking,
         Break,
         NonService,
         StandIn,

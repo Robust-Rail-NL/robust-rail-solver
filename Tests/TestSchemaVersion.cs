@@ -61,15 +61,21 @@ public class TestSchemaVersion
     public void WarnOnSchemaVersionMismatch_NamesBothVersions_WhenMismatched()
     {
         CapturingLogger logger = new();
+        // Any value that isn't ExpectedVersion mismatches - derive it rather
+        // than hardcoding a literal, so this doesn't silently stop mismatching
+        // (and stop testing anything) the next time ExpectedVersion is bumped.
+        int mismatchedVersion = InterchangeSchema.ExpectedVersion + 1;
 
-        ProblemInstance.WarnOnSchemaVersionMismatch("Scenario", 2, logger);
+        ProblemInstance.WarnOnSchemaVersionMismatch("Scenario", mismatchedVersion, logger);
 
         string warning = Assert.Single(logger.Warnings);
         Assert.Contains("Scenario", warning);
-        // Both the value found and the one expected: a warning naming only one
-        // of them leaves the reader unable to tell which end is wrong.
-        Assert.Contains("2", warning);
-        Assert.Contains(InterchangeSchema.ExpectedVersion.ToString(), warning);
+        // Both the value found and the one expected, each pinned to the phrase
+        // it appears in rather than a bare number: a warning naming only one of
+        // them leaves the reader unable to tell which end is wrong, and a bare
+        // number could coincidentally match something else in the message.
+        Assert.Contains($"schemaVersion {mismatchedVersion}", warning);
+        Assert.Contains($"expected {InterchangeSchema.ExpectedVersion}", warning);
     }
 
     [Fact]
