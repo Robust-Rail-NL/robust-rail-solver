@@ -6,6 +6,11 @@
 
         protected int cost = 1;
 
+        // How many plain switches this Connection counts as when crossed
+        // (e.g. an EnglishSwitch/HalfEnglishSwitch is 2, an Intersection is
+        // free) - see each subclass's constructor.
+        public int Cost => this.cost;
+
         public Connection(ulong id, string name)
             : base(id, name)
         {
