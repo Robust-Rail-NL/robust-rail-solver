@@ -25,11 +25,7 @@ namespace ServiceSiteScheduling
                         Console.WriteLine("Using config file: " + config_file);
                         Config config = Config.ReadFrom(config_file);
 
-                        string directoryPath = Path.GetDirectoryName(config.PlanPath);
-                        if (!Directory.Exists(directoryPath) && directoryPath != null)
-                        {
-                            Directory.CreateDirectory(directoryPath);
-                        }
+                        EnsureParentDirectoryExists(config.PlanPath);
 
                         string tmpPathPlan = "";
                         if (config.TemporaryPlanPath is null or "")
@@ -112,6 +108,19 @@ namespace ServiceSiteScheduling
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                 ?.InformationalVersion
             ?? "unknown";
+
+        // Creates the directory that will hold the file at @path, if it doesn't
+        // exist yet. A bare filename has no directory part (GetDirectoryName
+        // returns "", not null) and means the current directory, so there is
+        // nothing to create.
+        internal static void EnsureParentDirectoryExists(string path)
+        {
+            string directoryPath = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+        }
 
         // Input:   @location_path: path to the location (.json) file
         //          @scenario_path: path to the scenario (.json) file
