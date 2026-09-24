@@ -54,7 +54,7 @@ public class TestPlan(ITestOutputHelper output)
         temp_dir.Delete();
     }
 
-    // Guards PlanGraph.ToPlan() actually wiring Feasibility/Producer/Cost/
+    // Guards PlanGraph.ToPlan() actually wiring Feasibility/Origin/Cost/
     // CostDetails from the graph's own SolutionCost, rather than shipping the
     // schema-only defaults (Unknown/null/null/null) added in 3883c65.
     [Fact]
@@ -90,7 +90,7 @@ public class TestPlan(ITestOutputHelper output)
         Assert.NotEqual("Unknown", root.GetProperty("feasibility").GetString());
         Assert.True(double.IsFinite(root.GetProperty("cost").GetDouble()));
         Assert.False(string.IsNullOrEmpty(root.GetProperty("costDetails").GetString()));
-        Assert.Contains("robust-rail-solver", root.GetProperty("producer").GetString());
+        Assert.Contains("robust-rail-solver", root.GetProperty("origin").GetString());
 
         File.Delete(plan_path);
         foreach (FileInfo file in temp_dir.GetFiles())
@@ -105,7 +105,7 @@ public class TestPlan(ITestOutputHelper output)
     // when CreatePlan's unseeded random search happens to produce a plan
     // containing the missing value, so it can pass for a long time before
     // failing intermittently (this is exactly how Break/NonService/StandIn/
-    // StandOut/Setback were found missing, back when ORDER lived alongside a
+    // StandOut/Reverse were found missing, back when ORDER lived alongside a
     // local copy of PredefinedTaskType that had gone stale - see the removal
     // of that copy in favor of the real ServiceSiteScheduling.Interchange
     // enum). Comparing the full enum, not just spot-checking recently-added
@@ -218,7 +218,7 @@ public class Task
 internal static class TaskTypeOrder
 {
     // StandIn/StandOut are the standing-train equivalents of Arrive/Exit, so
-    // placed immediately alongside them; Setback is placed with the other
+    // placed immediately alongside them; Reverse is placed with the other
     // movement types, and Break/NonService at the end. Unlike the original
     // six (Arrive, Move, Wait, Split, Combine, Exit), this placement for the
     // five newer values is a reasonable default, not a verified business
@@ -232,7 +232,7 @@ internal static class TaskTypeOrder
         PredefinedTaskType.Arrive,
         PredefinedTaskType.StandIn,
         PredefinedTaskType.Move,
-        PredefinedTaskType.Setback,
+        PredefinedTaskType.Reverse,
         PredefinedTaskType.Wait,
         PredefinedTaskType.Split,
         PredefinedTaskType.Combine,

@@ -1239,7 +1239,7 @@ namespace ServiceSiteScheduling.Solutions
         }
 
         // Splits a route containing one or more in-place reversals into an
-        // alternating Move/Setback/Move/... action sequence, instead of
+        // alternating Move/Reverse/Move/... action sequence, instead of
         // folding the reversal(s) into a single Move's resource path (see
         // schemaVersion 2, SCHEMA_CHANGELOG.md in robust-rail-general).
         //
@@ -1250,7 +1250,7 @@ namespace ServiceSiteScheduling.Solutions
         //   arrival/general case, starttime + route.Duration for departure)
         //   and is always preserved exactly - the last piece absorbs
         //   whatever integer-rounding remainder is left. Everything *inside*
-        //   that span - where a Move ends and the next Setback begins - is
+        //   that span - where a Move ends and the next Reverse begins - is
         //   reconstructed after the fact by weighting each piece by its own
         //   share of the summed per-arc Duration (Arc.ComputeCost, real
         //   per-arc-type costs, including TrackCrossingTime +
@@ -1265,16 +1265,16 @@ namespace ServiceSiteScheduling.Solutions
         //   cursor by would desync the rest of the plan's timeline.
         // - A Reverse arc's own Duration bundles an extra TrackCrossingTime
         //   alongside train.ReversalDuration (see Arc.ComputeCost); that
-        //   whole weight is attributed to the Setback action rather than
+        //   whole weight is attributed to the Reverse action rather than
         //   split between it and the adjacent Moves, which may overstate the
-        //   Setback's share of the (correctly-totalled) span slightly
+        //   Reverse's share of the (correctly-totalled) span slightly
         //   relative to a true per-segment schedule.
         // internal rather than private: exercised directly by
         // Tests/TestSawMovement.cs against a hand-obtained Route, since
         // relying on the heuristic search to organically produce a route
         // with a reversal is unreliable (the search actively avoids them).
 
-        internal List<Interchange.Action> BuildMoveActionsWithSetbacks(
+        internal List<Interchange.Action> BuildMoveActionsWithReverses(
             IReadOnlyList<Arc> arcs,
             ulong startTime,
             ulong endTime,
@@ -1310,7 +1310,7 @@ namespace ServiceSiteScheduling.Solutions
                 else
                     pieceEnd = time + (ulong)((long)totalDuration * pieceWeight / totalWeight);
 
-                // Step 2b: emit the Setback or Move action for this piece.
+                // Step 2b: emit the Reverse or Move action for this piece.
                 if (isReversal)
                 {
                     Track reversalTrack = pieceArcs[0].ReversalTrack;
@@ -1318,7 +1318,7 @@ namespace ServiceSiteScheduling.Solutions
                         new Interchange.Action
                         {
                             Location = reversalTrack.ID,
-                            TaskType = TaskType.FromPredefined(Setback),
+                            TaskType = TaskType.FromPredefined(Reverse),
                             StartTime = time,
                             EndTime = pieceEnd,
                             ShuntingUnit = shuntingUnit,
@@ -1561,7 +1561,7 @@ namespace ServiceSiteScheduling.Solutions
                         if (routing.Route.Arcs.Any(arc => arc.Type == ArcType.Reverse))
                         {
                             actions.AddRange(
-                                BuildMoveActionsWithSetbacks(
+                                BuildMoveActionsWithReverses(
                                     routing.Route.Arcs,
                                     (ulong)routing.Start,
                                     endtime,
@@ -1690,7 +1690,7 @@ namespace ServiceSiteScheduling.Solutions
                             if (route.Arcs.Any(arc => arc.Type == ArcType.Reverse))
                             {
                                 actions.AddRange(
-                                    BuildMoveActionsWithSetbacks(
+                                    BuildMoveActionsWithReverses(
                                         route.Arcs,
                                         (ulong)starttime,
                                         (ulong)(starttime + route.Duration),
@@ -1791,7 +1791,7 @@ namespace ServiceSiteScheduling.Solutions
                 // reported cost is the full weighted total rather than just
                 // the hard-constraint-violation base cost.
                 Feasibility = this.Cost.IsFeasible ? Feasibility.Feasible : Feasibility.Infeasible,
-                Producer = $"robust-rail-solver {Program.Version}",
+                Origin = $"robust-rail-solver {Program.Version}",
                 Cost = this.Cost.Cost(this.Cost.IsFeasible),
                 CostDetails = this.Cost.ToString(),
             };
