@@ -103,10 +103,11 @@ namespace ServiceSiteScheduling.Interchange
         Split,
         Combine,
 
-        // A shunting unit reversing direction in place (no track change). Named
-        // for the physical action, not "Walking" (the crew walking to the other
-        // end is why it takes time, but it's not what the action represents).
-        Setback,
+        // A shunting unit reversing direction in place (no track change). Its
+        // duration includes the crew's walk to the other end, but the action
+        // represents the unit's reversal, not the walk itself - hence
+        // "Reverse", not "Walking".
+        Reverse,
 
         Wait,
         Arrive,

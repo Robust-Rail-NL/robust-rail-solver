@@ -13,7 +13,7 @@ using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using Tests.InPlaceSplit;
 
-// Exercises PlanGraph.BuildMoveActionsWithSetbacks directly against a real
+// Exercises PlanGraph.BuildMoveActionsWithReverses directly against a real
 // Route containing a genuine ArcType.Reverse arc, obtained via
 // RoutingGraph.ComputeRoute rather than the full heuristic search, which
 // actively avoids reversals. Calls ComputeRoute directly to sidestep search
@@ -29,7 +29,7 @@ public class SawMovementTests
         Path.Combine(Directory.GetCurrentDirectory(), "TestData", name);
 
     [Fact]
-    public void ReversingRoute_EmitsAnExplicitSetbackAction()
+    public void ReversingRoute_EmitsAnExplicitReverseAction()
     {
         ProblemInstance.Current = ProblemInstance.ParseJson(
             TestData("location_saw_movement.json"),
@@ -57,7 +57,7 @@ public class SawMovementTests
         ulong startTime = 1000;
         ulong endTime = startTime + (ulong)(int)route.Duration;
 
-        var actions = planGraph.BuildMoveActionsWithSetbacks(
+        var actions = planGraph.BuildMoveActionsWithReverses(
             route.Arcs,
             startTime,
             endTime,
@@ -71,13 +71,13 @@ public class SawMovementTests
             );
 
         var setbacks = actions
-            .Where(a => a.TaskType.Predefined == PredefinedTaskType.Setback)
+            .Where(a => a.TaskType.Predefined == PredefinedTaskType.Reverse)
             .ToList();
         Assert.Single(setbacks);
         Assert.Equal(siding.ID, setbacks[0].Location);
         Assert.Equal((ulong)1000, setbacks[0].StartTime);
         // Non-zero: the train type declares a real reversal cost
-        // (backNormTime/backAdditionTime), so the Setback must reflect it,
+        // (backNormTime/backAdditionTime), so the Reverse must reflect it,
         // not stand in as a zero-width marker.
         Assert.True(setbacks[0].EndTime > setbacks[0].StartTime);
 
@@ -96,8 +96,8 @@ public class SawMovementTests
         // The overall span must match the caller-supplied endTime exactly -
         // that's the number the rest of PlanGraph already trusts and
         // advances its own time cursor by. Only *where* the internal
-        // Move/Setback boundaries fall is approximate, never the total (see
-        // BuildMoveActionsWithSetbacks's own comment).
+        // Move/Reverse boundaries fall is approximate, never the total (see
+        // BuildMoveActionsWithReverses's own comment).
         Assert.Equal(startTime, actions.Min(a => a.StartTime!.Value));
         Assert.Equal(endTime, actions.Max(a => a.EndTime!.Value));
     }
