@@ -1,4 +1,5 @@
-﻿using Priority_Queue;
+﻿using System.Diagnostics;
+using Priority_Queue;
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
 using ServiceSiteScheduling.Utilities;
@@ -7,15 +8,19 @@ namespace ServiceSiteScheduling.Routing
 {
     class RoutingGraph
     {
-        public SuperVertex[] SuperVertices;
-        public Vertex[] Vertices;
-        public int[][] TrackCount;
-        public int[][] ReversalCount;
-        public int[][] SwitchCount;
-        public Arc[,] ArcMatrix;
+        private SuperVertex[] SuperVertices;
+        private Vertex[] Vertices;
+        private int[][] TrackCount;
+        private int[][] ReversalCount;
+        private int[][] SwitchCount;
+        private Arc[,] ArcMatrix;
 
-        protected FastPriorityQueue<Vertex> priorityqueue;
-        protected Storage[,] storages;
+        private FastPriorityQueue<Vertex> priorityqueue;
+        private Storage[,] storages;
+
+        // Vertices touched (Discovered) by the most recent `Dijkstra` call, so the next
+        // call can reset just those instead of sweeping all Vertices -- see `Dijkstra`.
+        private readonly List<Vertex> touchedVertices = [];
 
         public RoutingGraph(SuperVertex[] supervertices)
         {
@@ -24,11 +29,14 @@ namespace ServiceSiteScheduling.Routing
                 ProblemInstance.Current.Tracks.Length,
                 ProblemInstance.Current.Tracks.Length
             ];
+            var (storageIndices, storageBitSize) = Storage.ComputeIndices();
             for (int i = 0; i < ProblemInstance.Current.Tracks.Length; i++)
             for (int j = 0; j < ProblemInstance.Current.Tracks.Length; j++)
                 this.storages[i, j] = new Storage(
                     ProblemInstance.Current.Tracks[i],
-                    ProblemInstance.Current.Tracks[j]
+                    ProblemInstance.Current.Tracks[j],
+                    storageIndices,
+                    storageBitSize
                 );
 
             this.Vertices = new Vertex[4 * supervertices.Length];
@@ -66,6 +74,15 @@ namespace ServiceSiteScheduling.Routing
                 this.ReversalCount[i] = new int[this.Vertices.Length];
             }
 
+            // TODO: this runs a separate, early-terminating Dijkstra search per *pair*
+            // of vertices (twice, once per direction) -- O(V^2) calls. A single
+            // non-terminating Dijkstra per *source* vertex already yields shortest
+            // paths (and Previous chains) to every other vertex in one pass, which
+            // would cut this to O(V) calls (the Dijkstra half of Johnson's algorithm;
+            // arc costs here are non-negative, so Johnson's own Bellman-Ford
+            // reweighting step isn't needed). Worth revisiting if this constructor's
+            // one-time cost is ever actually measured as a problem -- it isn't known
+            // to be one today, and it's a one-off per solve, not a hot-loop cost.
             for (int i = 0; i < this.Vertices.Length; i++)
             {
                 var v = this.Vertices[i];
@@ -73,36 +90,21 @@ namespace ServiceSiteScheduling.Routing
                 {
                     var w = this.Vertices[j];
 
-                    var route = this.Dijkstra(train, w, v, w.TrackSide, false);
+                    var route = this.Dijkstra(train, w, v, false);
+                    RecordCounts(j, i, route);
 
-                    this.ReversalCount[i][j] = route.TotalReversals;
-                    this.SwitchCount[i][j] = route.TotalSwitches;
-                    this.TrackCount[i][j] = route.Tracks.Length;
-
-                    if (w.ArrivalSide != w.TrackSide && v.ArrivalSide == v.TrackSide)
-                    {
-                        var storage = this.storages[
-                            w.SuperVertex.Track.Index,
-                            v.SuperVertex.Track.Index
-                        ];
-                        storage.Add(w.TrackSide, v.TrackSide, storage.EmptyState, route);
-                    }
-
-                    route = this.Dijkstra(train, v, w, v.TrackSide, false);
-
-                    this.ReversalCount[j][i] = route.TotalReversals;
-                    this.SwitchCount[j][i] = route.TotalSwitches;
-                    this.TrackCount[j][i] = route.Tracks.Length;
-
-                    if (v.ArrivalSide != v.TrackSide && w.ArrivalSide == w.TrackSide)
-                    {
-                        var storage = this.storages[
-                            v.SuperVertex.Track.Index,
-                            w.SuperVertex.Track.Index
-                        ];
-                        storage.Add(v.TrackSide, w.TrackSide, storage.EmptyState, route);
-                    }
+                    route = this.Dijkstra(train, v, w, false);
+                    RecordCounts(i, j, route);
                 }
+            }
+
+            void RecordCounts(int startIndex, int endIndex, Route route)
+            {
+                // Count matrices are indexed [endIndex][startIndex], matching the
+                // assignments above this function replaces.
+                this.ReversalCount[endIndex][startIndex] = route.TotalReversals;
+                this.SwitchCount[endIndex][startIndex] = route.TotalSwitches;
+                this.TrackCount[endIndex][startIndex] = route.Tracks.Length;
             }
         }
 
@@ -116,6 +118,12 @@ namespace ServiceSiteScheduling.Routing
                 Vertex ab = new(Side.A, Side.B);
                 Vertex ba = new(Side.B, Side.A);
                 Vertex bb = new(Side.B, Side.B);
+                Debug.Assert(
+                    aa != ab && aa != ba && aa != bb && ab != ba && ab != bb && ba != bb,
+                    $"Track {track}'s four sub-vertices (AA/AB/BA/BB) must be pairwise distinct "
+                        + "objects -- ComputeRoute's origin==destination check relies on reference "
+                        + "equality between them"
+                );
                 SuperVertex v = new(track, aa, ab, ba, bb, track.Index);
                 supervertices[v.Index] = v;
                 aa.SuperVertex = ab.SuperVertex = ba.SuperVertex = bb.SuperVertex = v;
@@ -250,74 +258,72 @@ namespace ServiceSiteScheduling.Routing
             return new RoutingGraph(supervertices);
         }
 
-        public Route ComputeRoute(
-            IEnumerable<Parking.TrackOccupation> occupations,
-            ShuntTrain train,
+        public void SetTrackOccupation(Track track, Parking.TrackOccupation occupation) =>
+            this.SuperVertices[track.Index].TrackOccupation = occupation;
+
+        // The Vertex a Track+Side pair actually refers to for routing purposes:
+        // the train's true resting vertex (AA/BB, ArrivalSide==TrackSide), never
+        // a departure-ready one (AB/BA) -- see this branch's fix.
+        private (Vertex Origin, Vertex Destination) ResolveEndpoints(
             Track departureTrack,
-            Side departureSide,
+            Side originSide,
             Track arrivalTrack,
             Side arrivalSide
         )
         {
-            if (departureTrack == arrivalTrack && departureSide == arrivalSide)
-                return Route.EmptyRoute(train, this, departureTrack, departureSide);
-
-            Route route = null;
-            var storage = this.storages[departureTrack.Index, arrivalTrack.Index];
-            BitSet bitstate = storage.ConstructState(occupations, train);
-            if (!storage.TryGet(departureSide, arrivalSide, bitstate, out route))
-            {
-                SuperVertex start = this.SuperVertices[departureTrack.Index];
-                Vertex origin = departureSide == Side.A ? start.AB : start.BA;
-                SuperVertex end = this.SuperVertices[arrivalTrack.Index];
-                Vertex destination = arrivalSide == Side.A ? end.AA : end.BB;
-
-                route = this.Dijkstra(train, origin, destination, departureSide);
-                storage.Add(departureSide, arrivalSide, bitstate, route);
-                return route;
-            }
-
-            route = new Route(train, route);
-            route.TrackState = bitstate;
-            route.RefreshArcsForTrain();
-            route.ComputeDuration();
-            return route;
+            SuperVertex start = this.SuperVertices[departureTrack.Index];
+            SuperVertex end = this.SuperVertices[arrivalTrack.Index];
+            return (
+                originSide == Side.A ? start.AA : start.BB,
+                arrivalSide == Side.A ? end.AA : end.BB
+            );
         }
 
         public Route ComputeRoute(
             IEnumerable<Parking.TrackOccupation> occupations,
             ShuntTrain train,
             Track departureTrack,
-            Side departureSide,
+            Side originSide,
+            Track arrivalTrack,
+            Side arrivalSide
+        ) =>
+            this.ComputeRoute(
+                occupations,
+                train,
+                departureTrack,
+                originSide,
+                arrivalTrack,
+                arrivalSide,
+                null
+            );
+
+        public Route ComputeRoute(
+            IEnumerable<Parking.TrackOccupation> occupations,
+            ShuntTrain train,
+            Track departureTrack,
+            Side originSide,
             Track arrivalTrack,
             Side arrivalSide,
             BitSet bitstate
         )
         {
-            if (bitstate == null)
-                return this.ComputeRoute(
-                    occupations,
-                    train,
-                    departureTrack,
-                    departureSide,
-                    arrivalTrack,
-                    arrivalSide
-                );
+            var (origin, destination) = this.ResolveEndpoints(
+                departureTrack,
+                originSide,
+                arrivalTrack,
+                arrivalSide
+            );
 
-            if (departureTrack == arrivalTrack && departureSide == arrivalSide)
-                return Route.EmptyRoute(train, this, departureTrack, departureSide);
+            if (origin == destination)
+                return Route.EmptyRoute(train, this, departureTrack, originSide);
 
             Route route = null;
             var storage = this.storages[departureTrack.Index, arrivalTrack.Index];
-            if (!storage.TryGet(departureSide, arrivalSide, bitstate, out route))
+            bitstate ??= storage.ConstructState(occupations, train);
+            if (!storage.TryGet(originSide, arrivalSide, bitstate, out route))
             {
-                SuperVertex start = this.SuperVertices[departureTrack.Index];
-                Vertex origin = departureSide == Side.A ? start.AB : start.BA;
-                SuperVertex end = this.SuperVertices[arrivalTrack.Index];
-                Vertex destination = arrivalSide == Side.A ? end.AA : end.BB;
-
-                route = this.Dijkstra(train, origin, destination, departureSide);
-                storage.Add(departureSide, arrivalSide, bitstate, route);
+                route = this.Dijkstra(train, origin, destination);
+                storage.Add(originSide, arrivalSide, bitstate, route);
                 return route;
             }
 
@@ -331,33 +337,47 @@ namespace ServiceSiteScheduling.Routing
         public bool RoutePossible(
             ShuntTrain train,
             Track departureTrack,
-            Side departureSide,
+            Side originSide,
             Track arrivalTrack,
             Side arrivalSide
         )
         {
-            if (departureTrack == arrivalTrack && departureSide == arrivalSide)
-                return true;
+            var (origin, destination) = this.ResolveEndpoints(
+                departureTrack,
+                originSide,
+                arrivalTrack,
+                arrivalSide
+            );
 
-            SuperVertex start = this.SuperVertices[departureTrack.Index];
-            Vertex origin = departureSide == Side.A ? start.AB : start.BA;
-            SuperVertex end = this.SuperVertices[arrivalTrack.Index];
-            Vertex destination = arrivalSide == Side.A ? end.AA : end.BB;
+            if (origin == destination)
+                return true;
 
             return this.SwitchCount[destination.Index][origin.Index]
                 < Settings.SwitchesIfInvalidRoute;
         }
 
-        protected Route Dijkstra(
-            ShuntTrain train,
-            Vertex start,
-            Vertex end,
-            Side departureside,
-            bool useEstimate = true
-        )
+        private Route Dijkstra(ShuntTrain train, Vertex start, Vertex end, bool useEstimate = true)
         {
-            foreach (Vertex v in this.Vertices)
+            Debug.Assert(
+                start != end,
+                "Dijkstra must not be called with start == end -- callers (ComputeRoute/"
+                    + "RoutePossible) must return Route.EmptyRoute/true directly instead, or "
+                    + "the zero-distance case gets charged a spurious TrackCrossingTime"
+            );
+
+            // Reset only what the previous call actually touched, not every Vertex --
+            // Dijkstra sits on ComputeRoute's cache-miss path, which local search hits
+            // often enough (LocalSearchMove.cs's DebugCheckInterval comment measures
+            // ~2500 candidate moves/sec on a modest 30-train scenario) that an O(V)
+            // sweep per call is worth avoiding. A vertex is only ever discovered,
+            // explored, or given a Previous below when it's added to touchedVertices,
+            // so resetting exactly that set is equivalent to sweeping all Vertices.
+            foreach (Vertex v in this.touchedVertices)
+            {
                 v.Discovered = v.Explored = false;
+                v.Previous = null;
+            }
+            this.touchedVertices.Clear();
             this.priorityqueue.Clear();
 
             int[] switchcount = this.SwitchCount[end.Index],
@@ -366,6 +386,7 @@ namespace ServiceSiteScheduling.Routing
 
             start.Distance = 0;
             start.Discovered = true;
+            this.touchedVertices.Add(start);
             priorityqueue.Enqueue(
                 start,
                 (
@@ -435,6 +456,7 @@ namespace ServiceSiteScheduling.Routing
                                     )
                             );
                             neighbor.Discovered = true;
+                            this.touchedVertices.Add(neighbor);
                         }
                     }
                 }
@@ -472,11 +494,29 @@ namespace ServiceSiteScheduling.Routing
                 current = current.Previous.Tail;
             }
 
+            Arc[] arcArray = arcs.ToArray();
+
+            // The route's effective departure side isn't an input any more (the search
+            // starts from wherever the train truly rests, AA/BB) -- it's discovered from
+            // the path: whichever side's switch arcs the path actually leaves through.
+            // A route that never leaves the origin track via a Switch (a same-track
+            // reposition) has no such arc to read, so it falls back to the TrackSide of
+            // wherever the path ends up -- start and end are then on the same track, so
+            // that's the only side there is to report.
+            Arc firstSwitch = Array.Find(arcArray, arc => arc.Type == ArcType.Switch);
+            Debug.Assert(
+                firstSwitch != null || start.SuperVertex == end.SuperVertex,
+                "A route with no Switch arc must stay on a single Track -- Track/Reverse arcs "
+                    + "never cross SuperVertices, only Switch arcs do -- otherwise the "
+                    + "end.TrackSide fallback below reports the wrong side"
+            );
+            Side departureside = firstSwitch != null ? firstSwitch.Tail.TrackSide : end.TrackSide;
+
             return new Route(
                 train,
                 this,
                 route.ToArray(),
-                arcs.ToArray(),
+                arcArray,
                 crossings,
                 crossingtracks,
                 departureside,
@@ -485,7 +525,7 @@ namespace ServiceSiteScheduling.Routing
             );
         }
 
-        protected static Time ComputeEstimate(
+        private static Time ComputeEstimate(
             ShuntTrain train,
             int index,
             int[] switchcount,

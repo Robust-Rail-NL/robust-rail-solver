@@ -46,12 +46,20 @@ public class SawMovementTests
             ProblemInstance.Current.TrainUnits.Select(u => new ShuntTrainUnit(u))
         );
 
-        // siding(B) -> approach(B): entering and leaving siding on the same
-        // side requires reversing there first. Confirmed empirically to
-        // produce Arcs=[Reverse, Track, Switch].
-        Route route = graph.ComputeRoute([], train, siding, Side.B, approach, Side.B);
+        // siding's only real connection is via its A side (to approach); its
+        // B side is a bumper, so a train resting on siding always got there
+        // via A and truly rests at siding.AA. ComputeRoute's first Side
+        // argument is that true resting side (Side.A here), not a chosen
+        // exit -- the search itself discovers that reaching approach's B
+        // side (the switch connecting back to siding) requires reversing
+        // first, since siding.AA has no switch arcs of its own. Confirmed
+        // empirically to produce Arcs=[Reverse, Switch]: the direct reversal
+        // is cheaper than the old, buggy path that ran to the dead end at
+        // cap and back before reversing.
+        Route route = graph.ComputeRoute([], train, siding, Side.A, approach, Side.B);
         Assert.NotEqual(Route.Invalid, route);
         Assert.Contains(route.Arcs, a => a.Type == ArcType.Reverse);
+        Assert.Equal(new[] { ArcType.Reverse, ArcType.Switch }, route.Arcs.Select(a => a.Type));
         foreach (var arc in route.Arcs)
             arc.ComputeCost(train);
 
@@ -137,7 +145,10 @@ public class SawMovementTests
         ShuntTrain trainB = new(new List<ShuntTrainUnit> { new(unit), new(unit) });
         Assert.NotEqual(trainA.ReversalDuration, trainB.ReversalDuration);
 
-        Route routeA = graph.ComputeRoute([], trainA, siding, Side.B, approach, Side.B);
+        // siding's true resting side is A (see ReversingRoute_EmitsAnExplicit-
+        // ReverseAction's comment above) -- ComputeRoute's origin-side
+        // argument is that true resting side, not a chosen exit.
+        Route routeA = graph.ComputeRoute([], trainA, siding, Side.A, approach, Side.B);
         Arc reverseA = routeA.Arcs.First(a => a.Type == ArcType.Reverse);
         Assert.Equal(
             (Time)(Settings.TrackCrossingTime + trainA.ReversalDuration),
@@ -146,7 +157,7 @@ public class SawMovementTests
 
         // Same departure/arrival/side/occupancy as routeA - this must be a
         // cache hit, not a fresh Dijkstra run, for the bug to be exercised.
-        Route routeB = graph.ComputeRoute([], trainB, siding, Side.B, approach, Side.B);
+        Route routeB = graph.ComputeRoute([], trainB, siding, Side.A, approach, Side.B);
         Arc reverseB = routeB.Arcs.First(a => a.Type == ArcType.Reverse);
         Assert.Equal(
             (Time)(Settings.TrackCrossingTime + trainB.ReversalDuration),

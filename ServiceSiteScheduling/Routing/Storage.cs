@@ -1,15 +1,16 @@
-﻿using ServiceSiteScheduling.Utilities;
+﻿using System.Collections.Immutable;
+using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.Routing
 {
     class Storage
     {
-        private int bitsize;
+        private readonly int bitsize;
         private Dictionary<BitSet, Entry> AA;
         private Dictionary<BitSet, Entry> AB;
         private Dictionary<BitSet, Entry> BA;
         private Dictionary<BitSet, Entry> BB;
-        private int[] indices;
+        private readonly ImmutableArray<int> indices;
         private const int maxsize = 10000;
         private LinkedList<BitSet> AAhistory,
             ABhistory,
@@ -20,24 +21,40 @@ namespace ServiceSiteScheduling.Routing
         public TrackParts.Track To { get; private set; }
         public BitSet EmptyState { get; private set; }
 
-        public Storage(TrackParts.Track from, TrackParts.Track to)
+        // Computing this once per RoutingGraph (not once per Storage) turns an O(N)
+        // allocation duplicated across all O(N^2) Storages -- O(N^3) total -- into a
+        // single O(N) array shared by all of them. Depends only on
+        // ProblemInstance.Current.Tracks, so every Storage built from the same
+        // ProblemInstance gets an identical result.
+        public static (ImmutableArray<int> Indices, int BitSize) ComputeIndices()
         {
-            this.From = from;
-            this.To = to;
-
-            this.indices = new int[ProblemInstance.Current.Tracks.Length];
+            var indices = new int[ProblemInstance.Current.Tracks.Length];
             var activetracks = ProblemInstance.Current.Tracks.Where(track => track.IsActive);
             int index = 0;
             foreach (var track in activetracks)
             {
-                this.indices[track.Index] = index;
+                indices[track.Index] = index;
                 if (track.Access == Side.Both)
                     index += 2;
                 else
                     index++;
             }
 
-            this.bitsize = index;
+            return (ImmutableArray.Create(indices), index);
+        }
+
+        public Storage(
+            TrackParts.Track from,
+            TrackParts.Track to,
+            ImmutableArray<int> indices,
+            int bitsize
+        )
+        {
+            this.From = from;
+            this.To = to;
+
+            this.indices = indices;
+            this.bitsize = bitsize;
             this.AA = [];
             this.AAhistory = new LinkedList<BitSet>();
             this.AB = [];

@@ -119,6 +119,24 @@ public class TaskTypeOrderTests
         }
     }
 
+    // An in-place reversal used to fall into the trailing catch-all instead of
+    // getting an explicit placement, sorting after Wait/Split/Combine/Exit -
+    // invisible until a Reverse actually tied with another action at the same
+    // timestamp, which never happened before #46 made in-place reversals show
+    // up as real Reverse actions at all.
+    [Fact]
+    public void Reverse_SortsBetweenMoveAndWait()
+    {
+        Assert.True(
+            PlanGraph.TaskTypeOrder(PredefinedTaskType.Move)
+                < PlanGraph.TaskTypeOrder(PredefinedTaskType.Reverse)
+        );
+        Assert.True(
+            PlanGraph.TaskTypeOrder(PredefinedTaskType.Reverse)
+                < PlanGraph.TaskTypeOrder(PredefinedTaskType.Wait)
+        );
+    }
+
     [Fact]
     public void ACustomTaskType_SortsLast_RatherThanCollidingWithMove()
     {

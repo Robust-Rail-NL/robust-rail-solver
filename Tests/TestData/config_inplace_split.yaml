@@ -1,7 +1,16 @@
 # Deliberately a short search: the plan graph that triggers #11 is built by the
 # tabu phase within the first few iterations, so a long budget would only make
 # the test slow without making it more likely to catch anything.
-Seed: 1
+#
+# Bumped from 1 to 2 (#46): the routing-origin fix changed reachability/
+# ordering enough to shift which seed lands on a genuine in-place split
+# for TestInPlaceSplit.cs's tie-break in SimpleHeuristic.cs -- confirmed
+# via a seed sweep (1-60) that roughly half still do; in-place splitting
+# itself remains fully supported. TestInPlaceSplit.cs's own
+# ThePlan_ActuallyContainsASplitThatDoesNotMove is what actually verifies
+# this seed still does its job -- see that test if this ever needs
+# re-checking or re-picking.
+Seed: 2
 
 TabuSearch:
   Iterations: 40
