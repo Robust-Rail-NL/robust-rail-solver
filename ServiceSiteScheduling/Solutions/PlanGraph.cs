@@ -1230,7 +1230,7 @@ namespace ServiceSiteScheduling.Solutions
                         infrastructure.Sum(infra => (long)GetFlatDuration(infra));
                     if (leadingReversalCredit)
                     {
-                        flatDuration += (ulong)(int)Settings.TrackCrossingTime;
+                        flatDuration += (ulong)Settings.TrackCrossingTime;
                         leadingReversalCredit = false;
                     }
 
