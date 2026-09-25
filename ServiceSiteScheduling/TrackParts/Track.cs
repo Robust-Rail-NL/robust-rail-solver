@@ -28,6 +28,18 @@ namespace ServiceSiteScheduling.TrackParts
         )
             : base(id, name)
         {
+            // A zero-length track can't be parked on or reversed on for
+            // real - both are physical operations that need actual track
+            // length. Catches a malformed location file (e.g.
+            // parkingAllowed/sawMovementAllowed set on what's meant to be a
+            // zero-length graph connector) rather than silently mis-costing
+            // it later (see GetFlatDuration, #52: the reverse mistake -
+            // Length>0 not implying IsActive - is a real, valid shape and
+            // not checked here).
+            if ((canpark || canreverse) && length <= 0)
+                throw new InvalidOperationException(
+                    $"Track {id} ({name}): parkingAllowed/sawMovementAllowed requires a nonzero length, but length is {length}"
+                );
             this.Services = [service];
             this.Length = length;
             this.Access = access;
