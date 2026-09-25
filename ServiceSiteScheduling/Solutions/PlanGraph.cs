@@ -128,7 +128,7 @@ namespace ServiceSiteScheduling.Solutions
 
                 TrackOccupation occupation = new SimpleTrackOccupation(track);
                 occupations[i] = occupation;
-                this.RoutingGraph.SuperVertices[track.Index].TrackOccupation = occupation;
+                this.RoutingGraph.SetTrackOccupation(track, occupation);
 
                 if (
                     ProblemInstance
@@ -408,8 +408,6 @@ namespace ServiceSiteScheduling.Solutions
                     {
                         var arrival = (ArrivalTask)routing.Previous;
                         routing.Start = arrival.Start = arrival.ScheduledTime;
-                        if (arrival.ArrivalSide == routing.FromSide)
-                            routing.Start += routing.Train.ReversalDuration;
                         if (routing.Start < time && !arrival.Track.CanPark)
                         {
                             logger.LogDebug(
@@ -435,14 +433,6 @@ namespace ServiceSiteScheduling.Solutions
                         routing.Start = time;
 
                     routing.Start = Math.Max(routing.Start, time);
-
-                    if (
-                        routing.Previous.Previous?.ToSide == routing.FromSide
-                        && routing.Start
-                            < routing.Previous.Previous.End + routing.Train.ReversalDuration
-                    )
-                        routing.Start =
-                            routing.Previous.Previous.End + routing.Train.ReversalDuration;
 
                     // Update previous components
                     routing.Previous.End = routing.Start;
@@ -527,25 +517,8 @@ namespace ServiceSiteScheduling.Solutions
                     if (routing.Previous.TaskType == TrackTaskType.Arrival)
                     {
                         var arrival = (ArrivalTask)routing.Previous;
-                        if (
-                            arrival.End
-                            < arrival.ScheduledTime
-                                + (
-                                    arrival.ArrivalSide == arrival.Next.FromSide
-                                        ? arrival.Train.ReversalDuration
-                                        : (Time)0
-                                )
-                        )
-                            arrivalmessage =
-                                " <--- "
-                                + (
-                                    arrival.ScheduledTime
-                                    + (
-                                        arrival.ArrivalSide == arrival.Next.FromSide
-                                            ? arrival.Train.ReversalDuration
-                                            : (Time)0
-                                    )
-                                ).ToString();
+                        if (arrival.End < arrival.ScheduledTime)
+                            arrivalmessage = " <--- " + arrival.ScheduledTime.ToString();
                     }
                     Console.WriteLine(
                         $"{move.Start} | {move.Train} from {routing.FromTrack.PrettyName}{routing.FromSide} to {move.ToTrack.PrettyName}{move.ToSide} | {move.End} {arrivalmessage}"
@@ -626,121 +599,50 @@ namespace ServiceSiteScheduling.Solutions
             Track fromtrack = routing.FromTrack,
                 totrack = routing.ToTrack;
             Side? toside = routing.ToSide;
+            // The train is always physically resting somewhere before it can be routed
+            // away -- Arrival/Parking/StandIn tasks all set ArrivalSide before any
+            // routing over them runs.
+            Side originside = routing.Previous.ArrivalSide!;
 
-            if (fromtrack.Access == Side.Both)
-            {
-                var routeA = this.RoutingGraph.ComputeRoute(
-                    this.TrackOccupations,
-                    routing.Train,
-                    fromtrack,
-                    Side.A,
-                    totrack,
-                    toside
-                );
-                routeA.DepartureCrossings = departurecrossingsA;
-
-                var routeB = this.RoutingGraph.ComputeRoute(
-                    this.TrackOccupations,
-                    routing.Train,
-                    fromtrack,
-                    Side.B,
-                    totrack,
-                    toside,
-                    routeA.TrackState
-                );
-                routeB.DepartureCrossings = departurecrossingsB;
-
-                if (
-                    routeA.Crossings + routeA.DepartureCrossings
-                    < routeB.Crossings + routeB.DepartureCrossings
-                )
-                    routing.AddRoute(routeA);
-                else if (
-                    routeA.Crossings + routeA.DepartureCrossings
-                    > routeB.Crossings + routeB.DepartureCrossings
-                )
-                    routing.AddRoute(routeB);
-                else if (routeA.Duration < routeB.Duration)
-                    routing.AddRoute(routeA);
-                else
-                    routing.AddRoute(routeB);
-            }
-            else
-            {
-                var route = this.RoutingGraph.ComputeRoute(
-                    this.TrackOccupations,
-                    routing.Train,
-                    fromtrack,
-                    fromtrack.Access,
-                    totrack,
-                    toside
-                );
-                route.DepartureCrossings =
-                    fromtrack.Access == Side.A ? departurecrossingsA : departurecrossingsB;
-                routing.AddRoute(route);
-            }
+            // Which side the train actually leaves fromtrack through is discovered by
+            // the search (Route.DepartureSide), not chosen here -- it starts from the
+            // train's true resting vertex (originside) and is free to find either side
+            // cheapest, including via a leading Reverse arc when originside is the only
+            // side reachable from where it actually rests.
+            var route = this.RoutingGraph.ComputeRoute(
+                this.TrackOccupations,
+                routing.Train,
+                fromtrack,
+                originside,
+                totrack,
+                toside
+            );
+            route.DepartureCrossings =
+                route.DepartureSide == Side.A ? departurecrossingsA : departurecrossingsB;
+            routing.AddRoute(route);
         }
 
         public Route ComputeRouting(
             ShuntTrain train,
             Track fromtrack,
+            Side originside,
             Track totrack,
             Side? toside,
             int departurecrossingsA,
             int departurecrossingsB
         )
         {
-            if (fromtrack.Access == Side.Both)
-            {
-                var routeA = this.RoutingGraph.ComputeRoute(
-                    this.TrackOccupations,
-                    train,
-                    fromtrack,
-                    Side.A,
-                    totrack,
-                    toside
-                );
-                routeA.DepartureCrossings = departurecrossingsA;
-
-                var routeB = this.RoutingGraph.ComputeRoute(
-                    this.TrackOccupations,
-                    train,
-                    fromtrack,
-                    Side.B,
-                    totrack,
-                    toside,
-                    routeA.TrackState
-                );
-                routeB.DepartureCrossings = departurecrossingsB;
-
-                if (
-                    routeA.Crossings + routeA.DepartureCrossings
-                    < routeB.Crossings + routeB.DepartureCrossings
-                )
-                    return routeA;
-                if (
-                    routeA.Crossings + routeA.DepartureCrossings
-                    > routeB.Crossings + routeB.DepartureCrossings
-                )
-                    return routeB;
-                if (routeA.Duration < routeB.Duration)
-                    return routeA;
-                return routeB;
-            }
-            else
-            {
-                var route = this.RoutingGraph.ComputeRoute(
-                    this.TrackOccupations,
-                    train,
-                    fromtrack,
-                    fromtrack.Access,
-                    totrack,
-                    toside
-                );
-                route.DepartureCrossings =
-                    fromtrack.Access == Side.A ? departurecrossingsA : departurecrossingsB;
-                return route;
-            }
+            var route = this.RoutingGraph.ComputeRoute(
+                this.TrackOccupations,
+                train,
+                fromtrack,
+                originside,
+                totrack,
+                toside
+            );
+            route.DepartureCrossings =
+                route.DepartureSide == Side.A ? departurecrossingsA : departurecrossingsB;
+            return route;
         }
 
         public string RoutingOrdering()
@@ -768,15 +670,7 @@ namespace ServiceSiteScheduling.Solutions
             BitSet done = new(ProblemInstance.Current.TrainUnits.Length);
 
             foreach (ArrivalTask arrival in this.ArrivalTasks)
-                if (
-                    arrival.End
-                    > arrival.ScheduledTime
-                        + (
-                            arrival.ArrivalSide == arrival.Next.FromSide
-                                ? arrival.Train.ReversalDuration
-                                : (Time)0
-                        )
-                )
+                if (arrival.End > arrival.ScheduledTime)
                 {
                     logger.LogInformation(
                         "Arrival delay: {end} > {schedule} for train {train}",
@@ -1012,7 +906,19 @@ namespace ServiceSiteScheduling.Solutions
             else
                 b = first.State.GetCrossings(Side.B);
 
-            move.AddRoute(this.ComputeRouting(train, track, move.ToTrack, move.ToSide, a, b));
+            move.AddRoute(
+                this.ComputeRouting(
+                    train,
+                    track,
+                    // Set by whichever Arrival/Parking/StandIn task first rests on
+                    // track before this departure route runs.
+                    first.ArrivalSide!,
+                    move.ToTrack,
+                    move.ToSide,
+                    a,
+                    b
+                )
+            );
         }
 
         public bool HasSufficientSpace(ShuntTrain train, Track track, double start, double end)
@@ -1148,25 +1054,8 @@ namespace ServiceSiteScheduling.Solutions
                         if (routing.Previous.TaskType == TrackTaskType.Arrival)
                         {
                             var arrival = (ArrivalTask)routing.Previous;
-                            if (
-                                arrival.End
-                                < arrival.ScheduledTime
-                                    + (
-                                        arrival.ArrivalSide == arrival.Next.FromSide
-                                            ? arrival.Train.ReversalDuration
-                                            : (Time)0
-                                    )
-                            )
-                                arrivalmessage =
-                                    " <--- "
-                                    + (
-                                        arrival.ScheduledTime
-                                        + (
-                                            arrival.ArrivalSide == arrival.Next.FromSide
-                                                ? arrival.Train.ReversalDuration
-                                                : (Time)0
-                                        )
-                                    ).ToString();
+                            if (arrival.End < arrival.ScheduledTime)
+                                arrivalmessage = " <--- " + arrival.ScheduledTime.ToString();
                         }
                         sw.WriteLine(
                             $"{move.Start} | {move.Train} from {routing.FromTrack.PrettyName}{routing.FromSide} to {move.ToTrack.PrettyName}{move.ToSide} | {move.End} {arrivalmessage}"
