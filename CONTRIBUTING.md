@@ -5,7 +5,9 @@
 A pre-commit check (refuses direct commits to `edge`; runs
 `dotnet csharpier format` on staged `.cs`/`.csproj` files, aborting if it
 changes anything so the reformatted content doesn't slip past unreviewed)
-and a pre-push check (refuses direct pushes to `main`) are tracked under
+and a pre-push check (runs `dotnet csharpier check .` over the whole repo,
+a backstop for anything that slipped past the pre-commit check; refuses
+direct pushes to `main`) are tracked under
 [`.githooks/`](.githooks). Git deliberately never runs a repo's tracked
 hooks without an explicit opt-in — cloning a repo shouldn't be able to
 execute arbitrary code on its own — so enable them once per clone with:

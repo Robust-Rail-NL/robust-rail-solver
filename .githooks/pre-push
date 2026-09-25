@@ -3,6 +3,16 @@
 # not automatic, since git deliberately never runs a repo's tracked hooks
 # without that explicit opt-in.
 #
+# CSharpier: mirrors CI's `dotnet csharpier check .` (.github/workflows/dotnet.yml).
+# A backstop for commits that slipped past the pre-commit hook's own check --
+# e.g. made with --no-verify, or before core.hooksPath was configured in
+# whatever checkout created them. (Also skipped by `git push --no-verify`.)
+if ! dotnet csharpier check .; then
+  echo "error: csharpier check failed on one or more committed files." >&2
+  echo "  Run 'dotnet csharpier format .', commit the result, and retry." >&2
+  exit 1
+fi
+
 # Refuses to push directly to main. A client-side backstop after an
 # accidental direct push to robust-rail-planner's main once bypassed its
 # require-PR branch protection (enforce_admins was off, so the server let it
