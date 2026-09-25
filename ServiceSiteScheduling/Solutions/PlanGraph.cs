@@ -1243,32 +1243,35 @@ namespace ServiceSiteScheduling.Solutions
         // folding the reversal(s) into a single Move's resource path (see
         // schemaVersion 2, SCHEMA_CHANGELOG.md in robust-rail-general).
         //
-        // Approximate on purpose, for output only - flag this if it ever
-        // needs to be more precise:
-        // - `endTime` is the one number the rest of the scheduling engine
-        //   already trusts for this whole route (routing.End for the
-        //   arrival/general case, starttime + route.Duration for departure)
-        //   and is always preserved exactly - the last piece absorbs
-        //   whatever integer-rounding remainder is left. Everything *inside*
-        //   that span - where a Move ends and the next Reverse begins - is
-        //   reconstructed after the fact by weighting each piece by its own
-        //   share of the summed per-arc Duration (Arc.ComputeCost, real
-        //   per-arc-type costs, including TrackCrossingTime +
-        //   train.ReversalDuration for a Reverse arc), not from a real
-        //   per-segment scheduling decision: the scheduling engine
-        //   (RoutingTask/MoveTask) still only knows one contiguous span for
-        //   the whole route. Deliberately not the same thing as summing
-        //   arc.Duration directly and trusting that total instead of
-        //   endTime: Route.Duration (ComputeDuration's own formula) and the
-        //   sum of individual arc.Duration values are not guaranteed equal,
-        //   and drifting from what the caller already advanced its own time
-        //   cursor by would desync the rest of the plan's timeline.
-        // - A Reverse arc's own Duration bundles an extra TrackCrossingTime
-        //   alongside train.ReversalDuration (see Arc.ComputeCost); that
-        //   whole weight is attributed to the Reverse action rather than
-        //   split between it and the adjacent Moves, which may overstate the
-        //   Reverse's share of the (correctly-totalled) span slightly
-        //   relative to a true per-segment schedule.
+        // Each piece's duration is computed independently, matching how
+        // robust-rail-evaluator prices a replayed plan (see #52): a Move's
+        // duration is GetFlatDuration summed over its own resource walk
+        // (which already starts with the track it departs from), a
+        // Reverse's is Train.ReversalDuration alone, with no track-crossing
+        // component of its own. This matches Route.ComputeDuration()'s own
+        // formula term for term (#52 has the derivation), so these pieces
+        // are expected to sum to exactly `endTime - startTime`, not merely
+        // close to it.
+        //
+        // A route whose very first piece is a Reverse (no Move before it in
+        // this arcs list - a real shape, not just a theoretical one; see
+        // #52) has no preceding Move to naturally contribute the reversal
+        // track's ordinary TrackCrossingTime, the way a following Move
+        // always naturally contributes the extra one (via its own
+        // prepended fromTrack). leadingReversalCredit below adds that
+        // missing TrackCrossingTime explicitly to the first Move piece
+        // encountered, so pieces sum to exactly `endTime - startTime` in
+        // this shape too, not just the ordinary one.
+        //
+        // `endTime` (routing.End for the arrival/general case, starttime +
+        // route.Duration for departure) is always preserved exactly
+        // regardless: the last piece is anchored to it rather than to its
+        // own computed duration. With the credit above, that's expected to
+        // be a genuine no-op - logged as a warning when it isn't, since
+        // that means some route shape isn't accounted for above.
+        //
+        // A route's *last* piece can never be a Reverse - see the assert
+        // below - so there's no symmetric case on that end.
         // internal rather than private: exercised directly by
         // Tests/TestSawMovement.cs against a hand-obtained Route, since
         // relying on the heuristic search to organically produce a route
@@ -1285,35 +1288,39 @@ namespace ServiceSiteScheduling.Solutions
             // Step 1: group into alternating non-reversal segments and
             // single-arc reversal points, preserving order.
             var pieces = GroupIntoPieces(arcs);
+            Debug.Assert(
+                pieces.Count == 0 || !pieces[^1].IsReversal,
+                "A route's last piece can never be a Reverse: RoutingGraph.Dijkstra's "
+                    + "backtracking strips a Reverse arc landing on the destination "
+                    + "before it ever reaches Route.Arcs - a terminal reversal is "
+                    + "handled separately (see #51), never through this split."
+            );
 
-            // Step 2: build one action per piece, apportioning
-            // [startTime, endTime] across them by each piece's share of
-            // total arc Duration - see the approximation notes above.
+            // Step 2: build one action per piece - see the comment above for
+            // why each piece's own computed duration is trusted, with the
+            // last piece anchored to `endTime` as a safety net rather than a
+            // rescale.
             var result = new List<Interchange.Action>();
-            long totalWeight = arcs.Sum(arc => (long)arc.Duration);
-            ulong totalDuration = endTime - startTime;
             Track segmentFrom = fromTrack;
             ulong time = startTime;
+
+            // See the comment above: only ever consumed by the first Move
+            // piece encountered, so a leading Reverse followed by several
+            // more pieces still only credits the one Move that actually
+            // lacks a preceding Move of its own.
+            bool leadingReversalCredit = pieces.Count > 0 && pieces[0].IsReversal;
 
             for (int i = 0; i < pieces.Count; i++)
             {
                 var (isReversal, pieceArcs) = pieces[i];
-
-                // Step 2a: this piece's end time.
-                long pieceWeight = pieceArcs.Sum(arc => (long)arc.Duration);
                 bool isLast = i == pieces.Count - 1;
-                ulong pieceEnd;
-                if (isLast)
-                    pieceEnd = endTime;
-                else if (totalWeight == 0)
-                    pieceEnd = time;
-                else
-                    pieceEnd = time + (ulong)((long)totalDuration * pieceWeight / totalWeight);
 
-                // Step 2b: emit the Reverse or Move action for this piece.
                 if (isReversal)
                 {
                     Track reversalTrack = pieceArcs[0].ReversalTrack;
+                    ulong pieceEnd = isLast
+                        ? endTime
+                        : time + (ulong)(pieceArcs[0].Duration - Settings.TrackCrossingTime);
                     result.Add(
                         new Interchange.Action
                         {
@@ -1325,9 +1332,48 @@ namespace ServiceSiteScheduling.Solutions
                         }
                     );
                     segmentFrom = reversalTrack;
+                    time = pieceEnd;
                 }
                 else
                 {
+                    var infrastructure = CollectInfrastructure(pieceArcs);
+                    ulong flatDuration = (ulong)
+                        infrastructure.Sum(infra => (long)GetFlatDuration(infra));
+                    if (leadingReversalCredit)
+                    {
+                        flatDuration += (ulong)(int)Settings.TrackCrossingTime;
+                        leadingReversalCredit = false;
+                    }
+
+                    ulong pieceEnd;
+                    if (isLast)
+                    {
+                        pieceEnd = endTime;
+                        long gap = (long)(pieceEnd - time) - (long)flatDuration;
+                        if (gap != 0)
+                            // Not necessarily a bug in this method: e.g. a
+                            // Reverse arc's Duration/Cost is the only
+                            // train-dependent field any Arc carries, and
+                            // RoutingGraph.ComputeRoute's cache (keyed on
+                            // track/side/occupancy, not train - see
+                            // Routing/Storage.cs) can hand back a Route
+                            // whose Arcs were never recomputed for the
+                            // train now reusing it (issue TBD).
+                            logger.LogWarning(
+                                "Move piece for shunting unit {ShuntingUnitId} at {Location} ({StartTime}-{EndTime}) is anchored {Gap}s away from its own computed duration ({FlatDuration}s) - the route's pieces don't sum to its trusted total; investigate.",
+                                shuntingUnit.Id,
+                                segmentFrom.ID,
+                                time,
+                                pieceEnd,
+                                gap,
+                                flatDuration
+                            );
+                    }
+                    else
+                    {
+                        pieceEnd = time + flatDuration;
+                    }
+
                     var moveaction = new Interchange.Action
                     {
                         Location = segmentFrom.ID,
@@ -1337,15 +1383,15 @@ namespace ServiceSiteScheduling.Solutions
                         ShuntingUnit = shuntingUnit,
                     };
 
-                    moveaction.Resources = CollectResources(pieceArcs);
                     // remove first - same convention as the non-reversal Move
                     // blocks in ToPlan() below: the FromTrack entry every
                     // arc's path starts with, redundant with Location above.
                     // See either of those comments for why this is a guard,
                     // not an assumption (#24).
-                    if (moveaction.Resources.Count > 0)
+                    if (infrastructure.Count > 0)
                     {
-                        moveaction.Resources.RemoveAt(0);
+                        infrastructure.RemoveAt(0);
+                        moveaction.Resources = infrastructure.Select(Resource.FromInfra).ToList();
                         result.Add(moveaction);
                     }
                     else
@@ -1364,14 +1410,35 @@ namespace ServiceSiteScheduling.Solutions
                             moveaction.StartTime
                         );
                     }
+                    time = pieceEnd;
                 }
-
-                // Step 2c: advance to the next piece's start.
-                time = pieceEnd;
             }
 
             return result;
         }
+
+        // The flat per-infrastructure-part duration robust-rail-evaluator
+        // prices a Move's route by (see #52): TrackCrossingTime for a real
+        // (nonzero-length) Track, SwitchCrossingTime times a Connection's
+        // own switch-equivalent Cost (1 for a plain Switch, 2 for an
+        // EnglishSwitch/HalfEnglishSwitch, 0 for an Intersection) for
+        // anything else, and 0 for a zero-length Track (a connector, never
+        // a real stop - mirrors evaluator's own Railroad-with-zero-length
+        // special case exactly). Deliberately Length, not IsActive: a
+        // nonzero-length Track that's neither parkable nor reversal-capable
+        // (e.g. a through track) still crosses as a real TrackCrossingTime
+        // to the evaluator, even though IsActive is false for it.
+        // internal rather than private: unit-tested directly (see
+        // Tests/TestSawMovement.cs) - constructing a Route that exercises a
+        // Move on both sides of a reversal needs a branching track layout,
+        // not just a hand-picked Infrastructure instance.
+        internal static Time GetFlatDuration(Infrastructure infrastructure) =>
+            infrastructure switch
+            {
+                Track track => track.Length > 0 ? Settings.TrackCrossingTime : 0,
+                Connection connection => connection.Cost * Settings.SwitchCrossingTime,
+                _ => 0,
+            };
 
         // Groups arcs into alternating non-reversal segments and single-arc
         // reversal points, preserving order - e.g. [Track, Switch, Reverse,
@@ -1404,15 +1471,15 @@ namespace ServiceSiteScheduling.Solutions
             return pieces;
         }
 
-        // Collects the Resources visited by a sequence of arcs' paths, in
-        // order, skipping consecutive duplicates (adjacent arcs sharing a
+        // Collects the Infrastructure visited by a sequence of arcs' paths,
+        // in order, skipping consecutive duplicates (adjacent arcs sharing a
         // track-part boundary revisit the same infrastructure entry). Used
         // by every Move action's resource walk (both here and in ToPlan()) -
         // the caller removes the first entry, see the comments at each call
         // site for why (#24).
-        private static List<Resource> CollectResources(IEnumerable<Arc> arcs)
+        private static List<Infrastructure> CollectInfrastructure(IEnumerable<Arc> arcs)
         {
-            var resources = new List<Resource>();
+            var infrastructure = new List<Infrastructure>();
             Infrastructure? previous = null;
             foreach (var arc in arcs)
             {
@@ -1420,13 +1487,16 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     if (infra != previous)
                     {
-                        resources.Add(Resource.FromInfra(infra));
+                        infrastructure.Add(infra);
                         previous = infra;
                     }
                 }
             }
-            return resources;
+            return infrastructure;
         }
+
+        private static List<Resource> CollectResources(IEnumerable<Arc> arcs) =>
+            CollectInfrastructure(arcs).Select(Resource.FromInfra).ToList();
 
         // Populated by ToPlan() with every Move action it emitted that has no
         // Resources (see #24), tagged with the classification above so a
