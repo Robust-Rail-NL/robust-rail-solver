@@ -41,6 +41,11 @@
 
         public static explicit operator ulong(Time time)
         {
+            if (time.Seconds < 0)
+                throw new OverflowException(
+                    $"Time must be non-negative to convert to ulong, was {time.Seconds}"
+                );
+
             return (ulong)time.Seconds;
         }
 
