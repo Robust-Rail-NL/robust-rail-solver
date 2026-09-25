@@ -12,6 +12,16 @@ namespace ServiceSiteScheduling.Routing
         Track,
     }
 
+    // Invariant relied on by RoutingGraph.ComputeRoute's route cache
+    // (Routing/Storage.cs is keyed on track/side/occupancy, not train): of
+    // Arc.ComputeCost's three cases below, only ArcType.Reverse reads
+    // `train`. On a cache hit for a different train than originally
+    // computed the cached Route's Arcs, ComputeRoute clones and recomputes
+    // only the Reverse arcs (see Route.RefreshArcsForTrain) and keeps
+    // sharing the Track/Switch Arc instances unmodified - see #55. If a
+    // case below starts depending on `train` too, that sharing becomes
+    // unsafe and RefreshArcsForTrain needs to clone that arc type as well.
+
     class Arc
     {
         public Vertex Tail,

@@ -107,6 +107,60 @@ public class SawMovementTests
         Assert.Equal(endTime, actions.Max(a => a.EndTime!.Value));
     }
 
+    // RoutingGraph.ComputeRoute's route cache (Routing/Storage.cs) is keyed
+    // on departure/arrival/side/occupancy only, not train. A cache hit used
+    // to hand back a Route whose Reverse arc's Duration/Cost was still the
+    // one computed for whichever train's Dijkstra run first populated that
+    // cache entry (#55). Two trains with different ReversalDuration, routed
+    // through the same siding<->approach reversal: the second (cache-hit)
+    // train's Reverse arc must reflect its own ReversalDuration, and the
+    // first train's already-returned Route must stay unaffected by the
+    // second train's lookup (Route.Arcs used to alias the cached array).
+    [Fact]
+    public void CachedRoute_RefreshesReverseArcForTheReusingTrain()
+    {
+        ProblemInstance.Current = ProblemInstance.ParseJson(
+            TestData("location_saw_movement.json"),
+            TestData("scenario_saw_movement.json")
+        );
+
+        var graph = RoutingGraph.Construct();
+        Track siding = ProblemInstance.Current.Tracks.First(t => t.PrettyName == "siding");
+        Track approach = ProblemInstance.Current.Tracks.First(t => t.PrettyName == "approach");
+        ServiceSiteScheduling.Trains.TrainUnit unit = ProblemInstance.Current.TrainUnits[0];
+
+        // trainA: the scenario's single unit. trainB: the same unit type
+        // twice, to give it a different ReversalDuration (BaseReversalDuration
+        // + Units.Count * VariableReversalDuration) without needing separate
+        // TestData.
+        ShuntTrain trainA = new(new List<ShuntTrainUnit> { new(unit) });
+        ShuntTrain trainB = new(new List<ShuntTrainUnit> { new(unit), new(unit) });
+        Assert.NotEqual(trainA.ReversalDuration, trainB.ReversalDuration);
+
+        Route routeA = graph.ComputeRoute([], trainA, siding, Side.B, approach, Side.B);
+        Arc reverseA = routeA.Arcs.First(a => a.Type == ArcType.Reverse);
+        Assert.Equal(
+            (Time)(Settings.TrackCrossingTime + trainA.ReversalDuration),
+            reverseA.Duration
+        );
+
+        // Same departure/arrival/side/occupancy as routeA - this must be a
+        // cache hit, not a fresh Dijkstra run, for the bug to be exercised.
+        Route routeB = graph.ComputeRoute([], trainB, siding, Side.B, approach, Side.B);
+        Arc reverseB = routeB.Arcs.First(a => a.Type == ArcType.Reverse);
+        Assert.Equal(
+            (Time)(Settings.TrackCrossingTime + trainB.ReversalDuration),
+            reverseB.Duration
+        );
+
+        // routeA's own Reverse arc must not have been mutated by routeB's
+        // lookup.
+        Assert.Equal(
+            (Time)(Settings.TrackCrossingTime + trainA.ReversalDuration),
+            reverseA.Duration
+        );
+    }
+
     // GetFlatDuration is what turns a Move's resource walk into the
     // evaluator-matching duration BuildMoveActionsWithReverses now uses
     // (#52) - unit-tested directly (internal, same reasoning as

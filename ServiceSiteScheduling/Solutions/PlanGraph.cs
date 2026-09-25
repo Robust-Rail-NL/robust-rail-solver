@@ -1351,14 +1351,12 @@ namespace ServiceSiteScheduling.Solutions
                         pieceEnd = endTime;
                         long gap = (long)(pieceEnd - time) - (long)flatDuration;
                         if (gap != 0)
-                            // Not necessarily a bug in this method: e.g. a
-                            // Reverse arc's Duration/Cost is the only
-                            // train-dependent field any Arc carries, and
-                            // RoutingGraph.ComputeRoute's cache (keyed on
-                            // track/side/occupancy, not train - see
-                            // Routing/Storage.cs) can hand back a Route
-                            // whose Arcs were never recomputed for the
-                            // train now reusing it (issue TBD).
+                            // Not necessarily a bug in this method: a stale
+                            // cached Reverse arc's Duration used to be a
+                            // known cause (#55, fixed via
+                            // Route.RefreshArcsForTrain) - this warning is
+                            // kept as a general safety net in case another
+                            // cause surfaces.
                             logger.LogWarning(
                                 "Move piece for shunting unit {ShuntingUnitId} at {Location} ({StartTime}-{EndTime}) is anchored {Gap}s away from its own computed duration ({FlatDuration}s) - the route's pieces don't sum to its trusted total; investigate.",
                                 shuntingUnit.Id,
