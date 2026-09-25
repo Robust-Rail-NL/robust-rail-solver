@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "trackParts": [
+    {
+      "id": "0",
+      "type": "Bumper",
+      "aSide": [],
+      "bSide": ["1"],
+      "length": 0.0,
+      "name": "gate",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false
+    },
+    {
+      "id": "1",
+      "type": "Switch",
+      "aSide": ["0"],
+      "bSide": ["2", "3"],
+      "length": 0.0,
+      "name": "throat",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false
+    },
+    {
+      "id": "2",
+      "type": "RailRoad",
+      "aSide": ["1"],
+      "bSide": ["4"],
+      "length": 100.0,
+      "name": "parkexit",
+      "sawMovementAllowed": true,
+      "parkingAllowed": true
+    },
+    {
+      "id": "3",
+      "type": "RailRoad",
+      "aSide": ["1"],
+      "bSide": ["5"],
+      "length": 100.0,
+      "name": "sidingstub",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false
+    },
+    {
+      "id": "4",
+      "type": "RailRoad",
+      "aSide": ["2"],
+      "bSide": ["6"],
+      "length": 100.0,
+      "name": "fartrack",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false
+    },
+    {
+      "id": "5",
+      "type": "Bumper",
+      "aSide": ["3"],
+      "bSide": [],
+      "length": 0.0,
+      "name": "sidingcap",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false
+    },
+    {
+      "id": "6",
+      "type": "Bumper",
+      "aSide": ["4"],
+      "bSide": [],
+      "length": 0.0,
+      "name": "farcap",
+      "sawMovementAllowed": false,
+      "parkingAllowed": false
+    }
+  ],
+  "facilities": [],
+  "taskTypes": []
+}
