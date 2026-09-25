@@ -26,6 +26,31 @@ namespace ServiceSiteScheduling.Trains
             Time splitduration
         )
         {
+            if (reversalbase.Seconds < 0)
+                throw new ArgumentOutOfRangeException(
+                    nameof(reversalbase),
+                    reversalbase.Seconds,
+                    "Reversal base duration must be non-negative."
+                );
+            if (reversalvariable.Seconds < 0)
+                throw new ArgumentOutOfRangeException(
+                    nameof(reversalvariable),
+                    reversalvariable.Seconds,
+                    "Reversal variable duration must be non-negative."
+                );
+            if (combineduration.Seconds < 0)
+                throw new ArgumentOutOfRangeException(
+                    nameof(combineduration),
+                    combineduration.Seconds,
+                    "Combine duration must be non-negative."
+                );
+            if (splitduration.Seconds < 0)
+                throw new ArgumentOutOfRangeException(
+                    nameof(splitduration),
+                    splitduration.Seconds,
+                    "Split duration must be non-negative."
+                );
+
             this.Index = index;
             this.Name = name;
             this.Length = length;
