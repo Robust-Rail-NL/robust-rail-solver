@@ -9,8 +9,11 @@ using ServiceSiteScheduling;
 using ServiceSiteScheduling.Interchange;
 using ServiceSiteScheduling.LocalSearch;
 using ServiceSiteScheduling.Routing;
+using ServiceSiteScheduling.Servicing;
+using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.TrackParts;
 using ServiceSiteScheduling.Trains;
+using ServiceSiteScheduling.Utilities;
 using Tests.InPlaceSplit;
 
 // Exercises PlanGraph.BuildMoveActionsWithReverses directly against a real
@@ -76,10 +79,13 @@ public class SawMovementTests
         Assert.Single(setbacks);
         Assert.Equal(siding.ID, setbacks[0].Location);
         Assert.Equal((ulong)1000, setbacks[0].StartTime);
-        // Non-zero: the train type declares a real reversal cost
-        // (backNormTime/backAdditionTime), so the Reverse must reflect it,
-        // not stand in as a zero-width marker.
-        Assert.True(setbacks[0].EndTime > setbacks[0].StartTime);
+        // Exact, not just non-zero: a Reverse's duration is Train's own
+        // ReversalDuration alone, with no track-crossing time of its own
+        // (see BuildMoveActionsWithReverses's comment, #52).
+        Assert.Equal(
+            (ulong)(int)train.ReversalDuration,
+            setbacks[0].EndTime!.Value - setbacks[0].StartTime!.Value
+        );
 
         // No Move should embed the reversal itself (the same track twice,
         // two apart, in one Move's own resource path).
@@ -95,10 +101,46 @@ public class SawMovementTests
 
         // The overall span must match the caller-supplied endTime exactly -
         // that's the number the rest of PlanGraph already trusts and
-        // advances its own time cursor by. Only *where* the internal
-        // Move/Reverse boundaries fall is approximate, never the total (see
-        // BuildMoveActionsWithReverses's own comment).
+        // advances its own time cursor by (see BuildMoveActionsWithReverses's
+        // own comment, #52).
         Assert.Equal(startTime, actions.Min(a => a.StartTime!.Value));
         Assert.Equal(endTime, actions.Max(a => a.EndTime!.Value));
+    }
+
+    // GetFlatDuration is what turns a Move's resource walk into the
+    // evaluator-matching duration BuildMoveActionsWithReverses now uses
+    // (#52) - unit-tested directly (internal, same reasoning as
+    // BuildMoveActionsWithReverses/GroupIntoPieces above) rather than via a
+    // hand-built Route, since constructing a Route with a real Move on both
+    // sides of a reversal - not the boundary shape above - needs a branching
+    // track layout the graph's point-switch model doesn't allow to shortcut
+    // around by hand.
+    [Theory]
+    [InlineData(0, 0)] // zero-length Track (a connector, never a real stop)
+    [InlineData(200, 60)] // real Track, regardless of IsActive - see below
+    public void GetFlatDuration_ChargesATrackByLengthNotByIsActive(int length, int expected)
+    {
+        // CanPark=false, CanReverse=false: IsActive is false either way -
+        // the fix this guards is exactly that a real (nonzero-length) Track
+        // must still be charged despite that, unlike a zero-length one.
+        Track track = new(1, "t", ServiceType.None, length, Side.None, false, false, 0);
+        Assert.Equal((Time)expected, PlanGraph.GetFlatDuration(track));
+    }
+
+    [Theory]
+    [InlineData(typeof(Switch), 1)]
+    [InlineData(typeof(EnglishSwitch), 2)]
+    [InlineData(typeof(HalfEnglishSwitch), 2)]
+    [InlineData(typeof(Intersection), 0)]
+    public void GetFlatDuration_ChargesAConnectionBySwitchEquivalentCost(
+        Type connectionType,
+        int switchEquivalent
+    )
+    {
+        var connection = (Connection)Activator.CreateInstance(connectionType, (ulong)1, "c")!;
+        Assert.Equal(
+            (Time)(switchEquivalent * (int)Settings.SwitchCrossingTime),
+            PlanGraph.GetFlatDuration(connection)
+        );
     }
 }
