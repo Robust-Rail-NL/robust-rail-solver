@@ -10,12 +10,25 @@ namespace ServiceSiteScheduling.Routing
         private Dictionary<BitSet, Entry> AB;
         private Dictionary<BitSet, Entry> BA;
         private Dictionary<BitSet, Entry> BB;
+
+        // Rest and ReadyToDepart (#51) target different vertices (AA/BB vs
+        // AB/BA) for the same (from, to) side pair, so they need their own
+        // cache buckets -- otherwise a Rest-mode lookup could hand back a
+        // ReadyToDepart route, or vice versa.
+        private Dictionary<BitSet, Entry> ReadyAA;
+        private Dictionary<BitSet, Entry> ReadyAB;
+        private Dictionary<BitSet, Entry> ReadyBA;
+        private Dictionary<BitSet, Entry> ReadyBB;
         private readonly ImmutableArray<int> indices;
         private const int maxsize = 10000;
         private LinkedList<BitSet> AAhistory,
             ABhistory,
             BAhistory,
             BBhistory;
+        private LinkedList<BitSet> ReadyAAhistory,
+            ReadyABhistory,
+            ReadyBAhistory,
+            ReadyBBhistory;
 
         public TrackParts.Track From { get; private set; }
         public TrackParts.Track To { get; private set; }
@@ -64,6 +77,15 @@ namespace ServiceSiteScheduling.Routing
             this.BB = [];
             this.BBhistory = new LinkedList<BitSet>();
 
+            this.ReadyAA = [];
+            this.ReadyAAhistory = new LinkedList<BitSet>();
+            this.ReadyAB = [];
+            this.ReadyABhistory = new LinkedList<BitSet>();
+            this.ReadyBA = [];
+            this.ReadyBAhistory = new LinkedList<BitSet>();
+            this.ReadyBB = [];
+            this.ReadyBBhistory = new LinkedList<BitSet>();
+
             this.EmptyState = new BitSet(this.bitsize);
         }
 
@@ -90,39 +112,87 @@ namespace ServiceSiteScheduling.Routing
             return result;
         }
 
-        public bool TryGet(Side from, Side to, BitSet state, out Route route)
+        public bool TryGet(
+            Side from,
+            Side to,
+            BitSet state,
+            RouteDestination destination,
+            out Route route
+        )
         {
+            bool ready = destination == RouteDestination.ReadyToDepart;
             if (from == Side.A)
             {
                 if (to == Side.A)
-                    return tryGetValue(this.AA, this.AAhistory, state, out route);
+                    return tryGetValue(
+                        ready ? this.ReadyAA : this.AA,
+                        ready ? this.ReadyAAhistory : this.AAhistory,
+                        state,
+                        out route
+                    );
                 else
-                    return tryGetValue(this.AB, this.ABhistory, state, out route);
+                    return tryGetValue(
+                        ready ? this.ReadyAB : this.AB,
+                        ready ? this.ReadyABhistory : this.ABhistory,
+                        state,
+                        out route
+                    );
             }
             else
             {
                 if (to == Side.A)
-                    return tryGetValue(this.BA, this.BAhistory, state, out route);
+                    return tryGetValue(
+                        ready ? this.ReadyBA : this.BA,
+                        ready ? this.ReadyBAhistory : this.BAhistory,
+                        state,
+                        out route
+                    );
                 else
-                    return tryGetValue(this.BB, this.BBhistory, state, out route);
+                    return tryGetValue(
+                        ready ? this.ReadyBB : this.BB,
+                        ready ? this.ReadyBBhistory : this.BBhistory,
+                        state,
+                        out route
+                    );
             }
         }
 
-        public void Add(Side from, Side to, BitSet state, Route route)
+        public void Add(Side from, Side to, BitSet state, RouteDestination destination, Route route)
         {
+            bool ready = destination == RouteDestination.ReadyToDepart;
             if (from == Side.A)
             {
                 if (to == Side.A)
-                    add(this.AA, this.AAhistory, state, route);
+                    add(
+                        ready ? this.ReadyAA : this.AA,
+                        ready ? this.ReadyAAhistory : this.AAhistory,
+                        state,
+                        route
+                    );
                 else
-                    add(this.AB, this.ABhistory, state, route);
+                    add(
+                        ready ? this.ReadyAB : this.AB,
+                        ready ? this.ReadyABhistory : this.ABhistory,
+                        state,
+                        route
+                    );
             }
             else
             {
                 if (to == Side.A)
-                    add(this.BA, this.BAhistory, state, route);
+                    add(
+                        ready ? this.ReadyBA : this.BA,
+                        ready ? this.ReadyBAhistory : this.BAhistory,
+                        state,
+                        route
+                    );
                 else
-                    add(this.BB, this.BBhistory, state, route);
+                    add(
+                        ready ? this.ReadyBB : this.BB,
+                        ready ? this.ReadyBBhistory : this.BBhistory,
+                        state,
+                        route
+                    );
             }
         }
 

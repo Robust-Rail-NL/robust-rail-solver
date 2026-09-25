@@ -463,24 +463,21 @@ namespace ServiceSiteScheduling.Solutions
                 else
                 {
                     var departurerouting = (DepartureRoutingTask)move;
-                    Time reversalduration;
                     if (departurerouting.Next is DepartureTask departureTask)
                     {
-                        reversalduration =
-                            departureTask.DepartureSide == departurerouting.ToSide
-                                ? departurerouting.Train.ReversalDuration
-                                : (Time)0;
+                        // Any reversal this leg needs (#51) is now discovered
+                        // and costed by the route itself (ReadyToDepart
+                        // routing in computeDepartureRoute), so it's already
+                        // folded into departurerouting.Duration below -- no
+                        // separate padding term needed here.
                         departurerouting.Start = Math.Max(
                             time,
-                            departureTask.ScheduledTime
-                                - departurerouting.Duration
-                                - reversalduration
+                            departureTask.ScheduledTime - departurerouting.Duration
                         );
                     }
                     else
                     {
                         // Outstanding train: no fixed deadline, schedule forward
-                        reversalduration = (Time)0;
                         departurerouting.Start = time;
                     }
                     foreach (var task in departurerouting.Previous)
@@ -497,7 +494,7 @@ namespace ServiceSiteScheduling.Solutions
 
                     departurerouting.End = departurerouting.Start + departurerouting.Duration;
                     departurerouting.Next.Start = departurerouting.End;
-                    departurerouting.Next.End = departurerouting.Next.Start + reversalduration;
+                    departurerouting.Next.End = departurerouting.Next.Start;
                     time = departurerouting.End;
                 }
                 move = move.NextMove;
@@ -531,16 +528,7 @@ namespace ServiceSiteScheduling.Solutions
                     if (move is DepartureRoutingTask departure)
                     {
                         string departuremessage = string.Empty;
-                        if (
-                            departure.Next is DepartureTask dt2
-                            && dt2.Start
-                                + (
-                                    dt2.DepartureSide == departure.ToSide
-                                        ? departure.Train.ReversalDuration
-                                        : (Time)0
-                                )
-                                > dt2.ScheduledTime
-                        )
+                        if (departure.Next is DepartureTask dt2 && dt2.Start > dt2.ScheduledTime)
                             departuremessage = " <--- " + dt2.ScheduledTime.ToString();
                         Console.WriteLine(
                             $"{move.Start} | {move.Train} from ({string.Join(",", departure.Previous.Select(task => task.Track.PrettyName))}) to {move.ToTrack.PrettyName}{move.ToSide} {move.End} {departuremessage}"
@@ -629,7 +617,8 @@ namespace ServiceSiteScheduling.Solutions
             Track totrack,
             Side? toside,
             int departurecrossingsA,
-            int departurecrossingsB
+            int departurecrossingsB,
+            RouteDestination destination = RouteDestination.Rest
         )
         {
             var route = this.RoutingGraph.ComputeRoute(
@@ -638,7 +627,8 @@ namespace ServiceSiteScheduling.Solutions
                 fromtrack,
                 originside,
                 totrack,
-                toside
+                toside,
+                destination
             );
             route.DepartureCrossings =
                 route.DepartureSide == Side.A ? departurecrossingsA : departurecrossingsB;
@@ -684,15 +674,7 @@ namespace ServiceSiteScheduling.Solutions
                 }
 
             foreach (DepartureTask departure in this.DepartureTasks)
-                if (
-                    departure.Start
-                        + (
-                            departure.DepartureSide == departure.Previous.ToSide
-                                ? departure.Train.ReversalDuration
-                                : (Time)0
-                        )
-                    > departure.ScheduledTime
-                )
+                if (departure.Start > departure.ScheduledTime)
                 {
                     cost.DepartureDelays++;
                     cost.DepartureDelaySum += departure.Start - departure.ScheduledTime;
@@ -906,6 +888,18 @@ namespace ServiceSiteScheduling.Solutions
             else
                 b = first.State.GetCrossings(Side.B);
 
+            // A fixed DepartureTask's own DepartureSide is known scenario data,
+            // not a guess -- route straight to "ready to depart via that side"
+            // (#51) rather than to move.ToSide's heuristic-guessed resting
+            // side, so a reversal this leg actually needs is discovered and
+            // costed by the route itself instead of silently padded onto the
+            // schedule afterwards. A StandOutTask never really departs, so it
+            // keeps the old Rest/ToSide behaviour -- there's no real side to
+            // be "ready" for.
+            var (toside, destination) = move.Next is DepartureTask departureTask
+                ? (departureTask.DepartureSide, RouteDestination.ReadyToDepart)
+                : (move.ToSide, RouteDestination.Rest);
+
             move.AddRoute(
                 this.ComputeRouting(
                     train,
@@ -914,9 +908,10 @@ namespace ServiceSiteScheduling.Solutions
                     // track before this departure route runs.
                     first.ArrivalSide!,
                     move.ToTrack,
-                    move.ToSide,
+                    toside,
                     a,
-                    b
+                    b,
+                    destination
                 )
             );
         }
@@ -1069,13 +1064,7 @@ namespace ServiceSiteScheduling.Solutions
                             string departuremessage = string.Empty;
                             if (
                                 departure.Next is DepartureTask dt3
-                                && dt3.Start
-                                    + (
-                                        dt3.DepartureSide == departure.ToSide
-                                            ? departure.Train.ReversalDuration
-                                            : (Time)0
-                                    )
-                                    > dt3.ScheduledTime
+                                && dt3.Start > dt3.ScheduledTime
                             )
                                 departuremessage = " <--- " + dt3.ScheduledTime.ToString();
                             sw.WriteLine(
@@ -1159,8 +1148,16 @@ namespace ServiceSiteScheduling.Solutions
         // be a genuine no-op - logged as a warning when it isn't, since
         // that means some route shape isn't accounted for above.
         //
-        // A route's *last* piece can never be a Reverse - see the assert
-        // below - so there's no symmetric case on that end.
+        // A route's last piece *can* be a Reverse (#51: a DepartureRouting-
+        // Task's final hop onto a fixed DepartureTask has no next leg to
+        // carry a corrective leading Reverse, so when a reversal is needed
+        // it has to be this route's own last arc). That's the symmetric
+        // case to the leading one above: a terminal reversal has no
+        // following Move to naturally contribute its own track's
+        // TrackCrossingTime the way a non-terminal reversal's following
+        // piece always does (via that piece's own prepended fromTrack), so
+        // that credit is added here unconditionally instead - there's never
+        // a later piece to hand it to.
         // internal rather than private: exercised directly by
         // Tests/TestSawMovement.cs against a hand-obtained Route, since
         // relying on the heuristic search to organically produce a route
@@ -1177,13 +1174,6 @@ namespace ServiceSiteScheduling.Solutions
             // Step 1: group into alternating non-reversal segments and
             // single-arc reversal points, preserving order.
             var pieces = GroupIntoPieces(arcs);
-            Debug.Assert(
-                pieces.Count == 0 || !pieces[^1].IsReversal,
-                "A route's last piece can never be a Reverse: RoutingGraph.Dijkstra's "
-                    + "backtracking strips a Reverse arc landing on the destination "
-                    + "before it ever reaches Route.Arcs - a terminal reversal is "
-                    + "handled separately (see #51), never through this split."
-            );
 
             // Step 2: build one action per piece - see the comment above for
             // why each piece's own computed duration is trusted, with the
@@ -1207,9 +1197,33 @@ namespace ServiceSiteScheduling.Solutions
                 if (isReversal)
                 {
                     Track reversalTrack = pieceArcs[0].ReversalTrack;
-                    ulong pieceEnd = isLast
-                        ? endTime
-                        : time + (ulong)(pieceArcs[0].Duration - Settings.TrackCrossingTime);
+                    ulong pieceEnd;
+                    if (isLast)
+                    {
+                        pieceEnd = endTime;
+                        // See the comment above: unconditional, unlike
+                        // leadingReversalCredit - there is never a following
+                        // piece to have already covered this reversal's own
+                        // track-crossing charge.
+                        long naiveDuration =
+                            (long)pieceArcs[0].Duration + (long)Settings.TrackCrossingTime;
+                        long gap = (long)(pieceEnd - time) - naiveDuration;
+                        if (gap != 0)
+                            logger.LogWarning(
+                                "Terminal reversal action for shunting unit {ShuntingUnitId} at {Location} ({StartTime}-{EndTime}) is anchored {Gap}s away from its own computed duration ({NaiveDuration}s) - the route's pieces don't sum to its trusted total; investigate.",
+                                shuntingUnit.Id,
+                                reversalTrack.ID,
+                                time,
+                                pieceEnd,
+                                gap,
+                                naiveDuration
+                            );
+                    }
+                    else
+                    {
+                        pieceEnd =
+                            time + (ulong)(pieceArcs[0].Duration - Settings.TrackCrossingTime);
+                    }
                     result.Add(
                         new Interchange.Action
                         {

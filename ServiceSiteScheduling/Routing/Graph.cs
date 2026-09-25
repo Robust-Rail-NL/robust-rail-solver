@@ -90,10 +90,10 @@ namespace ServiceSiteScheduling.Routing
                 {
                     var w = this.Vertices[j];
 
-                    var route = this.Dijkstra(train, w, v, false);
+                    var route = this.Dijkstra(train, w, v, RouteDestination.Rest, false);
                     RecordCounts(j, i, route);
 
-                    route = this.Dijkstra(train, v, w, false);
+                    route = this.Dijkstra(train, v, w, RouteDestination.Rest, false);
                     RecordCounts(i, j, route);
                 }
             }
@@ -261,22 +261,28 @@ namespace ServiceSiteScheduling.Routing
         public void SetTrackOccupation(Track track, Parking.TrackOccupation occupation) =>
             this.SuperVertices[track.Index].TrackOccupation = occupation;
 
-        // The Vertex a Track+Side pair actually refers to for routing purposes:
-        // the train's true resting vertex (AA/BB, ArrivalSide==TrackSide), never
-        // a departure-ready one (AB/BA) -- see this branch's fix.
+        // The Vertex a Track+Side pair actually refers to for routing purposes.
+        // Rest targets the train's resting vertex (AA/BB, ArrivalSide==Track-
+        // Side) -- what every ordinary RoutingTask still wants, since any
+        // orientation it ends up in gets corrected by the next leg's own
+        // route. ReadyToDepart targets the departure-ready vertex instead
+        // (AB/BA), for the one leg with no next leg to hand a correction to
+        // (#51).
         private (Vertex Origin, Vertex Destination) ResolveEndpoints(
             Track departureTrack,
             Side originSide,
             Track arrivalTrack,
-            Side arrivalSide
+            Side arrivalSide,
+            RouteDestination destination
         )
         {
             SuperVertex start = this.SuperVertices[departureTrack.Index];
             SuperVertex end = this.SuperVertices[arrivalTrack.Index];
-            return (
-                originSide == Side.A ? start.AA : start.BB,
-                arrivalSide == Side.A ? end.AA : end.BB
-            );
+            Vertex destinationVertex =
+                destination == RouteDestination.ReadyToDepart
+                    ? (arrivalSide == Side.A ? end.AB : end.BA)
+                    : (arrivalSide == Side.A ? end.AA : end.BB);
+            return (originSide == Side.A ? start.AA : start.BB, destinationVertex);
         }
 
         public Route ComputeRoute(
@@ -285,7 +291,8 @@ namespace ServiceSiteScheduling.Routing
             Track departureTrack,
             Side originSide,
             Track arrivalTrack,
-            Side arrivalSide
+            Side arrivalSide,
+            RouteDestination destination = RouteDestination.Rest
         ) =>
             this.ComputeRoute(
                 occupations,
@@ -294,7 +301,8 @@ namespace ServiceSiteScheduling.Routing
                 originSide,
                 arrivalTrack,
                 arrivalSide,
-                null
+                null,
+                destination
             );
 
         public Route ComputeRoute(
@@ -304,26 +312,28 @@ namespace ServiceSiteScheduling.Routing
             Side originSide,
             Track arrivalTrack,
             Side arrivalSide,
-            BitSet bitstate
+            BitSet bitstate,
+            RouteDestination destination = RouteDestination.Rest
         )
         {
-            var (origin, destination) = this.ResolveEndpoints(
+            var (origin, destinationVertex) = this.ResolveEndpoints(
                 departureTrack,
                 originSide,
                 arrivalTrack,
-                arrivalSide
+                arrivalSide,
+                destination
             );
 
-            if (origin == destination)
+            if (origin == destinationVertex)
                 return Route.EmptyRoute(train, this, departureTrack, originSide);
 
             Route route = null;
             var storage = this.storages[departureTrack.Index, arrivalTrack.Index];
             bitstate ??= storage.ConstructState(occupations, train);
-            if (!storage.TryGet(originSide, arrivalSide, bitstate, out route))
+            if (!storage.TryGet(originSide, arrivalSide, bitstate, destination, out route))
             {
-                route = this.Dijkstra(train, origin, destination);
-                storage.Add(originSide, arrivalSide, bitstate, route);
+                route = this.Dijkstra(train, origin, destinationVertex, destination);
+                storage.Add(originSide, arrivalSide, bitstate, destination, route);
                 return route;
             }
 
@@ -339,14 +349,16 @@ namespace ServiceSiteScheduling.Routing
             Track departureTrack,
             Side originSide,
             Track arrivalTrack,
-            Side arrivalSide
+            Side arrivalSide,
+            RouteDestination destinationMode = RouteDestination.Rest
         )
         {
             var (origin, destination) = this.ResolveEndpoints(
                 departureTrack,
                 originSide,
                 arrivalTrack,
-                arrivalSide
+                arrivalSide,
+                destinationMode
             );
 
             if (origin == destination)
@@ -356,7 +368,13 @@ namespace ServiceSiteScheduling.Routing
                 < Settings.SwitchesIfInvalidRoute;
         }
 
-        private Route Dijkstra(ShuntTrain train, Vertex start, Vertex end, bool useEstimate = true)
+        private Route Dijkstra(
+            ShuntTrain train,
+            Vertex start,
+            Vertex end,
+            RouteDestination destination,
+            bool useEstimate = true
+        )
         {
             Debug.Assert(
                 start != end,
@@ -468,7 +486,14 @@ namespace ServiceSiteScheduling.Routing
             // Backtracking
             int crossings = 0;
             Vertex current = end;
-            if (current.Previous?.Type == ArcType.Reverse)
+            // A trailing Reverse arc landing on `end` is redundant for a Rest
+            // destination -- resting doesn't care which way the train ends
+            // up internally recorded as facing, so a pointless final flip
+            // right at the stop is dropped. For ReadyToDepart (#51) it's the
+            // opposite: that trailing Reverse *is* the desired final arc (the
+            // in-place reversal onto the departure side itself), so it must
+            // stay.
+            if (destination == RouteDestination.Rest && current.Previous?.Type == ArcType.Reverse)
                 current = current.Previous.Tail;
             Stack<Track> route = new();
             Stack<Arc> arcs = new();

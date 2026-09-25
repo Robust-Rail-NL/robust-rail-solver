@@ -3,6 +3,7 @@ namespace Tests.SameTrackDeparture;
 using ServiceSiteScheduling;
 using ServiceSiteScheduling.Interchange;
 using ServiceSiteScheduling.LocalSearch;
+using ServiceSiteScheduling.Routing;
 using ServiceSiteScheduling.Utilities;
 using Tests.InPlaceSplit;
 
@@ -27,19 +28,13 @@ using Tests.InPlaceSplit;
 // (also from #46) never exercised this gap: it happened to still discover
 // its own required reversal mid-route regardless.
 //
-// This test documents *current* (buggy) behaviour, not desired behaviour:
-// RoutingGraph.ComputeRoute's origin==destination check (same track, same
-// side) returns Route.EmptyRoute -- zero duration, zero arcs -- because
-// FromTrack and ToTrack resolve to the exact same vertex. There is
-// therefore no Route.Arcs for a Reverse to live in, and PlanGraph.ToPlan()
-// only ever emits a Reverse action by inspecting a route's arcs. The
-// reversal instead only shows up as silent schedule padding in
-// PlanGraph.ComputeTime (departurerouting.Start pulled earlier by
-// Train.ReversalDuration, with no Settings.TrackCrossingTime and no
-// action to represent it) -- exactly the gap #51 describes. Once fixed,
-// this test's assertions should flip: a real Reverse action should appear,
-// and the route itself should carry the reversal instead of ComputeTime
-// papering over it.
+// The fix: computeDepartureRoute now routes this leg with
+// RouteDestination.ReadyToDepart (Routing/RouteDestination.cs) targeting the
+// DepartureTask's real, scenario-fixed DepartureSide directly, rather than
+// move.ToSide's heuristic guess. RoutingGraph.ResolveEndpoints then targets
+// the AB/BA "ready to depart" vertex instead of AA/BB "rest", so the search
+// itself discovers the reversal (same mechanism #46 already uses for every
+// other leg) instead of ComputeTime papering over it afterwards.
 [Collection(PlanBuilding.Name)]
 public class SameTrackDepartureTests
 {
@@ -47,7 +42,7 @@ public class SameTrackDepartureTests
         Path.Combine(Directory.GetCurrentDirectory(), "TestData", name);
 
     [Fact]
-    public void DepartingFromTheArrivalTrack_HidesItsReversalInsteadOfEmittingOne()
+    public void DepartingFromTheArrivalTrack_EmitsARealReverseAction()
     {
         ProblemInstance.Current = ProblemInstance.ParseJson(
             TestData("location_samesite_departure.json"),
@@ -59,40 +54,56 @@ public class SameTrackDepartureTests
         var departureRouting = departureTask.GetDepartureRoutingTask();
 
         // Same gate for arrival and departure, same track for parking and
-        // departure: the route has nowhere to travel.
+        // departure: there's nowhere to travel, only to turn around.
         Assert.Equal(departureRouting.FromTrack, departureRouting.ToTrack);
 
-        var route = departureRouting.GetRoutes().Single();
-        Assert.Equal((Time)0, route.Duration);
-        Assert.Empty(route.Arcs);
-
         // The reversal is real (same side in and out) -- Train.ReversalDuration
-        // is nonzero for this fixture's train type precisely so the missing
-        // action isn't masked by a legitimately-zero duration.
-        Assert.Equal((Side?)departureTask.DepartureSide, departureRouting.ToSide);
+        // is nonzero for this fixture's train type precisely so a missing
+        // action wouldn't be masked by a legitimately-zero duration.
         Assert.True(departureRouting.Train.ReversalDuration > 0);
+
+        var route = departureRouting.GetRoutes().Single();
+
+        // Fixed: the route itself now carries the reversal as a genuine
+        // Reverse arc (RouteDestination.ReadyToDepart's AB/BA target isn't
+        // reachable from the train's true resting vertex without one here),
+        // rather than reporting Route.EmptyRoute and leaving ComputeTime to
+        // silently pad the schedule instead.
+        Assert.Equal(ArcType.Reverse, Assert.Single(route.Arcs).Type);
+
+        // A single-arc route's Duration charges its own track's crossing
+        // twice (once as the track being crossed, once more for the
+        // reversal itself, per Route.ComputeDuration/BuildMoveActionsWith-
+        // Reverses's terminal-reversal credit) plus the reversal itself --
+        // there's no other piece to share either charge with.
+        Time expectedDuration =
+            2 * Settings.TrackCrossingTime + departureRouting.Train.ReversalDuration;
+        Assert.Equal(expectedDuration, route.Duration);
 
         var plan = tabuSearch.Graph.ToPlan();
         Assert.NotNull(plan);
 
-        // Bug: no Reverse action anywhere in the plan, despite the reversal
-        // being physically necessary.
-        Assert.DoesNotContain(
+        // Fixed: a real Reverse action appears, spanning exactly the route's
+        // own duration -- no more silent gap in the timeline.
+        var reverseAction = Assert.Single(
             plan.Actions,
             a => a.TaskType.Predefined == PredefinedTaskType.Reverse
         );
-
-        // Bug: departurerouting.Start is pulled earlier than the schedule by
-        // exactly Train.ReversalDuration (PlanGraph.ComputeTime's ad hoc
-        // check), padding for a reversal no action ever covers -- a gap in
-        // the timeline that both the last real action's end and the
-        // scheduled departure time can be seen straddling.
-        ulong scheduledTime = (ulong)departureTask.ScheduledTime;
-        ulong expectedStart = scheduledTime - (ulong)departureRouting.Train.ReversalDuration;
-        Assert.Equal(expectedStart, (ulong)departureRouting.Start);
+        Assert.Equal(departureRouting.ToTrack.ID, reverseAction.Location);
         Assert.Equal(
-            expectedStart,
-            plan.Actions.Where(a => a.EndTime < scheduledTime).Max(a => a.EndTime)!.Value
+            (ulong)expectedDuration,
+            reverseAction.EndTime!.Value - reverseAction.StartTime!.Value
         );
+
+        // Fixed: departurerouting.Start is pulled earlier by the route's own
+        // (now correctly-costed) Duration alone -- no separate ad hoc
+        // reversalduration term on top -- and the Reverse action's own end
+        // lines up exactly with the scheduled departure time, with nothing
+        // left unaccounted for.
+        ulong scheduledTime = (ulong)departureTask.ScheduledTime;
+        Assert.Equal(scheduledTime - (ulong)expectedDuration, (ulong)departureRouting.Start);
+        Assert.Equal(scheduledTime, reverseAction.EndTime!.Value);
+        Assert.NotNull(tabuSearch.Graph.Cost);
+        Assert.Equal(0, tabuSearch.Graph.Cost.DepartureDelays);
     }
 }
