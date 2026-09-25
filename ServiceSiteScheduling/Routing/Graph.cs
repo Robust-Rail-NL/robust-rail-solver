@@ -279,6 +279,7 @@ namespace ServiceSiteScheduling.Routing
 
             route = new Route(train, route);
             route.TrackState = bitstate;
+            route.RefreshArcsForTrain();
             route.ComputeDuration();
             return route;
         }
@@ -322,6 +323,7 @@ namespace ServiceSiteScheduling.Routing
 
             route = new Route(train, route);
             route.TrackState = bitstate;
+            route.RefreshArcsForTrain();
             route.ComputeDuration();
             return route;
         }

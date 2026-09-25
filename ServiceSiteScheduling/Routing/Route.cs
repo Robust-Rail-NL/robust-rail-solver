@@ -123,6 +123,43 @@ namespace ServiceSiteScheduling.Routing
             return this.Duration;
         }
 
+        // A Route retrieved from RoutingGraph.ComputeRoute's cache (#55)
+        // shares its Arcs array with whichever train's Dijkstra run first
+        // computed it. That's only safe for Track/Switch arcs, whose
+        // Duration/Cost don't depend on train (see the invariant comment on
+        // ArcType in Arc.cs) - a Reverse arc's does, via
+        // train.ReversalDuration. Clone and recompute only the Reverse
+        // arcs for `this.Train`, in place of the stale shared ones; leave
+        // Track/Switch arcs shared.
+        //
+        // Can't runtime-assert that invariant here by recomputing a
+        // Track/Switch arc and comparing: Arc.ComputeCost reads
+        // Head.SuperVertex.TrackOccupation, a live mutable object, not a
+        // snapshot of the occupancy this Route was originally computed
+        // against - recomputing later can legitimately disagree with the
+        // cached value purely from occupancy drift, with no train involved.
+        public void RefreshArcsForTrain()
+        {
+            if (this.Arcs.Length == 0)
+                return;
+
+            Arc[]? cloned = null;
+            for (int i = 0; i < this.Arcs.Length; i++)
+            {
+                Arc arc = this.Arcs[i];
+                if (arc.Type != ArcType.Reverse)
+                    continue;
+
+                cloned ??= (Arc[])this.Arcs.Clone();
+                Arc refreshed = new(arc.Tail, arc.Head, arc.Type, arc.Path);
+                refreshed.ComputeCost(this.Train);
+                cloned[i] = refreshed;
+            }
+
+            if (cloned != null)
+                this.Arcs = cloned;
+        }
+
         public static Route EmptyRoute(ShuntTrain train, RoutingGraph graph, Track track, Side side)
         {
             return new Route(train, graph, [track], [], 0, side, 0, 0) { Duration = 0 };
