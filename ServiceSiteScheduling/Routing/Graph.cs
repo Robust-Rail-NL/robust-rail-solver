@@ -356,12 +356,7 @@ namespace ServiceSiteScheduling.Routing
                 < Settings.SwitchesIfInvalidRoute;
         }
 
-        private Route Dijkstra(
-            ShuntTrain train,
-            Vertex start,
-            Vertex end,
-            bool useEstimate = true
-        )
+        private Route Dijkstra(ShuntTrain train, Vertex start, Vertex end, bool useEstimate = true)
         {
             Debug.Assert(
                 start != end,
