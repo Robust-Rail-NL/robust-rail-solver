@@ -1253,19 +1253,22 @@ namespace ServiceSiteScheduling.Solutions
         // are expected to sum to exactly `endTime - startTime`, not merely
         // close to it.
         //
+        // A route whose very first piece is a Reverse (no Move before it in
+        // this arcs list - a real shape, not just a theoretical one; see
+        // #52) has no preceding Move to naturally contribute the reversal
+        // track's ordinary TrackCrossingTime, the way a following Move
+        // always naturally contributes the extra one (via its own
+        // prepended fromTrack). leadingReversalCredit below adds that
+        // missing TrackCrossingTime explicitly to the first Move piece
+        // encountered, so pieces sum to exactly `endTime - startTime` in
+        // this shape too, not just the ordinary one.
+        //
         // `endTime` (routing.End for the arrival/general case, starttime +
         // route.Duration for departure) is always preserved exactly
         // regardless: the last piece is anchored to it rather than to its
-        // own computed duration. That's a no-op in the ordinary case, but
-        // also absorbs the one known shortfall: a route whose very first
-        // piece is a Reverse (no Move before it in this arcs list - a real
-        // shape, not just a theoretical one; see #52) is missing the one
-        // TrackCrossingTime a preceding Move would otherwise have
-        // contributed for that track. The following Move still gets
-        // exactly what the evaluator expects of it (via its own prepended
-        // fromTrack), so the shortfall only ever makes the last piece run a
-        // little longer than its own computed share - never shorter, which
-        // is all a plan actually needs.
+        // own computed duration. With the credit above, that's expected to
+        // be a genuine no-op - logged as a warning when it isn't, since
+        // that means some route shape isn't accounted for above.
         //
         // A route's *last* piece can never be a Reverse - see the assert
         // below - so there's no symmetric case on that end.
@@ -1301,6 +1304,12 @@ namespace ServiceSiteScheduling.Solutions
             Track segmentFrom = fromTrack;
             ulong time = startTime;
 
+            // See the comment above: only ever consumed by the first Move
+            // piece encountered, so a leading Reverse followed by several
+            // more pieces still only credits the one Move that actually
+            // lacks a preceding Move of its own.
+            bool leadingReversalCredit = pieces.Count > 0 && pieces[0].IsReversal;
+
             for (int i = 0; i < pieces.Count; i++)
             {
                 var (isReversal, pieceArcs) = pieces[i];
@@ -1328,9 +1337,42 @@ namespace ServiceSiteScheduling.Solutions
                 else
                 {
                     var infrastructure = CollectInfrastructure(pieceArcs);
-                    ulong pieceEnd = isLast
-                        ? endTime
-                        : time + (ulong)infrastructure.Sum(infra => (long)GetFlatDuration(infra));
+                    ulong flatDuration = (ulong)
+                        infrastructure.Sum(infra => (long)GetFlatDuration(infra));
+                    if (leadingReversalCredit)
+                    {
+                        flatDuration += (ulong)(int)Settings.TrackCrossingTime;
+                        leadingReversalCredit = false;
+                    }
+
+                    ulong pieceEnd;
+                    if (isLast)
+                    {
+                        pieceEnd = endTime;
+                        long gap = (long)(pieceEnd - time) - (long)flatDuration;
+                        if (gap != 0)
+                            // Not necessarily a bug in this method: e.g. a
+                            // Reverse arc's Duration/Cost is the only
+                            // train-dependent field any Arc carries, and
+                            // RoutingGraph.ComputeRoute's cache (keyed on
+                            // track/side/occupancy, not train - see
+                            // Routing/Storage.cs) can hand back a Route
+                            // whose Arcs were never recomputed for the
+                            // train now reusing it (issue TBD).
+                            logger.LogWarning(
+                                "Move piece for shunting unit {ShuntingUnitId} at {Location} ({StartTime}-{EndTime}) is anchored {Gap}s away from its own computed duration ({FlatDuration}s) - the route's pieces don't sum to its trusted total; investigate.",
+                                shuntingUnit.Id,
+                                segmentFrom.ID,
+                                time,
+                                pieceEnd,
+                                gap,
+                                flatDuration
+                            );
+                    }
+                    else
+                    {
+                        pieceEnd = time + flatDuration;
+                    }
 
                     var moveaction = new Interchange.Action
                     {
