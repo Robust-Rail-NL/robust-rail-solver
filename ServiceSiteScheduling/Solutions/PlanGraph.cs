@@ -2040,6 +2040,13 @@ namespace ServiceSiteScheduling.Solutions
         /// with zero duration at the scenario start and end, where their timestamps
         /// necessarily tie with the Wait that follows or precedes them, so this
         /// comparator is the only thing keeping them on the correct side of it.
+        ///
+        /// Reverse is placed right after Move (an in-place reversal is itself a
+        /// kind of movement) and before Wait. This used to fall into the trailing
+        /// catch-all instead, sorting after Wait/Split/Combine/Exit/StandOut - a
+        /// gap invisible until a Reverse actually tied with another action at the
+        /// same timestamp, which never happened before #46 made in-place
+        /// reversals show up as real Reverse actions at all.
         /// </remarks>
         internal static int TaskTypeOrder(PredefinedTaskType? t) =>
             t switch
@@ -2047,12 +2054,13 @@ namespace ServiceSiteScheduling.Solutions
                 Arrive => 0,
                 StandIn => 0,
                 Move => 1,
-                Wait => 2,
-                Split => 3,
-                Combine => 4,
-                Exit => 5,
-                StandOut => 5,
-                _ => 6,
+                Reverse => 2,
+                Wait => 3,
+                Split => 4,
+                Combine => 5,
+                Exit => 6,
+                StandOut => 6,
+                _ => 7,
             };
 
         private static void AddTrackAction(
