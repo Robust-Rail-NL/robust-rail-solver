@@ -49,9 +49,14 @@ public class SplitDuringMoveOrderTests
 
         // The regression this fixture was really built for (#46): departing
         // the dead end always requires reversing in place first (it's the
-        // only way out), so that reversal must show up as a real, correctly
-        // costed Reverse action -- not be silently absorbed as a Wait/delay
-        // with no action to represent it at all.
+        // only way out), so that reversal must show up as a real Reverse
+        // action -- not be silently absorbed as a Wait/delay with no action
+        // to represent it at all. Not asserting anything about the Reverse
+        // action's own duration here: since #52, its correctly-costed
+        // duration is Train.ReversalDuration alone (which can legitimately
+        // be 0, as it is for this fixture's train type), with the track-
+        // crossing time this move actually costs credited to the adjacent
+        // Move actions instead (see TestSawMovement.cs's matching comment).
         var plan = tabuSearch.Graph.ToPlan();
         Assert.NotNull(plan);
         var setbacks = plan
@@ -61,10 +66,5 @@ public class SplitDuringMoveOrderTests
             )
             .ToList();
         Assert.NotEmpty(setbacks);
-        foreach (var setback in setbacks)
-            Assert.True(
-                setback.EndTime > setback.StartTime,
-                "a Reverse must reflect the train's real reversal cost, not stand in as a zero-width marker"
-            );
     }
 }

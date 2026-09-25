@@ -145,7 +145,10 @@ public class SawMovementTests
         ShuntTrain trainB = new(new List<ShuntTrainUnit> { new(unit), new(unit) });
         Assert.NotEqual(trainA.ReversalDuration, trainB.ReversalDuration);
 
-        Route routeA = graph.ComputeRoute([], trainA, siding, Side.B, approach, Side.B);
+        // siding's true resting side is A (see ReversingRoute_EmitsAnExplicit-
+        // ReverseAction's comment above) -- ComputeRoute's origin-side
+        // argument is that true resting side, not a chosen exit.
+        Route routeA = graph.ComputeRoute([], trainA, siding, Side.A, approach, Side.B);
         Arc reverseA = routeA.Arcs.First(a => a.Type == ArcType.Reverse);
         Assert.Equal(
             (Time)(Settings.TrackCrossingTime + trainA.ReversalDuration),
@@ -154,7 +157,7 @@ public class SawMovementTests
 
         // Same departure/arrival/side/occupancy as routeA - this must be a
         // cache hit, not a fresh Dijkstra run, for the bug to be exercised.
-        Route routeB = graph.ComputeRoute([], trainB, siding, Side.B, approach, Side.B);
+        Route routeB = graph.ComputeRoute([], trainB, siding, Side.A, approach, Side.B);
         Arc reverseB = routeB.Arcs.First(a => a.Type == ArcType.Reverse);
         Assert.Equal(
             (Time)(Settings.TrackCrossingTime + trainB.ReversalDuration),
