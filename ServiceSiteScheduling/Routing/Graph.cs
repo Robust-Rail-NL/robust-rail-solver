@@ -486,13 +486,24 @@ namespace ServiceSiteScheduling.Routing
             // Backtracking
             int crossings = 0;
             Vertex current = end;
-            // A trailing Reverse arc landing on `end` is redundant for a Rest
-            // destination -- resting doesn't care which way the train ends
-            // up internally recorded as facing, so a pointless final flip
-            // right at the stop is dropped. For ReadyToDepart (#51) it's the
-            // opposite: that trailing Reverse *is* the desired final arc (the
-            // in-place reversal onto the departure side itself), so it must
-            // stay.
+            // A trailing Reverse arc landing on `end` is dropped for a Rest
+            // destination. AA and AB (same for BB/BA) are the same physical
+            // track, so a path that reaches AB first and then reverses into
+            // AA (rather than some other, costlier path that reaches AA
+            // directly) is only ever cheaper than stopping at AB in the
+            // Reverse arc's own cost -- and nothing downstream reads that
+            // choice back off this Route to tell AA and AB apart: the next
+            // TrackTask's own ArrivalSide is set independently, by whichever
+            // local-search move or heuristic step placed it there (see e.g.
+            // ParkingSwitchMove/ParkingSwapMove), never derived from this
+            // Route's Arcs. So the reversal would cost real time (and, once
+            // emitted, a real Reverse action) for a distinction nothing
+            // downstream ever queries -- keeping it would be paying for a
+            // flip nobody asked for. For ReadyToDepart (#51) that argument
+            // doesn't apply: AB/BA there isn't standing in for the same
+            // physical stop as AA/BB, it's the actual destination the caller
+            // requested (this is the one leg with no next task to read an
+            // "ArrivalSide" from at all), so the trailing Reverse is kept.
             if (destination == RouteDestination.Rest && current.Previous?.Type == ArcType.Reverse)
                 current = current.Previous.Tail;
             Stack<Track> route = new();
