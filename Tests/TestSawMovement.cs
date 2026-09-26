@@ -66,7 +66,7 @@ public class SawMovementTests
         var planGraph = new TabuSearch(new Random(1), 0).Graph;
         var shuntingUnit = new ShuntingUnit(1);
         ulong startTime = 1000;
-        ulong endTime = startTime + (ulong)(int)route.Duration;
+        ulong endTime = startTime + (ulong)route.Duration;
 
         var actions = planGraph.BuildMoveActionsWithReverses(
             route.Arcs,
@@ -91,7 +91,7 @@ public class SawMovementTests
         // ReversalDuration alone, with no track-crossing time of its own
         // (see BuildMoveActionsWithReverses's comment, #52).
         Assert.Equal(
-            (ulong)(int)train.ReversalDuration,
+            (ulong)train.ReversalDuration,
             setbacks[0].EndTime!.Value - setbacks[0].StartTime!.Value
         );
 
