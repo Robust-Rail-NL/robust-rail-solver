@@ -618,7 +618,7 @@ namespace ServiceSiteScheduling.Solutions
             Side? toside,
             int departurecrossingsA,
             int departurecrossingsB,
-            RouteDestination destination = RouteDestination.Rest
+            RouteDestination destinationMode = RouteDestination.Rest
         )
         {
             var route = this.RoutingGraph.ComputeRoute(
@@ -628,7 +628,7 @@ namespace ServiceSiteScheduling.Solutions
                 originside,
                 totrack,
                 toside,
-                destination
+                destinationMode
             );
             route.DepartureCrossings =
                 route.DepartureSide == Side.A ? departurecrossingsA : departurecrossingsB;
@@ -896,7 +896,7 @@ namespace ServiceSiteScheduling.Solutions
             // schedule afterwards. A StandOutTask never really departs, so it
             // keeps the old Rest/ToSide behaviour -- there's no real side to
             // be "ready" for.
-            var (toside, destination) = move.Next is DepartureTask departureTask
+            var (toside, destinationMode) = move.Next is DepartureTask departureTask
                 ? (departureTask.DepartureSide, RouteDestination.ReadyToDepart)
                 : (move.ToSide, RouteDestination.Rest);
 
@@ -911,7 +911,7 @@ namespace ServiceSiteScheduling.Solutions
                     toside,
                     a,
                     b,
-                    destination
+                    destinationMode
                 )
             );
         }

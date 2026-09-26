@@ -116,11 +116,11 @@ namespace ServiceSiteScheduling.Routing
             Side from,
             Side to,
             BitSet state,
-            RouteDestination destination,
+            RouteDestination destinationMode,
             out Route route
         )
         {
-            bool ready = destination == RouteDestination.ReadyToDepart;
+            bool ready = destinationMode == RouteDestination.ReadyToDepart;
             if (from == Side.A)
             {
                 if (to == Side.A)
@@ -157,9 +157,15 @@ namespace ServiceSiteScheduling.Routing
             }
         }
 
-        public void Add(Side from, Side to, BitSet state, RouteDestination destination, Route route)
+        public void Add(
+            Side from,
+            Side to,
+            BitSet state,
+            RouteDestination destinationMode,
+            Route route
+        )
         {
-            bool ready = destination == RouteDestination.ReadyToDepart;
+            bool ready = destinationMode == RouteDestination.ReadyToDepart;
             if (from == Side.A)
             {
                 if (to == Side.A)

@@ -273,19 +273,19 @@ namespace ServiceSiteScheduling.Routing
             Side originSide,
             Track arrivalTrack,
             Side arrivalSide,
-            RouteDestination destination
+            RouteDestination destinationMode
         )
         {
             SuperVertex start = this.SuperVertices[departureTrack.Index];
             SuperVertex end = this.SuperVertices[arrivalTrack.Index];
 
-            Vertex destinationVertex;
-            if (destination == RouteDestination.ReadyToDepart)
-                destinationVertex = arrivalSide == Side.A ? end.AB : end.BA;
+            Vertex destination;
+            if (destinationMode == RouteDestination.ReadyToDepart)
+                destination = arrivalSide == Side.A ? end.AB : end.BA;
             else
-                destinationVertex = arrivalSide == Side.A ? end.AA : end.BB;
+                destination = arrivalSide == Side.A ? end.AA : end.BB;
 
-            return (originSide == Side.A ? start.AA : start.BB, destinationVertex);
+            return (originSide == Side.A ? start.AA : start.BB, destination);
         }
 
         public Route ComputeRoute(
@@ -295,7 +295,7 @@ namespace ServiceSiteScheduling.Routing
             Side originSide,
             Track arrivalTrack,
             Side arrivalSide,
-            RouteDestination destination = RouteDestination.Rest
+            RouteDestination destinationMode = RouteDestination.Rest
         ) =>
             this.ComputeRoute(
                 occupations,
@@ -305,7 +305,7 @@ namespace ServiceSiteScheduling.Routing
                 arrivalTrack,
                 arrivalSide,
                 null,
-                destination
+                destinationMode
             );
 
         public Route ComputeRoute(
@@ -316,27 +316,27 @@ namespace ServiceSiteScheduling.Routing
             Track arrivalTrack,
             Side arrivalSide,
             BitSet bitstate,
-            RouteDestination destination = RouteDestination.Rest
+            RouteDestination destinationMode = RouteDestination.Rest
         )
         {
-            var (origin, destinationVertex) = this.ResolveEndpoints(
+            var (origin, destination) = this.ResolveEndpoints(
                 departureTrack,
                 originSide,
                 arrivalTrack,
                 arrivalSide,
-                destination
+                destinationMode
             );
 
-            if (origin == destinationVertex)
+            if (origin == destination)
                 return Route.EmptyRoute(train, this, departureTrack, originSide);
 
             Route route = null;
             var storage = this.storages[departureTrack.Index, arrivalTrack.Index];
             bitstate ??= storage.ConstructState(occupations, train);
-            if (!storage.TryGet(originSide, arrivalSide, bitstate, destination, out route))
+            if (!storage.TryGet(originSide, arrivalSide, bitstate, destinationMode, out route))
             {
-                route = this.Dijkstra(train, origin, destinationVertex, destination);
-                storage.Add(originSide, arrivalSide, bitstate, destination, route);
+                route = this.Dijkstra(train, origin, destination, destinationMode);
+                storage.Add(originSide, arrivalSide, bitstate, destinationMode, route);
                 return route;
             }
 
@@ -375,7 +375,7 @@ namespace ServiceSiteScheduling.Routing
             ShuntTrain train,
             Vertex start,
             Vertex end,
-            RouteDestination destination = RouteDestination.Rest,
+            RouteDestination destinationMode = RouteDestination.Rest,
             bool useEstimate = true
         )
         {
@@ -507,7 +507,10 @@ namespace ServiceSiteScheduling.Routing
             // physical stop as AA/BB, it's the actual destination the caller
             // requested (this is the one leg with no next task to read an
             // "ArrivalSide" from at all), so the trailing Reverse is kept.
-            if (destination == RouteDestination.Rest && current.Previous?.Type == ArcType.Reverse)
+            if (
+                destinationMode == RouteDestination.Rest
+                && current.Previous?.Type == ArcType.Reverse
+            )
                 current = current.Previous.Tail;
             Stack<Track> route = new();
             Stack<Arc> arcs = new();
