@@ -278,10 +278,13 @@ namespace ServiceSiteScheduling.Routing
         {
             SuperVertex start = this.SuperVertices[departureTrack.Index];
             SuperVertex end = this.SuperVertices[arrivalTrack.Index];
-            Vertex destinationVertex =
-                destination == RouteDestination.ReadyToDepart
-                    ? (arrivalSide == Side.A ? end.AB : end.BA)
-                    : (arrivalSide == Side.A ? end.AA : end.BB);
+
+            Vertex destinationVertex;
+            if (destination == RouteDestination.ReadyToDepart)
+                destinationVertex = arrivalSide == Side.A ? end.AB : end.BA;
+            else
+                destinationVertex = arrivalSide == Side.A ? end.AA : end.BB;
+
             return (originSide == Side.A ? start.AA : start.BB, destinationVertex);
         }
 
