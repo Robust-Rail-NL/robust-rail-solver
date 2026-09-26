@@ -283,8 +283,17 @@ namespace ServiceSiteScheduling.Routing
             // ?: below silently treats None/Both as B otherwise. Only asserted for
             // arrivalSide: originSide legitimately carries Side.None for an
             // InStanding train whose true resting side isn't derivable (see
-            // ProblemInstance.cs's InStanding-arrival comment) -- a real, exercised
-            // value here, not a bug.
+            // ProblemInstance.cs's InStanding-arrival comment) -- a real,
+            // exercised value here, not a bug.
+            //
+            // TODO: that still means an unknown origin side is silently resolved
+            // to B specifically (start.BB below), with nothing having actually
+            // decided B is the right guess for "unknown" -- it's just where the
+            // ?: falls through to. Contrast with the destination side, where
+            // callers that face this same uncertainty (e.g. SimpleHeuristic's
+            // RoutePossible probes) explicitly try both Side.A and Side.B rather
+            // than picking one. Nothing here does the equivalent for originSide;
+            // worth checking whether that's ever actually the wrong guess.
             Debug.Assert(
                 arrivalSide == Side.A || arrivalSide == Side.B,
                 $"ResolveEndpoints' `arrivalSide` must be A or B, was {arrivalSide}"

@@ -121,11 +121,7 @@ namespace ServiceSiteScheduling.Routing
             out Route route
         )
         {
-            var (hashmap, history) = SelectDictAndList(
-                from,
-                to,
-                destinationMode == RouteDestination.ReadyToDepart
-            );
+            var (hashmap, history) = SelectDictAndList(from, to, destinationMode);
             return tryGetValue(hashmap, history, state, out route);
         }
 
@@ -137,24 +133,21 @@ namespace ServiceSiteScheduling.Routing
             Route route
         )
         {
-            var (hashmap, history) = SelectDictAndList(
-                from,
-                to,
-                destinationMode == RouteDestination.ReadyToDepart
-            );
+            var (hashmap, history) = SelectDictAndList(from, to, destinationMode);
             add(hashmap, history, state, route);
         }
 
-        // Picks which of the 8 (from, to, ready) cache buckets TryGet/Add
-        // should use. Only one place, not duplicated across both callers, so
-        // a future bug fix or added mode can't be applied to one and
-        // forgotten in the other.
+        // Picks which of the 8 (from, to, destinationMode) cache buckets
+        // TryGet/Add should use. Only one place, not duplicated across both
+        // callers, so a future bug fix or added mode can't be applied to one
+        // and forgotten in the other.
         private (Dictionary<BitSet, Entry> Dict, LinkedList<BitSet> History) SelectDictAndList(
             Side from,
             Side to,
-            bool ready
+            RouteDestination destinationMode
         )
         {
+            bool ready = destinationMode == RouteDestination.ReadyToDepart;
             if (from == Side.A)
             {
                 if (to == Side.A)
@@ -167,7 +160,10 @@ namespace ServiceSiteScheduling.Routing
             {
                 // Not asserted here: unlike `to`, `from` legitimately carries
                 // Side.None for an InStanding train's true resting side (see
-                // ResolveEndpoints' matching comment) -- a real value, not a bug.
+                // ResolveEndpoints' matching TODO) -- a real value, not a bug.
+                // But landing in this else branch at all silently treats that
+                // unknown side as B specifically, with nothing having actually
+                // decided B is the right guess -- see ResolveEndpoints.
                 if (to == Side.A)
                     return ready ? (this.ReadyBA, this.ReadyBAhistory) : (this.BA, this.BAhistory);
 

@@ -868,6 +868,16 @@ namespace ServiceSiteScheduling.Solutions
             TrackTask last
         )
         {
+            // TODO: pre-existing (predates #51, not touched by its fix) - Side is
+            // a 4-valued class (None/A/B/Both), not a 2-valued enum, so both the
+            // `move.ToSide == Side.A` check below and this method's own
+            // `track.Access == Side.Both`/`== Side.A`/else chain silently treat
+            // None as B wherever it isn't explicitly checked for. Same
+            // unexamined "unknown resolves to B" ambiguity flagged in
+            // RoutingGraph.ResolveEndpoints/Routing/Storage.cs's SelectDictAndList
+            // for originSide - not verified here whether Side.None can actually
+            // reach `track.Access`/`move.ToSide` at this call site, or what the
+            // consequence would be if it did.
             int a = 0,
                 b = 0;
             if (track.Access == Side.Both)
