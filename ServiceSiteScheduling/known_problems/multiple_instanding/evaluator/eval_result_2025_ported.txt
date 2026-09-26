@@ -1,0 +1,44 @@
+
++---------------------------+
+|     🚨 ERROR OCCURRED     |
++---------------------------+
+| Tracked Train     : 3001
+| Action start time : 5300
+| Action end time   : 5300
+| Trains's departure: 3900
++---------------------------+
+| Error Suspected:  
+| Trains's departure mismatch 
+| with Action start/end time
++---------------------------+
+ 
+
+
++---------------------------+
+|     🚨 ERROR OCCURRED     |
++---------------------------+
+| Tracked Train     : 6001
+| Action start time : 5300
+| Action end time   : 5300
+| Trains's departure: 5000
++---------------------------+
+| Error Suspected:  
+| Trains's departure mismatch 
+| with Action start/end time
++---------------------------+
+ 
+
+
++---------------------------+
+|     🚨 ERROR OCCURRED     |
++---------------------------+
+| Tracked Train     : 7001
+| Action start time : 5300
+| Action end time   : 5300
+| Trains's departure: 5000
++---------------------------+
+| Error Suspected:  
+| Trains's departure mismatch 
+| with Action start/end time
++---------------------------+
+The plan is not valid
