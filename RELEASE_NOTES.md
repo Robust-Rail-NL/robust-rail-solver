@@ -1,5 +1,106 @@
 # Release notes
 
+## 2.2.0 — 2026-09-26
+
+Adopts interchange **schemaVersion 2** (see `SCHEMA_CHANGELOG.md` in
+`robust-rail-general`): every plan this solver emits now declares
+`schemaVersion: 2` and uses a real, explicit `Reverse` action for an
+in-place reversal instead of embedding it in a `Move`. Unlike 2.1.0, this
+**is** a lockstep release with the evaluator — see "Compatibility" below.
+
+### Explicit reversals: the `Reverse` action (#46, #51)
+
+An in-place reversal used to be invisible to routing whenever a train's
+resting side already matched its desired departure side (same-side reuse,
+most dead-end/single-access tracks): never priced, never emitted as a real
+action, only ever showing up as silent schedule padding.
+
+- `RoutingGraph.ComputeRoute`, `PlanGraph`'s `ComputeRouting` calls, and
+  `SimpleHeuristic`'s `RoutePossible` probes now all search from the
+  train's true resting vertex/side instead of guessing or hardcoding one.
+- A departure's terminal hop — routing onto a fixed `DepartureTask`, with
+  no further leg to carry a corrective reversal — gets its own routing mode
+  (`RouteDestination.ReadyToDepart`) so this last-hop case is covered too,
+  closing #51's gap.
+- A cached `Route`'s `Reverse` arc used to keep the duration/cost of
+  whichever train first computed it, silently reused for a different train
+  reusing that route. Now recomputed per reusing train.
+- A `Move`/`Reverse`/`Move` split's per-action durations now match the
+  evaluator's own duration model (#52).
+- `Plan.Feasibility`/`Cost`/`CostDetails`/`Origin` are now populated from
+  the graph's real `SolutionCost` instead of schema-only placeholders
+  (`Unknown`/`null`/`null`/`null`).
+- A `Track` claiming `parkingAllowed`/`sawMovementAllowed` with zero length
+  is now rejected at load, instead of silently mis-costed later.
+
+### Fixes
+
+- **`Time`'s `ulong` conversion no longer wraps on a negative value
+  (#60).** A negative `Time` (a legitimate intermediate, e.g. from a slack
+  calculation) used to silently wrap to a huge unsigned value when crossed
+  into the plan's wire format, corrupting the emitted timestamp instead of
+  failing at the actual problem. A `TrainType` duration field that's
+  negative from scenario config is now also rejected at construction,
+  before it can reach the same conversion.
+- **Startup crash when `PlanPath` is a bare filename (#53).**
+  `Path.GetDirectoryName` returns `""` for a bare filename, and
+  `Directory.CreateDirectory("")` throws.
+- **`BipartiteGraph`'s degree-1 pruning swapped arrival/departure indices
+  on its departure-side pass (#49).** Silently paired vertices that were
+  never actually shown to be uniquely adjacent. Thanks to
+  [@MayteSteeghs](https://github.com/MayteSteeghs).
+
+### Hardening
+
+- `Side` is a 4-valued type (`None`/`A`/`B`/`Both`), not a 2-valued enum —
+  several `x == Side.A ? … : …` call sites silently treated `None`/`Both`
+  as `B`. Added `Debug.Assert` guards where that assumption actually holds,
+  and documented the one deliberate exception (an `InStanding` train's
+  resting side, which legitimately carries `Side.None`).
+- A plan write now warns if a train split doesn't happen immediately after
+  arrival — a defensive tripwire for a shape no scenario produces today,
+  not a fix for an observed bug.
+
+### Performance
+
+- `Storage`'s per-track index map was recomputed and separately allocated
+  in every one of the O(track count²) `Storage` instances `RoutingGraph`
+  creates. Computed once and shared instead, cutting O(N³) memory to O(N).
+- Dropped the route cache's empty-occupation pre-warm: measured 0 of 90
+  pre-warmed entries ever retrieved on a busier fixture, vs. 26/90 on a
+  much lighter one — pure upfront cost that gets less useful as load
+  increases, not more.
+- `Dijkstra`'s per-call reset now clears only the vertices the previous
+  call actually touched (amortized constant time), instead of sweeping the
+  whole graph (linear time) — sitting on local search's hot cache-miss path.
+
+### Repo hygiene
+
+- Local git hooks are now tracked under `.githooks/`, opt-in via
+  `core.hooksPath`; a CSharpier check was added to the pre-push hook
+  (CSharpier bumped to 1.3.0).
+- Wholesale-dead `POS`/`TimeInterval` types (a standalone experiment with
+  zero callers) prefixed `Unused`, not deleted (yet).
+- Removed the dead `dev` branch from the .NET workflow's triggers.
+- `docker-push.sh`/`docker-push-edge.sh` now work from any directory, gained
+  registry build caching, and log out of `ghcr.io` when they exit.
+
+### Compatibility
+
+Every plan this version emits declares `schemaVersion: 2` unconditionally
+and uses real `Reverse` actions wherever a reversal occurs — this is not
+configurable. Requires evaluator 2.2.0 or later: an evaluator release that
+predates schemaVersion 2 support does not reject such a plan outright —
+`Reverse` is an unrecognized enum value, silently dropped by
+`ignore_unknown_fields`, and the action disappears from evaluation with no
+error. Fixed in evaluator 2.2.0 (evaluator#28), released 2026-09-26.
+
+### Publishing
+
+Versioned from `HIP.csproj`'s `<Version>`, bumped via `bump-version.sh`
+(see `CONTRIBUTING.md`), pushed to `ghcr.io/robust-rail-nl/hip` via
+`docker-push.sh`.
+
 ## 2.1.0 — 2026-09-11
 
 A fix-focused release. No interchange-format changes — this is not a
