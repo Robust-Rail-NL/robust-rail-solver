@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.Routing
@@ -120,41 +121,12 @@ namespace ServiceSiteScheduling.Routing
             out Route route
         )
         {
-            bool ready = destinationMode == RouteDestination.ReadyToDepart;
-            if (from == Side.A)
-            {
-                if (to == Side.A)
-                    return tryGetValue(
-                        ready ? this.ReadyAA : this.AA,
-                        ready ? this.ReadyAAhistory : this.AAhistory,
-                        state,
-                        out route
-                    );
-                else
-                    return tryGetValue(
-                        ready ? this.ReadyAB : this.AB,
-                        ready ? this.ReadyABhistory : this.ABhistory,
-                        state,
-                        out route
-                    );
-            }
-            else
-            {
-                if (to == Side.A)
-                    return tryGetValue(
-                        ready ? this.ReadyBA : this.BA,
-                        ready ? this.ReadyBAhistory : this.BAhistory,
-                        state,
-                        out route
-                    );
-                else
-                    return tryGetValue(
-                        ready ? this.ReadyBB : this.BB,
-                        ready ? this.ReadyBBhistory : this.BBhistory,
-                        state,
-                        out route
-                    );
-            }
+            var (hashmap, history) = SelectDictAndList(
+                from,
+                to,
+                destinationMode == RouteDestination.ReadyToDepart
+            );
+            return tryGetValue(hashmap, history, state, out route);
         }
 
         public void Add(
@@ -165,40 +137,42 @@ namespace ServiceSiteScheduling.Routing
             Route route
         )
         {
-            bool ready = destinationMode == RouteDestination.ReadyToDepart;
+            var (hashmap, history) = SelectDictAndList(
+                from,
+                to,
+                destinationMode == RouteDestination.ReadyToDepart
+            );
+            add(hashmap, history, state, route);
+        }
+
+        // Picks which of the 8 (from, to, ready) cache buckets TryGet/Add
+        // should use. Only one place, not duplicated across both callers, so
+        // a future bug fix or added mode can't be applied to one and
+        // forgotten in the other.
+        private (Dictionary<BitSet, Entry> Dict, LinkedList<BitSet> History) SelectDictAndList(
+            Side from,
+            Side to,
+            bool ready
+        )
+        {
             if (from == Side.A)
             {
                 if (to == Side.A)
-                    add(
-                        ready ? this.ReadyAA : this.AA,
-                        ready ? this.ReadyAAhistory : this.AAhistory,
-                        state,
-                        route
-                    );
-                else
-                    add(
-                        ready ? this.ReadyAB : this.AB,
-                        ready ? this.ReadyABhistory : this.ABhistory,
-                        state,
-                        route
-                    );
+                    return ready ? (this.ReadyAA, this.ReadyAAhistory) : (this.AA, this.AAhistory);
+
+                Debug.Assert(to == Side.B, $"Storage's `to` must be A or B, was {to}");
+                return ready ? (this.ReadyAB, this.ReadyABhistory) : (this.AB, this.ABhistory);
             }
             else
             {
+                // Not asserted here: unlike `to`, `from` legitimately carries
+                // Side.None for an InStanding train's true resting side (see
+                // ResolveEndpoints' matching comment) -- a real value, not a bug.
                 if (to == Side.A)
-                    add(
-                        ready ? this.ReadyBA : this.BA,
-                        ready ? this.ReadyBAhistory : this.BAhistory,
-                        state,
-                        route
-                    );
-                else
-                    add(
-                        ready ? this.ReadyBB : this.BB,
-                        ready ? this.ReadyBBhistory : this.BBhistory,
-                        state,
-                        route
-                    );
+                    return ready ? (this.ReadyBA, this.ReadyBAhistory) : (this.BA, this.BAhistory);
+
+                Debug.Assert(to == Side.B, $"Storage's `to` must be A or B, was {to}");
+                return ready ? (this.ReadyBB, this.ReadyBBhistory) : (this.BB, this.BBhistory);
             }
         }
 

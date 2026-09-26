@@ -279,6 +279,17 @@ namespace ServiceSiteScheduling.Routing
             SuperVertex start = this.SuperVertices[departureTrack.Index];
             SuperVertex end = this.SuperVertices[arrivalTrack.Index];
 
+            // Side is a 4-valued class (None/A/B/Both), not a 2-valued enum -- the
+            // ?: below silently treats None/Both as B otherwise. Only asserted for
+            // arrivalSide: originSide legitimately carries Side.None for an
+            // InStanding train whose true resting side isn't derivable (see
+            // ProblemInstance.cs's InStanding-arrival comment) -- a real, exercised
+            // value here, not a bug.
+            Debug.Assert(
+                arrivalSide == Side.A || arrivalSide == Side.B,
+                $"ResolveEndpoints' `arrivalSide` must be A or B, was {arrivalSide}"
+            );
+
             Vertex destination;
             if (destinationMode == RouteDestination.ReadyToDepart)
                 destination = arrivalSide == Side.A ? end.AB : end.BA;
