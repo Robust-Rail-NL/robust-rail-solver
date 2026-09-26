@@ -502,11 +502,12 @@ namespace ServiceSiteScheduling.Routing
             // Route's Arcs. So the reversal would cost real time (and, once
             // emitted, a real Reverse action) for a distinction nothing
             // downstream ever queries -- keeping it would be paying for a
-            // flip nobody asked for. For ReadyToDepart (#51) that argument
-            // doesn't apply: AB/BA there isn't standing in for the same
-            // physical stop as AA/BB, it's the actual destination the caller
-            // requested (this is the one leg with no next task to read an
-            // "ArrivalSide" from at all), so the trailing Reverse is kept.
+            // flip nobody asked for.
+            // For ReadyToDepart (#51) that argument doesn't apply: AB/BA
+            // there isn't standing in for the same physical stop as AA/BB,
+            // it's the actual destination the caller requested (this is the
+            // one leg with no next task to read an "ArrivalSide" from at
+            // all), so the trailing Reverse is kept.
             if (
                 destinationMode == RouteDestination.Rest
                 && current.Previous?.Type == ArcType.Reverse
