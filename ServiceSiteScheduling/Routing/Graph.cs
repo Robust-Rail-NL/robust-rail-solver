@@ -90,10 +90,10 @@ namespace ServiceSiteScheduling.Routing
                 {
                     var w = this.Vertices[j];
 
-                    var route = this.Dijkstra(train, w, v, RouteDestination.Rest, false);
+                    var route = this.Dijkstra(train, w, v, useEstimate: false);
                     RecordCounts(j, i, route);
 
-                    route = this.Dijkstra(train, v, w, RouteDestination.Rest, false);
+                    route = this.Dijkstra(train, v, w, useEstimate: false);
                     RecordCounts(i, j, route);
                 }
             }
@@ -372,7 +372,7 @@ namespace ServiceSiteScheduling.Routing
             ShuntTrain train,
             Vertex start,
             Vertex end,
-            RouteDestination destination,
+            RouteDestination destination = RouteDestination.Rest,
             bool useEstimate = true
         )
         {
