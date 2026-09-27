@@ -360,6 +360,15 @@ namespace ServiceSiteScheduling.Routing
                 return route;
             }
 
+            // Route.Invalid gets cached like any other route, but must stay
+            // the sentinel every caller checks for - copying it per train
+            // below is neither needed (it has no real per-train cost to
+            // adjust, just a fixed penalty) nor safe: `new Route(train,
+            // route)` + ComputeDuration() would recompute a nonzero Duration
+            // from its empty Tracks/Arcs and penalty TotalSwitches (#66).
+            if (ReferenceEquals(route, Route.Invalid))
+                return route;
+
             route = new Route(train, route);
             route.TrackState = bitstate;
             route.RefreshArcsForTrain();
