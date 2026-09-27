@@ -1421,6 +1421,19 @@ namespace ServiceSiteScheduling.Solutions
             string Cause
         )> zeroResourceMoves = [];
 
+        // Populated by ToPlan() with every DepartureRoutingTask route still
+        // left as Route.Invalid (Routing/Graph.cs's Dijkstra found no path at
+        // all) once the plan is finalized - meaning that train never got a
+        // real route out of its resting track. Unlike zeroResourceMoves
+        // above, this isn't a route whose resource walk came up empty, it's
+        // no route at all: Route.Invalid carries a real (Route.Train == null)
+        // sentinel, which ToPlan() used to dereference unconditionally and
+        // crash on (see #65). See WriteJSONFile's validateFinal for where
+        // this is escalated.
+        private readonly List<string> unroutableDepartures = [];
+
+        public IReadOnlyList<string> UnroutableDepartures => this.unroutableDepartures;
+
         // @validateFinal: when true (only appropriate for the actual
         // delivered plan, not the tmp_plans/ debug snapshots TabuSearch and
         // SimulatedAnnealing write on every improving move), refuse to
@@ -1475,6 +1488,18 @@ namespace ServiceSiteScheduling.Solutions
                 failed = true;
             }
 
+            if (this.unroutableDepartures.Count > 0)
+            {
+                logger.LogError(
+                    "Delivered plan at {FilePath} has {Count} departure(s) with no route out "
+                        + "of their resting track at all - see #65: {Details}",
+                    filePath,
+                    this.unroutableDepartures.Count,
+                    string.Join("; ", this.unroutableDepartures)
+                );
+                failed = true;
+            }
+
             if (failed)
                 Environment.Exit(1);
         }
@@ -1488,6 +1513,7 @@ namespace ServiceSiteScheduling.Solutions
                 return null;
 
             this.zeroResourceMoves.Clear();
+            this.unroutableDepartures.Clear();
             List<Interchange.Action> actions = [];
 
             Dictionary<ShuntTrain, ShuntingUnit> trainconversion = [];
@@ -1618,140 +1644,165 @@ namespace ServiceSiteScheduling.Solutions
                     var departurerouting = (DepartureRoutingTask)move;
                     var starttime = departurerouting.Start;
 
-                    foreach (var route in departurerouting.GetRoutes())
+                    // A departure whose routes converge multiple previously-
+                    // separate groups needs *every* one of them to actually
+                    // reach the merge point: one Route.Invalid (Dijkstra
+                    // found no path at all for that group) means the whole
+                    // departure can't physically happen, not just that
+                    // group's leg - so the whole action set is suppressed
+                    // below, not just the failing route's own contribution.
+                    // See #65.
+                    if (departurerouting.GetRoutes().Any(r => ReferenceEquals(r, Route.Invalid)))
                     {
-                        var tasks = departurerouting.GetPrevious(task =>
-                            task.Train.UnitBits.Intersects(route.Train.UnitBits)
+                        this.unroutableDepartures.Add(
+                            $"train {departurerouting.Train} at {departurerouting.Next.Track.ID} from {(ulong)starttime}"
                         );
-                        var shuntingunit = GetShuntUnit(route.Train, trainconversion);
-
-                        // Add tasks
-                        foreach (var task in tasks)
-                            AddTrackAction(task, starttime, trainconversion, actions);
-
-                        // Add merge
-                        if (tasks.Count() > 1)
+                        logger.LogDebug(
+                            "Departure routing for train {Train} has no route out at all (Route.Invalid) at {StartTime}. See #65.",
+                            departurerouting.Train,
+                            (ulong)starttime
+                        );
+                    }
+                    else
+                    {
+                        foreach (var route in departurerouting.GetRoutes())
                         {
+                            var tasks = departurerouting.GetPrevious(task =>
+                                task.Train.UnitBits.Intersects(route.Train.UnitBits)
+                            );
+                            var shuntingunit = GetShuntUnit(route.Train, trainconversion);
+
+                            // Add tasks
                             foreach (var task in tasks)
-                            {
-                                var mergeaction = new Interchange.Action
-                                {
-                                    Location = task.Track.ID,
-                                    TaskType = TaskType.FromPredefined(Combine),
-                                    StartTime = (ulong)starttime,
-                                    EndTime = (ulong)(
-                                        starttime
-                                        + departurerouting.Train.Units[0].Type.CombineDuration
-                                            * (tasks.Count() - 1)
-                                    ),
-                                    ShuntingUnit = GetShuntUnit(task.Train, trainconversion),
-                                };
-                                actions.Add(mergeaction);
+                                AddTrackAction(task, starttime, trainconversion, actions);
 
-                                // add parent-child-relation
-                                mergeaction.ShuntingUnit.ChildIDs.Add(shuntingunit.Id);
-                                shuntingunit.ParentIDs.Add(mergeaction.ShuntingUnit.Id);
-                            }
-                            starttime +=
-                                departurerouting.Train.Units[0].Type.CombineDuration
-                                * (tasks.Count() - 1);
-                        }
+                            // Add merge
+                            if (tasks.Count() > 1)
+                            {
+                                foreach (var task in tasks)
+                                {
+                                    var mergeaction = new Interchange.Action
+                                    {
+                                        Location = task.Track.ID,
+                                        TaskType = TaskType.FromPredefined(Combine),
+                                        StartTime = (ulong)starttime,
+                                        EndTime = (ulong)(
+                                            starttime
+                                            + departurerouting.Train.Units[0].Type.CombineDuration
+                                                * (tasks.Count() - 1)
+                                        ),
+                                        ShuntingUnit = GetShuntUnit(task.Train, trainconversion),
+                                    };
+                                    actions.Add(mergeaction);
 
-                        // Add move. Only when the route actually travels - a route
-                        // whose departure track/side already match the unit's
-                        // current position is Route.EmptyRoute (Arcs=[], Duration=0,
-                        // see Graph.ComputeRoute), and emitting a Move for it would
-                        // collect zero resources (its only Arcs entry, and thus the
-                        // only thing the strip below has to remove, doesn't exist).
-                        // Mirrors the arrival/general routing case above, which
-                        // uses routing.NumberOfRoutes > 0 for the same purpose - see
-                        // #24, whose root cause was this missing guard.
-                        if (route.Duration > 0)
-                        {
-                            if (route.Arcs.Any(arc => arc.Type == ArcType.Reverse))
-                            {
-                                actions.AddRange(
-                                    BuildMoveActionsWithReverses(
-                                        route.Arcs,
-                                        (ulong)starttime,
-                                        (ulong)(starttime + route.Duration),
-                                        route.Tracks[0],
-                                        shuntingunit
-                                    )
-                                );
+                                    // add parent-child-relation
+                                    mergeaction.ShuntingUnit.ChildIDs.Add(shuntingunit.Id);
+                                    shuntingunit.ParentIDs.Add(mergeaction.ShuntingUnit.Id);
+                                }
+                                starttime +=
+                                    departurerouting.Train.Units[0].Type.CombineDuration
+                                    * (tasks.Count() - 1);
                             }
-                            else
+
+                            // Add move. Only when the route actually travels - a route
+                            // whose departure track/side already match the unit's
+                            // current position is Route.EmptyRoute (Arcs=[], Duration=0,
+                            // see Graph.ComputeRoute), and emitting a Move for it would
+                            // collect zero resources (its only Arcs entry, and thus the
+                            // only thing the strip below has to remove, doesn't exist).
+                            // Mirrors the arrival/general routing case above, which
+                            // uses routing.NumberOfRoutes > 0 for the same purpose - see
+                            // #24, whose root cause was this missing guard.
+                            if (route.Duration > 0)
                             {
-                                var moveaction = new Interchange.Action
+                                if (route.Arcs.Any(arc => arc.Type == ArcType.Reverse))
                                 {
-                                    Location = route.Tracks[0].ID,
-                                    TaskType = TaskType.FromPredefined(Move),
-                                    StartTime = (ulong)starttime,
-                                    EndTime = (ulong)(starttime + route.Duration),
-                                    ShuntingUnit = shuntingunit,
-                                };
-                                // add path
-                                moveaction.Resources = CollectResources(route.Arcs);
-                                // remove first - the FromTrack entry every arc's path
-                                // starts with, redundant with Location above. Kept as a
-                                // guard (rather than assumed) since #24 hasn't ruled out
-                                // every route shape collecting only that one entry.
-                                if (moveaction.Resources.Count > 0)
-                                {
-                                    moveaction.Resources.RemoveAt(0);
+                                    actions.AddRange(
+                                        BuildMoveActionsWithReverses(
+                                            route.Arcs,
+                                            (ulong)starttime,
+                                            (ulong)(starttime + route.Duration),
+                                            route.Tracks[0],
+                                            shuntingunit
+                                        )
+                                    );
                                 }
                                 else
                                 {
-                                    string cause = ClassifyZeroResourceCause(route);
-                                    this.zeroResourceMoves.Add(
-                                        (
+                                    var moveaction = new Interchange.Action
+                                    {
+                                        Location = route.Tracks[0].ID,
+                                        TaskType = TaskType.FromPredefined(Move),
+                                        StartTime = (ulong)starttime,
+                                        EndTime = (ulong)(starttime + route.Duration),
+                                        ShuntingUnit = shuntingunit,
+                                    };
+                                    // add path
+                                    moveaction.Resources = CollectResources(route.Arcs);
+                                    // remove first - the FromTrack entry every arc's path
+                                    // starts with, redundant with Location above. Kept as a
+                                    // guard (rather than assumed) since #24 hasn't ruled out
+                                    // every route shape collecting only that one entry.
+                                    if (moveaction.Resources.Count > 0)
+                                    {
+                                        moveaction.Resources.RemoveAt(0);
+                                    }
+                                    else
+                                    {
+                                        string cause = ClassifyZeroResourceCause(route);
+                                        this.zeroResourceMoves.Add(
+                                            (
+                                                moveaction.ShuntingUnit.Id,
+                                                moveaction.Location,
+                                                moveaction.StartTime,
+                                                moveaction.EndTime,
+                                                cause
+                                            )
+                                        );
+                                        // Debug, not Warning - see the matching comment
+                                        // on the arrival/general routing case above.
+                                        logger.LogDebug(
+                                            "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it ({Cause}). See issue #24.",
                                             moveaction.ShuntingUnit.Id,
                                             moveaction.Location,
                                             moveaction.StartTime,
                                             moveaction.EndTime,
                                             cause
-                                        )
-                                    );
-                                    // Debug, not Warning - see the matching comment
-                                    // on the arrival/general routing case above.
-                                    logger.LogDebug(
-                                        "Departure move action for shunting unit {ShuntingUnitId} at {Location} from {StartTime} to {EndTime} has a route but does not specify it ({Cause}). See issue #24.",
-                                        moveaction.ShuntingUnit.Id,
-                                        moveaction.Location,
-                                        moveaction.StartTime,
-                                        moveaction.EndTime,
-                                        cause
-                                    );
+                                        );
+                                    }
+                                    // add to plan
+                                    actions.Add(moveaction);
                                 }
-                                // add to plan
-                                actions.Add(moveaction);
+                            }
+                            starttime += route.Duration;
+                        }
+                        var departureshuntunit = GetShuntUnit(
+                            departurerouting.Train,
+                            trainconversion
+                        );
+                        // Add merge
+                        if (departurerouting.GetRoutes().Count > 1)
+                        {
+                            foreach (var route in departurerouting.GetRoutes())
+                            {
+                                var mergeaction = new Interchange.Action
+                                {
+                                    Location = departurerouting.Next.Track.ID,
+                                    TaskType = TaskType.FromPredefined(Combine),
+                                    StartTime = (ulong)starttime,
+                                    EndTime = (ulong)departurerouting.End,
+                                    ShuntingUnit = GetShuntUnit(route.Train, trainconversion),
+                                };
+                                actions.Add(mergeaction);
+
+                                // add parent-child-relation
+                                mergeaction.ShuntingUnit.ChildIDs.Add(departureshuntunit.Id);
+                                departureshuntunit.ParentIDs.Add(mergeaction.ShuntingUnit.Id);
                             }
                         }
-                        starttime += route.Duration;
+                        // Add departure
+                        AddTrackAction(departurerouting.Next, trainconversion, actions);
                     }
-                    var departureshuntunit = GetShuntUnit(departurerouting.Train, trainconversion);
-                    // Add merge
-                    if (departurerouting.GetRoutes().Count > 1)
-                    {
-                        foreach (var route in departurerouting.GetRoutes())
-                        {
-                            var mergeaction = new Interchange.Action
-                            {
-                                Location = departurerouting.Next.Track.ID,
-                                TaskType = TaskType.FromPredefined(Combine),
-                                StartTime = (ulong)starttime,
-                                EndTime = (ulong)departurerouting.End,
-                                ShuntingUnit = GetShuntUnit(route.Train, trainconversion),
-                            };
-                            actions.Add(mergeaction);
-
-                            // add parent-child-relation
-                            mergeaction.ShuntingUnit.ChildIDs.Add(departureshuntunit.Id);
-                            departureshuntunit.ParentIDs.Add(mergeaction.ShuntingUnit.Id);
-                        }
-                    }
-                    // Add departure
-                    AddTrackAction(departurerouting.Next, trainconversion, actions);
                 }
                 move = move.NextMove;
             }
