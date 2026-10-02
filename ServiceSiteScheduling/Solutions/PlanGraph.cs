@@ -195,7 +195,7 @@ namespace ServiceSiteScheduling.Solutions
             this.unverifiedSplitPlacements.Clear();
 
             this.ComputeLocation(this.First, recomputestart, recomputeend);
-            this.ComputeTime();
+            ComputeTime(recomputestart, recomputestart?.PreviousMove?.End ?? 0);
             return this.ComputeCost();
         }
 
@@ -394,144 +394,7 @@ namespace ServiceSiteScheduling.Solutions
             return leads.Value ? routing.ToSide!.Flip : routing.ToSide;
         }
 
-        /// <summary>
-        /// Computes every task's <c>Start</c>/<c>End</c> by building a
-        /// <see cref="SimpleTemporalNetwork"/> from the plan's per-train causal chains and
-        /// the existing per-machine <see cref="ServiceTask"/> resource chain, dispatching
-        /// it, and writing the dispatched values back onto the tasks. Replaces a walk that
-        /// carried one scalar "time" forward across the plan's single interleaved
-        /// <see cref="MoveTask.NextMove"/> list, flooring every move's start by whatever
-        /// task happened to precede it in that one list -- even an unrelated train on an
-        /// unrelated track. See #43.
-        /// <para>
-        /// Always builds from <see cref="First"/>: the STN dispatch is already linear in
-        /// plan size (matching this method's previous complexity), and nothing currently
-        /// exploits <c>ComputeModel</c>'s <c>recomputestart</c>/<c>recomputeend</c> range for
-        /// timing (no <c>LocalSearchMove</c> subclass ever narrows it), so there's no
-        /// incremental-recompute behavior to preserve here.
-        /// </para>
-        /// </summary>
-        public void ComputeTime()
-        {
-            var (network, points) = this.BuildTemporalNetwork();
-            network.Dispatch();
-            WriteBackTimes(this.First, points);
-        }
-
-        private (
-            SimpleTemporalNetwork Network,
-            Dictionary<object, TimePoint> Points
-        ) BuildTemporalNetwork()
-        {
-            var network = new SimpleTemporalNetwork();
-            var points = new Dictionary<object, TimePoint>();
-
-            TimePoint TP(object task)
-            {
-                if (!points.TryGetValue(task, out var point))
-                    points[task] = point = network.CreateTimePoint(task.ToString());
-                return point;
-            }
-
-            // A predecessor's own "own duration" before its train can move on: a
-            // service task holds the train for its MinimumDuration; everything else
-            // (standing-in/parking/arrival) holds it for no minimum time.
-            static Time OwnDurationWeight(TrackTask task) =>
-                task is ServiceTask service ? service.MinimumDuration : (Time)0;
-
-            // Chain-initial TrackTasks: an inStanding train's StandInTask, and an
-            // ArrivalTask's ScheduledTime, are fixed inputs ComputeTime never re-derives
-            // (nothing else ever assigns their Start) -- so they're the network's release
-            // points, not something computed from an edge.
-            foreach (var arrival in this.ArrivalTasks)
-                network.RequireAbsolute(TP(arrival), arrival.ScheduledTime);
-            foreach (var standin in this.StandInTasks)
-                network.RequireAbsolute(TP(standin), standin.Start);
-
-            MoveTask? move = this.First;
-            while (move != null)
-            {
-                if (move.TaskType == MoveTaskType.Standard)
-                {
-                    var routing = (RoutingTask)move;
-                    var routingPoint = TP(routing);
-
-                    // Any reversal this leg needs is discovered and costed by the
-                    // route itself (#46), so no separate padding term belongs here.
-                    network.Require(
-                        TP(routing.Previous),
-                        routingPoint,
-                        OwnDurationWeight(routing.Previous)
-                    );
-
-                    foreach (TrackTask next in routing.Next)
-                    {
-                        network.Require(routingPoint, TP(next), routing.Duration);
-
-                        // The existing hard resource-ordering constraint: a service
-                        // resource is in use for a stretch of time, so the next task
-                        // scheduled on it can't start before the previous one's
-                        // MinimumDuration has elapsed. The template a future
-                        // track/infrastructure reservation edge would reuse.
-                        if (
-                            next is ServiceTask
-                            {
-                                PreviousServiceTask: { } previousService
-                            } nextService
-                        )
-                        {
-                            Debug.Assert(
-                                nextService.Resource == previousService.Resource,
-                                $"ServiceTask {nextService}'s PreviousServiceTask {previousService} "
-                                    + "must be on the same Resource -- the chain links tasks on one "
-                                    + "physical service facility, not across different ones"
-                            );
-                            network.Require(
-                                TP(previousService),
-                                TP(next),
-                                previousService.MinimumDuration
-                            );
-                        }
-                    }
-                }
-                else
-                {
-                    var departurerouting = (DepartureRoutingTask)move;
-                    var departurePoint = TP(departurerouting);
-
-                    if (departurerouting.Next is DepartureTask departureTask)
-                    {
-                        // Any reversal this leg needs (#51) is now discovered and
-                        // costed by the route itself (ReadyToDepart routing in
-                        // computeDepartureRoute), so it's already folded into
-                        // departurerouting.Duration below -- no separate padding
-                        // term needed here.
-                        network.RequireAbsolute(
-                            departurePoint,
-                            departureTask.ScheduledTime - departurerouting.Duration
-                        );
-                    }
-                    else
-                    {
-                        // outStanding train, no fixed deadline -- schedule forward from
-                        // its own predecessors only, added below.
-                        Debug.Assert(
-                            departurerouting.Next is StandOutTask,
-                            $"DepartureRoutingTask {departurerouting}'s Next must be a "
-                                + $"DepartureTask or a StandOutTask, was {departurerouting.Next}"
-                        );
-                    }
-
-                    foreach (var task in departurerouting.Previous)
-                        network.Require(TP(task), departurePoint, OwnDurationWeight(task));
-                }
-                move = move.NextMove;
-            }
-
-            return (network, points);
-        }
-
-        private static void WriteBackTimes(MoveTask? start, Dictionary<object, TimePoint> points)
+        public static void ComputeTime(MoveTask? start, Time time)
         {
             MoveTask? move = start;
             while (move != null)
@@ -540,17 +403,91 @@ namespace ServiceSiteScheduling.Solutions
                 {
                     var routing = (RoutingTask)move;
 
-                    routing.Start = points[routing].Value;
-                    routing.Previous.End = routing.Start;
-                    routing.End = routing.Start + routing.Duration;
+                    // Compute the starting time
+                    if (routing.Previous.TaskType == TrackTaskType.Arrival)
+                    {
+                        var arrival = (ArrivalTask)routing.Previous;
+                        routing.Start = arrival.Start = arrival.ScheduledTime;
+                        if (routing.Start < time && !arrival.Track.CanPark)
+                        {
+                            logger.LogDebug(
+                                ""
+                                    + "Shuntingunit {routing.Train} incorporates a delay in arriving at {routing.Start} "
+                                    + "into its Arrive action, because previous routing task {routing.Previous} "
+                                    + "ends at time {time}, but arrival track {arrival.Track} cannot be used for parking.",
+                                routing.Train,
+                                routing.Start,
+                                routing.Previous,
+                                time,
+                                arrival.Track
+                            );
+                        }
+                    }
+                    else if (routing.Previous.TaskType == TrackTaskType.Service)
+                        routing.Start =
+                            routing.Previous.Start
+                            + ((ServiceTask)routing.Previous).MinimumDuration;
+                    else if (routing.Previous.TaskType == TrackTaskType.StandIn)
+                        routing.Start = routing.Previous.Start;
+                    else
+                        routing.Start = time;
 
+                    routing.Start = Math.Max(routing.Start, time);
+
+                    // Update previous components
+                    routing.Previous.End = routing.Start;
+
+                    // Compute the end time
+                    routing.End = routing.Start + routing.Duration;
+                    time = routing.End;
+
+                    // Update next components
                     foreach (TrackTask next in routing.Next)
-                        next.Start = points[next].Value;
+                    {
+                        if (next.TaskType == TrackTaskType.Service)
+                        {
+                            var service = (ServiceTask)next;
+                            if (service.PreviousServiceTask != null)
+                                service.Start = Math.Max(
+                                    routing.End,
+                                    service.PreviousServiceTask.Start
+                                        + service.PreviousServiceTask.MinimumDuration
+                                );
+                            else
+                                service.Start = routing.End;
+                        }
+                        else
+                            next.Start = routing.End;
+                    }
                 }
                 else
                 {
                     var departurerouting = (DepartureRoutingTask)move;
-                    departurerouting.Start = points[departurerouting].Value;
+                    if (departurerouting.Next is DepartureTask departureTask)
+                    {
+                        // Any reversal this leg needs (#51) is now discovered
+                        // and costed by the route itself (ReadyToDepart
+                        // routing in computeDepartureRoute), so it's already
+                        // folded into departurerouting.Duration below -- no
+                        // separate padding term needed here.
+                        departurerouting.Start = Math.Max(
+                            time,
+                            departureTask.ScheduledTime - departurerouting.Duration
+                        );
+                    }
+                    else
+                    {
+                        // Outstanding train: no fixed deadline, schedule forward
+                        departurerouting.Start = time;
+                    }
+                    foreach (var task in departurerouting.Previous)
+                    {
+                        if (task.TaskType == TrackTaskType.Service)
+                            departurerouting.Start = Math.Max(
+                                departurerouting.Start,
+                                task.Start + ((ServiceTask)task).MinimumDuration
+                            );
+                    }
 
                     foreach (var previous in departurerouting.Previous)
                         previous.End = departurerouting.Start;
@@ -558,6 +495,7 @@ namespace ServiceSiteScheduling.Solutions
                     departurerouting.End = departurerouting.Start + departurerouting.Duration;
                     departurerouting.Next.Start = departurerouting.End;
                     departurerouting.Next.End = departurerouting.Next.Start;
+                    time = departurerouting.End;
                 }
                 move = move.NextMove;
             }

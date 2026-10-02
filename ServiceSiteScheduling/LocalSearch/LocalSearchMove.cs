@@ -7,6 +7,10 @@
         public Utilities.BitSet AffectedTracks { get; protected set; }
 
         protected string routingordering;
+        protected Tasks.MoveTask executestart,
+            executeend,
+            revertstart,
+            revertend;
 
 #if DEBUG
         /// <summary>
@@ -56,7 +60,10 @@
 #if DEBUG
             this.Graph.UpdateRoutingOrder();
 #endif
-            this.Cost = this.Graph.ComputeModel(this.Graph.First, this.Graph.Last);
+            this.Cost = this.Graph.ComputeModel(
+                this.executestart ?? this.Graph.First,
+                this.executeend ?? this.Graph.Last
+            );
 #if DEBUG
             if (this.debugCheckThisMove)
                 this.Graph.CheckCorrectness();
@@ -67,7 +74,10 @@
         public virtual Solutions.SolutionCost Revert()
         {
             this.Graph.UpdateRoutingOrder();
-            var cost = this.Graph.ComputeModel(this.Graph.First, this.Graph.Last);
+            var cost = this.Graph.ComputeModel(
+                this.revertstart ?? this.Graph.First,
+                this.revertend ?? this.Graph.Last
+            );
 #if DEBUG
             if (this.debugCheckThisMove)
             {
