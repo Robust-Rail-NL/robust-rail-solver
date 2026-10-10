@@ -11,7 +11,7 @@ namespace ServiceSiteScheduling.Parking
         public Deque<State> StateDeque;
         public List<State> States;
         public int TrackLengthViolations = 0;
-        public int TrackLengthViolationSum = 0;
+        public double TrackLengthViolationSum = 0; // metres
         public List<State> ViolatingStates;
 
         public TrackOccupation(Track track)
@@ -107,7 +107,8 @@ namespace ServiceSiteScheduling.Parking
                 state.Reset();
             this.States.Clear();
             this.ViolatingStates.Clear();
-            this.TrackLengthViolations = this.TrackLengthViolationSum = 0;
+            this.TrackLengthViolations = 0;
+            this.TrackLengthViolationSum = 0;
         }
     }
 
@@ -321,7 +322,7 @@ namespace ServiceSiteScheduling.Parking
                 this.ViolatingStates.Add(task.State);
                 this.TrackLengthViolationSum = Math.Max(
                     this.TrackLengthViolationSum,
-                    this.occupation - this.Track.Length
+                    Utilities.Lengths.ToMetres(this.occupation - this.Track.Length)
                 );
             }
             base.Arrive(task);

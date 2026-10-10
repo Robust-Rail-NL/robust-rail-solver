@@ -38,7 +38,7 @@ namespace ServiceSiteScheduling.TrackParts
             // not checked here).
             if ((canpark || canreverse) && length <= 0)
                 throw new InvalidOperationException(
-                    $"Track {id} ({name}): parkingAllowed/sawMovementAllowed requires a nonzero length, but length is {length}"
+                    $"Track {id} ({name}): parkingAllowed/sawMovementAllowed requires a nonzero length, but length is {Utilities.Lengths.ToMetres(length)} m"
                 );
             this.Services = [service];
             this.Length = length;
@@ -134,7 +134,7 @@ namespace ServiceSiteScheduling.TrackParts
 
         public override string ToString()
         {
-            return $"{this.ID} {this.PrettyName} ({this.Length} {this.Access})";
+            return $"{this.ID} {this.PrettyName} ({Utilities.Lengths.ToMetres(this.Length)} {this.Access})";
         }
     }
 }

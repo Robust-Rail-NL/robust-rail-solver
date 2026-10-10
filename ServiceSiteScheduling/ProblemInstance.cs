@@ -202,7 +202,7 @@ namespace ServiceSiteScheduling
                             part.Id,
                             part.Name,
                             ServiceType.None,
-                            (int)(part.Length ?? 0),
+                            Utilities.Lengths.FromMetres(part.Length ?? 0, $"Track {part.Name}"),
                             Side.None,
                             part.ParkingAllowed,
                             part.SawMovementAllowed,
@@ -521,7 +521,7 @@ namespace ServiceSiteScheduling
                 TrainType type = new(
                     traintypes.Count,
                     name,
-                    (int)tut.Length,
+                    Utilities.Lengths.FromMetres(tut.Length.Value, $"Train unit type {name}"),
                     instance.Tracks.Where(t => t.CanPark).ToArray(),
                     (int)tut.BackNormTime,
                     (int)tut.BackAdditionTime * (int)tut.Carriages,

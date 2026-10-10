@@ -1,0 +1,73 @@
+{
+    "schemaVersion": 2,
+    "trackParts": [
+        {
+            "id": "1",
+            "type": "Bumper",
+            "aSide": [],
+            "bSide": [
+                "2"
+            ],
+            "length": 0.0,
+            "name": "gate_in",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false
+        },
+        {
+            "id": "2",
+            "type": "RailRoad",
+            "aSide": [
+                "1"
+            ],
+            "bSide": [
+                "4"
+            ],
+            "length": 200.0,
+            "name": "approach_in",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false
+        },
+        {
+            "id": "4",
+            "type": "RailRoad",
+            "aSide": [
+                "2"
+            ],
+            "bSide": [
+                "5"
+            ],
+            "length": 80.0,
+            "name": "through",
+            "sawMovementAllowed": true,
+            "parkingAllowed": true
+        },
+        {
+            "id": "5",
+            "type": "RailRoad",
+            "aSide": [
+                "4"
+            ],
+            "bSide": [
+                "6"
+            ],
+            "length": 200.0,
+            "name": "approach_out",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false
+        },
+        {
+            "id": "6",
+            "type": "Bumper",
+            "aSide": [
+                "5"
+            ],
+            "bSide": [],
+            "length": 0.0,
+            "name": "gate_out",
+            "sawMovementAllowed": false,
+            "parkingAllowed": false
+        }
+    ],
+    "facilities": [],
+    "taskTypes": []
+}

@@ -12,7 +12,7 @@ namespace ServiceSiteScheduling.Solutions
         public int OutStandingOverruns;
         public int OutStandingOverrunSum;
         public int TrackLengthViolations;
-        public int TrackLengthViolationSum;
+        public double TrackLengthViolationSum; // metres
         public double ShuntMoves;
         public int RoutingDurationSum;
         public int CombineOnDepartureTrack;

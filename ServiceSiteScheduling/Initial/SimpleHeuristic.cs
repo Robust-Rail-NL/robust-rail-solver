@@ -552,7 +552,7 @@ namespace ServiceSiteScheduling.Initial
                         .ToArray();
                     if (reachable.Length == 0)
                         throw new InvalidOperationException(
-                            $"No routing possible for train {routing.Train} of length {routing.Train.Length} from previous track <{routing.Previous.Track}> with sufficient length and possible route."
+                            $"No routing possible for train {routing.Train} of length {Utilities.Lengths.ToMetres(routing.Train.Length)} m from previous track <{routing.Previous.Track}> with sufficient length and possible route."
                         );
                     var possibletracks = reachable.Where(track =>
                         space[track] >= routing.Train.Length
