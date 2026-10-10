@@ -108,7 +108,7 @@ namespace ServiceSiteScheduling.Solutions
                             part.Id,
                             part.Name,
                             ServiceType.None,
-                            (int)part.Length,
+                            Utilities.Lengths.FromMetres(part.Length.Value, $"Track {part.Name}"),
                             Side.None,
                             part.ParkingAllowed,
                             part.SawMovementAllowed,
