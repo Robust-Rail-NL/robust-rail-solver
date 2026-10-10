@@ -63,7 +63,7 @@ namespace ServiceSiteScheduling.Trains
 
         public override string ToString()
         {
-            return $"({this.Index}) {this.Name} = {this.Length}m";
+            return $"({this.Index}) {this.Name} = {Utilities.Lengths.ToMetres(this.Length)}m";
         }
     }
 }
