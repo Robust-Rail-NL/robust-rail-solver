@@ -12,6 +12,7 @@ namespace ServiceSiteScheduling
         // Method: Run the program from a config file. This is the entry point of the application
         static void Main(string[] args)
         {
+            LocalSearch.SearchClock.Start();
             Console.WriteLine($"HIP {Version}");
 
             if (args.Length != 0)

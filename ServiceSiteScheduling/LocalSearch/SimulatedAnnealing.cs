@@ -1,10 +1,25 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using ServiceSiteScheduling.Solutions;
 using ServiceSiteScheduling.Tasks;
 using ServiceSiteScheduling.Utilities;
 
 namespace ServiceSiteScheduling.LocalSearch
 {
+    // Wall-clock since program entry (Program.Main starts it), so the STATS
+    // line covers problem parsing and the tabu phase too. Not running (e.g.
+    // in tests calling SimulatedAnnealing.Run directly): callers fall back to
+    // their own stopwatch.
+    static class SearchClock
+    {
+        static readonly Stopwatch clock = new();
+
+        public static void Start() => clock.Start();
+
+        public static long ElapsedMilliseconds(Stopwatch fallback) =>
+            clock.IsRunning ? clock.ElapsedMilliseconds : fallback.ElapsedMilliseconds;
+    }
+
     class SimulatedAnnealing
     {
         Random random;
@@ -201,6 +216,7 @@ namespace ServiceSiteScheduling.LocalSearch
             int noimprovement = 0,
                 iteration = 0,
                 neighbors = 0;
+            long timeToBestMilliseconds = 0;
             bool previousimproved = false;
             SolutionCost bestcost = this.Graph.ComputeModel();
             SolutionCost current = bestcost;
@@ -397,6 +413,7 @@ namespace ServiceSiteScheduling.LocalSearch
                             if (move.Cost.Cost(fullcost) < bestcost.Cost(fullcost))
                             {
                                 bestcost = move.Cost;
+                                timeToBestMilliseconds = SearchClock.ElapsedMilliseconds(stopwatch);
                                 noimprovement = 0;
                                 if (debugLevel > 1)
                                 {
@@ -468,6 +485,7 @@ namespace ServiceSiteScheduling.LocalSearch
                             if (current.Cost(fullcost) < bestcost.Cost(fullcost))
                             {
                                 bestcost = current;
+                                timeToBestMilliseconds = SearchClock.ElapsedMilliseconds(stopwatch);
                                 noimprovement = 0;
                                 if (debugLevel > 1)
                                 {
@@ -546,7 +564,33 @@ namespace ServiceSiteScheduling.LocalSearch
                 $"Finished after {(stopwatch.ElapsedMilliseconds / (double)1000).ToString("N2")} seconds"
             );
             Console.WriteLine($"Neighbors visited: {neighbors}");
+            Console.WriteLine(
+                FormatStatsLine(
+                    SearchClock.ElapsedMilliseconds(stopwatch),
+                    neighbors,
+                    iteration,
+                    this.Graph.Cost.IsFeasible,
+                    timeToBestMilliseconds
+                )
+            );
         }
+
+        // One machine-readable summary line, printed after the human-readable
+        // "Finished after" / "Neighbors visited" lines (which stay as they
+        // are). Times run from program entry (see SearchClock), so they include
+        // parsing and the tabu phase. time_to_best_seconds is when the best
+        // cost was last improved (0.00 if never improved on the initial plan).
+        internal static string FormatStatsLine(
+            long searchMilliseconds,
+            int neighbors,
+            int iterations,
+            bool feasible,
+            long timeToBestMilliseconds
+        ) =>
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"STATS search_seconds={searchMilliseconds / 1000.0:F2} neighbors={neighbors} iterations={iterations} feasible={(feasible ? "true" : "false")} time_to_best_seconds={timeToBestMilliseconds / 1000.0:F2}"
+            );
 
         protected void Revert(List<LocalSearchMove> moves, bool fullcost, SolutionCost best = null)
         {
