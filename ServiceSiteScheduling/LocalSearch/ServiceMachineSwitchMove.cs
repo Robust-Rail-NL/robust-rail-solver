@@ -231,7 +231,12 @@ namespace ServiceSiteScheduling.LocalSearch
                                     Tasks.MoveTask lower = service.Previous,
                                         upper = service.Next;
                                     if (!lower.SkipsParking)
+                                    {
+                                        // No move before a StandIn: nothing to anchor against.
+                                        if (lower.AllPrevious.Any(task => task.Previous == null))
+                                            continue;
                                         lower = lower.LatestPrevious();
+                                    }
                                     if (!upper.SkipsParking)
                                         upper.EarliestNext();
 
@@ -332,7 +337,12 @@ namespace ServiceSiteScheduling.LocalSearch
                                 Tasks.MoveTask lower = service.Previous,
                                     upper = service.Next;
                                 if (!lower.SkipsParking)
+                                {
+                                    // No move before a StandIn: nothing to anchor against.
+                                    if (lower.AllPrevious.Any(task => task.Previous == null))
+                                        continue;
                                     lower = lower.LatestPrevious();
+                                }
                                 if (!upper.SkipsParking)
                                     upper.EarliestNext();
 
