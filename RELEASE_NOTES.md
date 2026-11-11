@@ -1,5 +1,19 @@
 # Release notes
 
+## 2.3.1 — 2026-11-11
+
+A fix-only patch release. No change to the interchange format (plans still declare `schemaVersion: 2`) and no change to the output besides the fix below.
+
+### Fixes
+
+- **Stale Reverse arc durations for a freshly computed route (#81).** `RoutingGraph.ComputeRoute` returned a route fresh from Dijkstra with its `Arcs` still pointing at the graph's own shared `Arc` objects. The next Dijkstra run, for any train, re-priced those arcs and overwrote a Reverse arc's `Duration` with the other train's `ReversalDuration`. #55 had fixed this for a cache hit, but not for the route that populates the cache. `ToPlan()` could then lay out a route's Reverse piece with the wrong length, so the pieces no longer summed to the route's end time. The solver logged this as `Move piece for shunting unit N at L (S-E) is anchored Gs away from its own computed duration (Ds) - the route's pieces don't sum to its trusted total; investigate.`, with a start time after the end time in the worst case (`450-420`). It was observed on intermediate plan snapshots written during the search of the Kleine Binckhorst `example1` scenario on an `edge` build; the final plan for that scenario was not affected, and 2.3.0 itself does not log it there. A fresh route now snapshots its Reverse arcs for its own train, as a cache hit already did. A regression test covers it.
+
+Plans that reverse in place could in principle change: a route whose Reverse arc had been re-priced by another train now keeps its own train's duration.
+
+### Compatibility
+
+Same as 2.3.0: `schemaVersion` 2, for use with an evaluator of the same `schemaVersion` (2.3.0 or later).
+
 ## 2.3.0 — 2026-11-11
 
 No change to the interchange format: plans still declare `schemaVersion: 2`, and it is meant for use with an evaluator of the same `schemaVersion` (2.3.0 or later). The only addition to the output is one extra line on stdout (see "Machine-readable search statistics").
