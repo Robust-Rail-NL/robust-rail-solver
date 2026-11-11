@@ -172,6 +172,43 @@ public class SawMovementTests
         );
     }
 
+    // The cache-miss counterpart of the test above: the Route Dijkstra just
+    // computed points at the graph's own shared Arc objects, which a later
+    // Dijkstra run (any train, any key) re-prices via Arc.ComputeCost. Without
+    // a snapshot of the Reverse arcs on the miss path, that later run
+    // overwrote the first train's Reverse Duration with the second train's
+    // ReversalDuration, and PlanGraph.BuildMoveActionsWithReverses then
+    // warned about pieces that "don't sum to its trusted total".
+    [Fact]
+    public void FreshRoute_KeepsItsReverseArcDurationAfterAnotherTrainsDijkstra()
+    {
+        ProblemInstance.Current = ProblemInstance.ParseJson(
+            TestData("location_saw_movement.json"),
+            TestData("scenario_saw_movement.json")
+        );
+
+        var graph = RoutingGraph.Construct();
+        Track siding = ProblemInstance.Current.Tracks.First(t => t.PrettyName == "siding");
+        Track approach = ProblemInstance.Current.Tracks.First(t => t.PrettyName == "approach");
+        ServiceSiteScheduling.Trains.TrainUnit unit = ProblemInstance.Current.TrainUnits[0];
+
+        ShuntTrain trainA = new(new List<ShuntTrainUnit> { new(unit) });
+        ShuntTrain trainB = new(new List<ShuntTrainUnit> { new(unit), new(unit) });
+        Assert.NotEqual(trainA.ReversalDuration, trainB.ReversalDuration);
+
+        Route routeA = graph.ComputeRoute([], trainA, siding, Side.A, approach, Side.B);
+        Arc reverseA = routeA.Arcs.First(a => a.Type == ArcType.Reverse);
+        Time expected = Settings.TrackCrossingTime + trainA.ReversalDuration;
+        Assert.Equal(expected, reverseA.Duration);
+
+        // A different cache key, so a genuine Dijkstra run for trainB.
+        graph.ComputeRoute([], trainB, approach, Side.B, siding, Side.A);
+        graph.ComputeRoute([], trainB, approach, Side.A, siding, Side.B);
+        graph.ComputeRoute([], trainB, siding, Side.B, approach, Side.A);
+
+        Assert.Equal(expected, routeA.Arcs.First(a => a.Type == ArcType.Reverse).Duration);
+    }
+
     // GetFlatDuration is what turns a Move's resource walk into the
     // evaluator-matching duration BuildMoveActionsWithReverses now uses
     // (#52) - unit-tested directly (internal, same reasoning as
