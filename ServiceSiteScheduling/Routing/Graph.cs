@@ -356,6 +356,13 @@ namespace ServiceSiteScheduling.Routing
             if (!storage.TryGet(originSide, arrivalSide, bitstate, destinationMode, out route))
             {
                 route = this.Dijkstra(train, origin, destination, destinationMode);
+                // Dijkstra's route points at the graph's own shared Arc
+                // objects, and the next Dijkstra run (for any train) calls
+                // Arc.ComputeCost on them again, overwriting a Reverse arc's
+                // Duration with that other train's ReversalDuration. Snapshot
+                // the Reverse arcs for `train` now, so the returned (and
+                // cached) route keeps the durations it was priced with.
+                route.RefreshArcsForTrain();
                 storage.Add(originSide, arrivalSide, bitstate, destinationMode, route);
                 return route;
             }
