@@ -1,5 +1,38 @@
 # Release notes
 
+## 2.3.0 — 2026-11-11
+
+No change to the interchange format: plans still declare `schemaVersion: 2`, and it is meant for use with an evaluator of the same `schemaVersion` (2.3.0 or later). The only addition to the output is one extra line on stdout (see "Machine-readable search statistics").
+
+### Machine-readable search statistics (#74)
+
+At the end of simulated annealing the solver now prints one more line, after the existing "Finished after" and "Neighbors visited" lines, which are unchanged:
+
+```
+STATS search_seconds=<s> neighbors=<n> iterations=<n> feasible=true|false time_to_best_seconds=<s>
+```
+
+`time_to_best_seconds` is the time at which the best cost was last improved, i.e. when the final plan was found. Both times are measured from program entry (a clock started first thing in `Main`), so they include problem parsing and the tabu phase, not just annealing. Without a started clock (a test calling `Run` directly) they fall back to the annealing stopwatch. Experiment scripts can read this line instead of parsing the human-readable output.
+
+### Fixes
+
+- **Crash for a standing train's first service (#75, #79).** On a scenario with servicing, a train that is already standing in the yard at the start and needs a service could make `ServiceMachineSwitchMove.GetMoves` throw a `NullReferenceException`, which ended the process with exit code 139 (found on a generated 4-train scenario with servicing, and reproduced on 2.2.0). Service switch moves are now skipped for a standing train's first service. A regression test covers it.
+- **Two crashes in `ToPlan()` on departures without a route (#65, #66, #67).** A train that genuinely has no route out of its resting track used to crash the solver (`ArgumentNullException` when a departure's route set contained `Route.Invalid`, and an `IndexOutOfRangeException` on `route.Tracks[0]` once that was fixed). The solver now reports such a scenario as infeasible. `RoutingGraph.ComputeRoute` also no longer returns a corrupted copy of a cached `Route.Invalid`: a cache hit returns the sentinel itself. The departure's whole action set is suppressed when any of its routes is invalid, and the failure is recorded in a new `unroutableDepartures` diagnostic, the same pattern as `zeroResourceMoves` and `unverifiedSplitPlacements`. Regression tests added for both.
+
+### Exact lengths (#72)
+
+Track and unit lengths were truncated to whole metres, while the evaluator compares exact lengths, so the solver accepted parkings that the evaluator rejected as too long. Lengths are now kept as whole millimetres internally, rounded half away from zero like the evaluator's `llround`, with a warning for a length with more than 3 decimals. Input, output and the track-length violation sum stay in metres.
+
+Plans can change: a layout that fitted only because of the truncation is no longer produced, and an exact fit that used to be rejected can be.
+
+### Compatibility
+
+`schemaVersion` 2 and the evaluator's length rule from 2.3.0 (exact integer millimetres, #39), which the solver now follows (#72). No other format change.
+
+### Reproducibility note
+
+The solver-versus-planner experiment grid (robust-rail-general, `experiments/issa-grid/`) ran the build `HIP 2.2.0-edge+20261106.965fd71`, which has the same source tree as this release. Results from that experiment can be attributed to this version.
+
 ## 2.2.0 — 2026-09-26
 
 Adopts interchange **schemaVersion 2** (see `SCHEMA_CHANGELOG.md` in
