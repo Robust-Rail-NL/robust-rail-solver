@@ -66,6 +66,8 @@ Currently manual only — run
 from the `edge` branch (it checks and refuses to run from anywhere else).
 Push `edge` to origin first: the script also refuses unless local `edge` is
 identical to `origin/edge`, so `:edge` only ever contains pushed commits.
+It also refuses to run with a dirty working tree (uncommitted or untracked files),
+since the docker build uses the working tree, not the commit.
 
 There is no CI automation building or pushing `edge` on every push to the
 branch. This was a deliberate choice, not an oversight: wiring that up means

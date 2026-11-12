@@ -7,7 +7,7 @@
 # Must be run from the edge branch (checked below), since :edge is meant to
 # always reflect whatever is currently on that branch — not whatever branch
 # happened to be checked out locally. That branch must also be identical to
-# origin/edge (checked below): publish only after pushing.
+# origin/edge (checked below): publish only after pushing. The working tree must be clean too.
 #
 # The image version embedded in the build (both the OCI label and the
 # published binary's own AssemblyInformationalVersionAttribute — see the
@@ -52,6 +52,15 @@ BUILDER_NAME="robust-rail-builder"
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$BRANCH" != "edge" ]]; then
     echo "Refusing to publish :edge from branch '$BRANCH' — checkout edge first." >&2
+    exit 1
+fi
+
+# The docker build context is the working tree, not the commit, so any
+# uncommitted or untracked change would end up in an image whose version
+# string claims a clean sha. Refuse rather than publish that.
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Refusing to publish :edge from a dirty working tree — commit or stash first." >&2
+    git status --short >&2
     exit 1
 fi
 
