@@ -6,7 +6,8 @@
 #
 # Must be run from the edge branch (checked below), since :edge is meant to
 # always reflect whatever is currently on that branch — not whatever branch
-# happened to be checked out locally.
+# happened to be checked out locally. That branch must also be identical to
+# origin/edge (checked below): publish only after pushing.
 #
 # The image version embedded in the build (both the OCI label and the
 # published binary's own AssemblyInformationalVersionAttribute — see the
@@ -51,6 +52,15 @@ BUILDER_NAME="robust-rail-builder"
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$BRANCH" != "edge" ]]; then
     echo "Refusing to publish :edge from branch '$BRANCH' — checkout edge first." >&2
+    exit 1
+fi
+
+# :edge must only ever reflect what is on origin/edge, so every published
+# image traces back to a commit anyone can fetch. Refuse if local edge has
+# unpushed commits (or is behind): push first, then publish.
+git fetch --quiet origin edge
+if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/edge)" ]]; then
+    echo "Refusing to publish :edge: local edge ($(git rev-parse --short HEAD)) differs from origin/edge ($(git rev-parse --short origin/edge)) — push (or pull) first." >&2
     exit 1
 fi
 
