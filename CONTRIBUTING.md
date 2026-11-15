@@ -29,6 +29,9 @@ The HIP solver image is published under two channels:
   [`docker-push.sh`](ServiceSiteScheduling/docker-push.sh) once a change has
   gone through its own PR and been merged into `main`. `hip:latest` always
   means "last real release."
+  `docker-push.sh` refuses to run unless the working tree is clean and `HEAD` is
+  the commit tagged `v<version>` (by `bump-version.sh`) with that tag pushed to
+  origin; `-f` skips these checks.
 - **`edge`** — a fast, lower-ceremony channel for running a not-yet-reviewed
   fix without waiting for its PR into `main`. Built and pushed via
   [`docker-push-edge.sh`](ServiceSiteScheduling/docker-push-edge.sh) under
