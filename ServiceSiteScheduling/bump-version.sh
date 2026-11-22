@@ -10,14 +10,17 @@ set -euo pipefail
 
 CSPROJ="HIP.csproj"
 
+# BEGIN SHARED BLOCK: bump-clean-tree (identical in every repo's bump-version.sh; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 if [[ -n "$(git status --porcelain)" ]]; then
     echo "Working tree is not clean; commit or stash changes before bumping the version" >&2
     exit 1
 fi
+# END SHARED BLOCK: bump-clean-tree
 
 CURRENT=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$CSPROJ")
 [[ -n "$CURRENT" ]] || { echo "Could not read <Version> from $CSPROJ" >&2; exit 1; }
 
+# BEGIN SHARED BLOCK: bump-usage (identical in every repo's bump-version.sh; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 usage() {
     echo "Usage: $0 <major|minor|patch|prerelease|X.Y.Z[-suffix]>" >&2
     echo "Current version: $CURRENT" >&2
@@ -25,7 +28,9 @@ usage() {
 }
 
 [[ $# -eq 1 ]] || usage
+# END SHARED BLOCK: bump-usage
 
+# BEGIN SHARED BLOCK: bump-semver (identical in every repo's bump-version.sh; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 RELEASE="${CURRENT%%-*}"
 IFS='.' read -r MAJOR MINOR PATCH <<< "$RELEASE"
 if [[ "$CURRENT" == *-* ]]; then
@@ -48,12 +53,22 @@ case "$1" in
     [0-9]*.[0-9]*.[0-9]*) NEW="$1" ;;
     *) usage ;;
 esac
+# END SHARED BLOCK: bump-semver
+
+# BEGIN SHARED BLOCK: bump-tag-exists (identical in every repo's bump-version.sh; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
+if git rev-parse -q --verify "refs/tags/v$NEW" >/dev/null; then
+    echo "Tag v$NEW already exists" >&2
+    exit 1
+fi
+# END SHARED BLOCK: bump-tag-exists
 
 sed -i "s#<Version>$CURRENT</Version>#<Version>$NEW</Version>#" "$CSPROJ"
 
 git add "$CSPROJ"
+# BEGIN SHARED BLOCK: bump-commit-tag (identical in every repo's bump-version.sh; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 git commit -m "Bump version to $NEW"
 git tag -a "v$NEW" -m "v$NEW"
 
 echo "Bumped version: $CURRENT -> $NEW"
 echo "Created commit and tag v$NEW (not pushed — run 'git push --follow-tags' when ready)"
+# END SHARED BLOCK: bump-commit-tag
