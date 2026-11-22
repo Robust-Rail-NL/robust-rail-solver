@@ -241,6 +241,10 @@ Then [`docker-push.sh`](ServiceSiteScheduling/docker-push.sh) builds and pushes 
 ./docker-push.sh
 ```
 
+The script refuses to run unless the working tree is clean and `HEAD` is the commit tagged
+`v<version>` (created by `bump-version.sh`) with that tag pushed to `origin`. Pass `-f` to skip these
+checks.
+
 The `:latest` tag is only applied for final `1.x.y` releases — prerelease versions (including the `noproto` branch's `2.0.0-alpha.*` line) are pushed under their own tag only, so they never shadow the current stable image.
 
 The script creates a dedicated `buildx` builder (`robust-rail-builder`) using the `docker-container` driver with `network=host`. This is required on some machines: the default `docker-container` driver runs BuildKit in an isolated network namespace whose DNS resolution can fail to reach private/LAN DNS servers, causing errors like:

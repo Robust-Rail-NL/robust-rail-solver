@@ -29,6 +29,9 @@ The HIP solver image is published under two channels:
   [`docker-push.sh`](ServiceSiteScheduling/docker-push.sh) once a change has
   gone through its own PR and been merged into `main`. `hip:latest` always
   means "last real release."
+  `docker-push.sh` refuses to run unless the working tree is clean and `HEAD` is
+  the commit tagged `v<version>` (by `bump-version.sh`) with that tag pushed to
+  origin; `-f` skips these checks.
 - **`edge`** — a fast, lower-ceremony channel for running a not-yet-reviewed
   fix without waiting for its PR into `main`. Built and pushed via
   [`docker-push-edge.sh`](ServiceSiteScheduling/docker-push-edge.sh) under
@@ -64,6 +67,11 @@ The HIP solver image is published under two channels:
 Currently manual only — run
 [`docker-push-edge.sh`](ServiceSiteScheduling/docker-push-edge.sh) yourself
 from the `edge` branch (it checks and refuses to run from anywhere else).
+Push `edge` to origin first: the script also refuses unless local `edge` is
+identical to `origin/edge`, so `:edge` only ever contains pushed commits.
+It also refuses to run with a dirty working tree (uncommitted or untracked files),
+since the docker build uses the working tree, not the commit.
+
 There is no CI automation building or pushing `edge` on every push to the
 branch. This was a deliberate choice, not an oversight: wiring that up means
 a new category of CI workflow (deploy, not just build/test) and storing
