@@ -37,6 +37,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# BEGIN SHARED BLOCK: ghcr-login (identical in every repo's push scripts; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 docker login ghcr.io
 # Only the push needs auth; ghcr.io/robust-rail-nl is public for reads. Log
 # out again once this script exits (success or failure) rather than leaving
@@ -44,11 +45,13 @@ docker login ghcr.io
 # docker pull against ghcr.io (e.g. run_experiment.py's) ends up decrypting
 # it for no reason.
 trap 'docker logout ghcr.io' EXIT
+# END SHARED BLOCK: ghcr-login
 
 IMAGE="ghcr.io/robust-rail-nl/hip"
 CACHE_REF="$IMAGE:buildcache"
 BUILDER_NAME="robust-rail-builder"
 
+# BEGIN SHARED BLOCK: edge-guards (identical in every repo's push scripts; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$BRANCH" != "edge" ]]; then
     echo "Refusing to publish :edge from branch '$BRANCH' — checkout edge first." >&2
@@ -72,6 +75,7 @@ if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/edge)" ]]; then
     echo "Refusing to publish :edge: local edge ($(git rev-parse --short HEAD)) differs from origin/edge ($(git rev-parse --short origin/edge)) — push (or pull) first." >&2
     exit 1
 fi
+# END SHARED BLOCK: edge-guards
 
 RELEASE=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' HIP.csproj)
 [[ -n "$RELEASE" ]] || { echo "Could not read <Version> from HIP.csproj" >&2; exit 1; }
@@ -79,9 +83,11 @@ RELEASE="${RELEASE%%-*}"
 
 EDGE_VERSION="$RELEASE-edge+$(date -u +%Y%m%d).$(git rev-parse --short HEAD)"
 
+# BEGIN SHARED BLOCK: buildx-builder (identical in every repo's push scripts; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 if ! docker buildx inspect "$BUILDER_NAME" >/dev/null 2>&1; then
     docker buildx create --name "$BUILDER_NAME" --driver docker-container --driver-opt network=host
 fi
+# END SHARED BLOCK: buildx-builder
 
 docker buildx build \
     --builder "$BUILDER_NAME" \
