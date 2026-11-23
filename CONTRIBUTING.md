@@ -2,7 +2,9 @@
 
 ## Local git hooks
 
-A pre-commit check (refuses direct commits to `edge`; runs
+A pre-commit check (refuses direct commits to `edge`, but lets a
+`git merge --no-ff` finish, including a conflicted one concluded with
+`git commit`; runs
 `dotnet csharpier format` on staged `.cs`/`.csproj` files, aborting if it
 changes anything so the reformatted content doesn't slip past unreviewed)
 and a pre-push check (runs `dotnet csharpier check .` over the whole repo,
