@@ -10,17 +10,27 @@
 # commits land there often enough, for good reason, that blocking them would
 # just get in the way. This is a client-side backstop, not a substitute for
 # care: `git commit --no-verify` skips it entirely.
+
+# The guard below is copied verbatim into every sibling repo's hook; the
+# scripts/check_push_script_sync.py drift check in robust-rail-general compares
+# the copies. Change all of them together.
+# BEGIN SHARED BLOCK: edge-commit-guard
 protected_branches='^(edge)$'
 
 current_branch=$(git rev-parse --abbrev-ref HEAD)
+# git sets MERGE_HEAD before the commit that concludes a merge (including one
+# paused by conflicts) and clears it afterwards, so it cannot be confused with
+# an ordinary commit. --git-path makes this work in worktrees too.
+merge_head=$(git rev-parse --git-path MERGE_HEAD)
 
-if [[ "$current_branch" =~ $protected_branches ]]; then
+if [[ "$current_branch" =~ $protected_branches ]] && [ ! -e "$merge_head" ]; then
   echo "error: refusing to commit directly to '$current_branch'." >&2
   echo "  Create a feature branch (see CONTRIBUTING.md), then" >&2
   echo "  'git merge --no-ff' it into edge instead." >&2
   echo "  (Deliberate override: git commit --no-verify)" >&2
   exit 1
 fi
+# END SHARED BLOCK: edge-commit-guard
 
 # CSharpier: format staged .cs/.csproj files in place, mirroring what CI's
 # `dotnet csharpier check` enforces (.github/workflows/dotnet.yml). If
