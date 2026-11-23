@@ -22,6 +22,9 @@ Both are client-side backstops for mistakes, not a substitute for care or
 for CI/branch protection: `git commit --no-verify` / `git push --no-verify`
 skip them entirely.
 
+The edge guard in `pre-commit` is shared with the sibling repos, whose copies
+`robust-rail-general/scripts/check_push_script_sync.py` checks for drift.
+
 ## Image channels: `stable` and `edge`
 
 The HIP solver image is published under two channels:
